@@ -144,3 +144,5 @@ cython_debug/
 *.weights
 *.python
 *.74
+*.mp4
+*.mkv

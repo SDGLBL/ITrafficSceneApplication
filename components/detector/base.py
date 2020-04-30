@@ -18,7 +18,7 @@ class BaseDetector(object):
             raise AssertionError('batch_size不能为0或者负数')
         self.model = model
         self.device = device
-        self.classes = load_classes('./detection/yolov3/data/coco.names')
+        self.classes = load_classes('./components/detector/yolov3/data/coco.names')
         self.batch_size = batch_size
     
     def preprocessing(self,imgs:list):

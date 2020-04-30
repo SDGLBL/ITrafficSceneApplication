@@ -1,7 +1,10 @@
+from components.registry import DETECTOR
 from .base import BaseDetector
 from hyperlpr import HyperLPR_plate_recognition
 import numpy as np
 
+
+@DETECTOR.register_module
 class LpnDetector(BaseDetector):
     """
     车牌探测与识别类

@@ -1,3 +1,4 @@
+#from ..registry import DETECTOR
 import torch
 import random
 import numpy as np
@@ -6,6 +7,8 @@ from matplotlib import pyplot as plt
 import torchvision.transforms.functional as F
 from .yolov3 import  get_yolov3,pad_to_square,resize,non_max_suppression,rescale_boxes
 
+
+#@DETECTOR.register_module
 class Yolov3Detector(BaseDetector):
     """
     Yolov3目标探测网络
@@ -63,6 +66,7 @@ class Yolov3Detector(BaseDetector):
         img = resize(img, self.img_size)
         return img
 
+
     def afterprocessing(self, detections: torch.Tensor,shapes: list):
         """
         非极大值抑制和rescale
@@ -96,12 +100,12 @@ class Yolov3Detector(BaseDetector):
         Args:
             imgs: 图像list or 图像np.ndarray
             shapes: 对应图像列表中每个图像的shape 比如 [img1.shape,img2.shape,.....,img_n.shape]
-                    如果可以肯定整个列表中图像shape都不会发生变化，那么直接输入一个图像的shape tuple即可　比如　(300,600,3)
+                    如果可以肯定整个列表中图像shape都不会发生变化，那么直接输入一个图像的shape tuple即可　比如　(H,W,C)
             *args:
             **kwargs:
 
         Returns:
-            detections:探测到的bboxs_list 其长度为图像列表长度，每个其中的bboxs对应一个imgs中的图像
+            detections:探测到的bboxs_list 其长度为图像列表长度，每个其中的bboxs对应一个imgs中的图像中的目标bboxs
 
         """
         imgs_batch = self.preprocessing(imgs)

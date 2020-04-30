@@ -1,8 +1,9 @@
-from .yolov3 import rescale_boxes,load_classes
+from components.detector.yolov3 import rescale_boxes,load_classes
 from matplotlib import pyplot as plt
 import numpy as np
 import random
 import cv2
+import logging
 
 
 
@@ -10,7 +11,7 @@ def draw_label(
         bboxs,
         img:np.ndarray,
         bbox_colors,
-        classes=load_classes('./detection/yolov3/data/coco.names')):
+        classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
     绘制bbox
     Args:
@@ -34,7 +35,7 @@ def draw_label(
     return img
 
 
-def get_random_bbox_colors(classes=load_classes('./detection/yolov3/data/coco.names')):
+def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
     获取随机颜色，数量为传入的类别数量
     Args:
@@ -48,3 +49,19 @@ def get_random_bbox_colors(classes=load_classes('./detection/yolov3/data/coco.na
     for _ in range(len(classes)):
         bbox_colors.append((random.randint(60,255),random.randint(50,255),random.randint(70,255)))
     return bbox_colors
+
+
+def get_logger(
+    level=logging.INFO,
+    filename='log.txt'
+    ,filemode="w"
+    , format="%(asctime)s %(name)s:%(levelname)s:%(message)s"
+    , datefmt="%d-%M-%Y %H:%M:%S"):
+
+    logging.basicConfig(
+        level=level,
+        filename='log.txt',
+        filemode="w",
+        format="%(asctime)s %(name)s:%(levelname)s:%(message)s",
+        datefmt="%d-%M-%Y %H:%M:%S")
+    return logging.getLogger(__name__)

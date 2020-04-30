@@ -3,14 +3,10 @@ from __future__ import division
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 import numpy as np
 
-from detection.yolov3.utils.parse_config import *
-from detection.yolov3.utils.utils import build_targets, to_cpu, non_max_suppression
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+from components.detector.yolov3.utils.parse_config import *
+from components.detector.yolov3.utils.utils import build_targets, to_cpu
 
 
 def create_modules(module_defs):
@@ -73,7 +69,7 @@ def create_modules(module_defs):
             anchors = [anchors[i] for i in anchor_idxs]
             num_classes = int(module_def["classes"])
             img_size = int(hyperparams["height"])
-            # Define detection layer
+            # Define detector layer
             yolo_layer = YOLOLayer(anchors, num_classes, img_size)
             modules.add_module(f"yolo_{module_i}", yolo_layer)
         # Register module list and number of output filters
@@ -232,7 +228,7 @@ class YOLOLayer(nn.Module):
 
 
 class Darknet(nn.Module):
-    """YOLOv3 object detection model"""
+    """YOLOv3 object detector model"""
 
     def __init__(self, config_path, img_size=416):
         super(Darknet, self).__init__()
@@ -273,7 +269,7 @@ class Darknet(nn.Module):
             self.seen = header[3]  # number of images seen during training
             weights = np.fromfile(f, dtype=np.float32)  # The rest are weights
 
-        # Establish cutoff for loading backbone weights
+        # Establish cutoff for loading backbones weights
         cutoff = None
         if "darknet53.conv.74" in weights_path:
             cutoff = 75
