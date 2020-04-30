@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:$PROJECT_DIR$/../../../../../..//$PROJECT_DIR$/.idea/ITrafficSceneApplication.iml" filepath="$PROJECT_DIR$/.idea/ITrafficSceneApplication.iml" />
+      <module fileurl="file://file:/home/../../..///home/lijie/PycharmProjects/ITrafficSceneApplication/.idea/ITrafficSceneApplication.iml" filepath="file:$PROJECT_DIR$/../../../../../..///home/lijie/PycharmProjects/ITrafficSceneApplication/.idea/ITrafficSceneApplication.iml" />
     </modules>
   </component>
 </project>

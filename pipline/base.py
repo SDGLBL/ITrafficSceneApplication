@@ -8,5 +8,13 @@ class BasePipeline(object):
     def __init__(self):
         pass
 
-    
+    def update(self,bboxs,img:np.ndarray):
+        """
+
+        Args:
+            bboxs: 每个图像中的bbox list ,包含有[x1, y1, x2, y2, obj_conf, cls_conf, cls_pred]
+            img: 图像
+        Returns:
+        """
+        pass
             

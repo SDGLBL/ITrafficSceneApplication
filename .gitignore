@@ -113,7 +113,7 @@ ENV/
 env.bak/
 venv.bak/
 .vscode
-
+.idea
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -137,3 +137,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# custom file
+*.jpg
+*.png
+*.weights
+*.python
+*.74
