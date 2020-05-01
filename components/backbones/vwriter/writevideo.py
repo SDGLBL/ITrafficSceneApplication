@@ -1,13 +1,12 @@
-from components.registry import BACKBONE_C
 import cv2
 from cv2 import VideoWriter_fourcc
-from components.backbones.base import BaseBackboneComponent
 from utils import draw_label,get_random_bbox_colors
+from components.backbones.registry import BACKBONE_COMPONENT
+from components.backbones.base import BaseBackboneComponent
 
-
-@BACKBONE_C.register_module
+@BACKBONE_COMPONENT.register_module
 class WriteVideoBackboneComponent(BaseBackboneComponent):
-    def __init__(self,resolution,fps,fourcc='mp4v',write_path='./save.mp4'):
+    def __init__(self,resolution,fps,fourcc='avc1',write_path='./save.mp4'):
         self.vwriter = cv2.VideoWriter(
             write_path,
             VideoWriter_fourcc(*fourcc),
@@ -22,7 +21,10 @@ class WriteVideoBackboneComponent(BaseBackboneComponent):
         imgs = kwargs['imgs']
         detections = kwargs['detections']
         for img,bboxs in zip(imgs,detections):
-            img = draw_label(bboxs,img,self.colors)
-            self.vwriter.write(img)
-
-
+            if bboxs is not None:
+                print(img.shape)
+                img = draw_label(bboxs, img, self.colors)
+                self.vwriter.write(img)
+            elif bboxs is None:
+                # 如果没有探测到任何目标
+                self.vwriter.write(img)

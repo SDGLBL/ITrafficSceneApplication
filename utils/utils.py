@@ -1,5 +1,4 @@
-from components.detector.yolov3 import rescale_boxes,load_classes
-from matplotlib import pyplot as plt
+from components.detector.yolov3 import load_classes
 import numpy as np
 import random
 import cv2
@@ -60,8 +59,8 @@ def get_logger(
 
     logging.basicConfig(
         level=level,
-        filename='log.txt',
-        filemode="w",
-        format="%(asctime)s %(name)s:%(levelname)s:%(message)s",
-        datefmt="%d-%M-%Y %H:%M:%S")
+        filename=filename,
+        filemode=filemode,
+        format=format,
+        datefmt=datefmt)
     return logging.getLogger(__name__)

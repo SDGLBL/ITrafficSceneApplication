@@ -1,4 +1,4 @@
-#from ..registry import DETECTOR
+from .registry import DETECTOR
 import torch
 import random
 import numpy as np
@@ -8,23 +8,30 @@ import torchvision.transforms.functional as F
 from .yolov3 import  get_yolov3,pad_to_square,resize,non_max_suppression,rescale_boxes
 
 
-#@DETECTOR.register_module
+@DETECTOR.register_module
 class Yolov3Detector(BaseDetector):
-    """
-    Yolov3目标探测网络
-    """
+
     def __init__(self,
                  device,
                  conf_thres = 0.8,
                  nms_thres=0.4,
                  img_size=416,
                  batch_size=1):
+        """Yolov3目标探测网络
+        Args:
+            device (torch.device): 模型运行硬件 cuda or cpu
+            conf_thres (float, optional): 目标置信度阈值. Defaults to 0.8.
+            nms_thres (float, optional): 非极大值抑制阈值. Defaults to 0.4.
+            img_size (int, optional): 网络输入大小. Defaults to 416.
+            batch_size (int, optional): 批处理大小. Defaults to 1.
+        """                 
         # 神经网络输入图像大小
         self.img_size = img_size
         # 置信度阈值
         self.conf_thres = conf_thres
         # 非极大值抑制阈值
         self.nms_thres = nms_thres
+        #self._instanceLock =
         super(Yolov3Detector, self).__init__(
             model=get_yolov3(
                 img_size=img_size,
@@ -34,14 +41,14 @@ class Yolov3Detector(BaseDetector):
             batch_size=batch_size)
 
 
-    def preprocessing(self, imgs:list):
+    def preprocessing(self, imgs):
         """
         将输入的图像列表处理为batch
         Args:
-            imgs: list[PIL.Image] or list[np.ndarray]
+            imgs: (list[PIL.Image]) or list[np.ndarray]
 
         Returns:
-            imgs_batch:torch.Tensor shape like [N,C,H,W]
+            imgs_batch (torch.Tensor) : torch.Tensor shape like [N,C,H,W]
         """
         imgs = super().preprocessing(imgs)
         imgs = [self.__yolov3_img_pre(img) for img in imgs]
@@ -54,7 +61,7 @@ class Yolov3Detector(BaseDetector):
         """
         将图像处理为网络可以接受的大小
         Args:
-            img: PIL.Image or np.ndarray
+            img (): PIL.Image or np.ndarray
 
         Returns:
             torch.Tensor
@@ -78,8 +85,12 @@ class Yolov3Detector(BaseDetector):
         """
         # NMS
         detections = non_max_suppression(detections,self.conf_thres,self.nms_thres)
-        results = []
+        # 非极大值抑制后可能出现没有任何目标被探测出
+        results = [None for _ in range(len(detections))]
         for index,detections_for_one in enumerate(detections):
+            if detections_for_one is None:
+                # 没有探测到任何东西直接跳过
+                continue
             if isinstance(shapes,list):
                 detections_for_one = rescale_boxes(detections_for_one, self.img_size, shapes[index][:2])
             elif isinstance(shapes,tuple):
@@ -89,10 +100,10 @@ class Yolov3Detector(BaseDetector):
             result = []
             for x1, y1, x2, y2, obj_conf, cls_conf, cls_pred in detections_for_one:
                 result.append([x1.item(), y1.item(), x2.item(), y2.item(), obj_conf.item(), cls_conf.item(), cls_pred.item()])
-            results.append(result)
+            results[index] = result
         return results
-
-
+    
+    
 
     def __call__(self, imgs: list,shapes: list, *args, **kwargs):
         """

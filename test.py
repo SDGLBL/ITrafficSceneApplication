@@ -1,23 +1,45 @@
-from detection import LpnDetector,Yolov3Detector,draw_label,get_random_bbox_colors
-from PIL import Image
-import numpy as np
 import torch
-from matplotlib import pyplot as plt
-import time
+from torch.multiprocessing import Process,Queue
+from utils import Yolov3TaskBuilder
+from utils.registry import build_from_cfg
+from components.backbones.registry import BACKBONE_COMPONENT
+from components.detector.registry import DETECTOR
+from components.head.registry import HEAD
 
-# RTX2060速度0.68s处理30帧
-if __name__ == "__main__":
-    x = Yolov3Detector(batch_size=1,device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
-    img = Image.open('./test.jpg').convert('RGB')
-    img = np.array(img)
-    imgs = []
-    for _ in range(1):
-        imgs.append(img)
-    st = time.time()
-    y = x(imgs,img.shape)
-    et = time.time()
-    print(et-st)
-    bbox_colors = get_random_bbox_colors()
-    img = draw_label(y[0],np.array(img),bbox_colors=bbox_colors)
-    plt.imsave('./output.jpg',img)
-    plt.show()
+
+if __name__ == '__main__':
+    # cuda 只支持由spawn产生的进程
+    #multiprocessing.set_start_method('forkserver')
+    components = {
+        'head_detector':[
+            {
+                'type':'VideoFileHead',
+                'filename':'./test.mp4',
+                'step':30,
+                'cache_capacity':100
+            },
+            {
+                'type':'Yolov3Detector',
+                'device':torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+                'batch_size':8
+            }
+        ],
+        'backbones_components_cfgs':[
+            [{
+                'type':'WriteVideoBackboneComponent',
+                'resolution':(1280,720),
+                'fps':30
+            }]
+        ]
+    }
+    video_head = build_from_cfg(components['head_detector'][0],HEAD)
+    #detector = build_from_cfg(components['head_detector'][1],DETECTOR)
+    vwriter = build_from_cfg(components['backbones_components_cfgs'][0][0],BACKBONE_COMPONENT)
+
+    for index,imgs in enumerate(video_head):
+        if index > 20 :
+            break
+        vwriter.process(imgs=imgs, detections=[None for _ in range(30)])
+
+
+

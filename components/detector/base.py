@@ -1,3 +1,5 @@
+from typing import Any
+from multiprocessing import Lock
 import numpy as np
 from .yolov3 import load_classes
 import torch
@@ -5,6 +7,7 @@ import torch
 class BaseDetector(object):
     """
     探测器基类：用于探测出图像中的目标
+    必须实现__call__方法
     """
     def __init__(self,model,device,batch_size=1):
         """
@@ -20,6 +23,8 @@ class BaseDetector(object):
         self.device = device
         self.classes = load_classes('./components/detector/yolov3/data/coco.names')
         self.batch_size = batch_size
+        self.pLock = Lock()
+
     
     def preprocessing(self,imgs:list):
         """
@@ -47,5 +52,9 @@ class BaseDetector(object):
         pass
 
     def __call__(self, imgs:np.ndarray,*args, **kwargs):
+
         pass
+
+
+
 

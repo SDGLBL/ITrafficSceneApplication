@@ -1,1 +1,1 @@
-from .filevideo import VideoFilePipeline
+from .filevideo import VideoFileHead
