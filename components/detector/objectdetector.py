@@ -45,7 +45,7 @@ class Yolov3Detector(BaseDetector):
         """
         将输入的图像列表处理为batch
         Args:
-            imgs: (list[PIL.Image]) or list[np.ndarray]
+            imgs (list[PIL.Image]) or list[np.ndarray] : 长度应该与batch_size匹配
 
         Returns:
             imgs_batch (torch.Tensor) : torch.Tensor shape like [N,C,H,W]
@@ -80,7 +80,7 @@ class Yolov3Detector(BaseDetector):
         Args:
             detections: 神经网络的输出
 
-        Returns:results:非极大值抑制和rescale后的输出
+        Returns:results (list[bboxs]):非极大值抑制和rescale后的输出
 
         """
         # NMS
@@ -109,11 +109,9 @@ class Yolov3Detector(BaseDetector):
         """
         YoLov3前传函数
         Args:
-            imgs: 图像list or 图像np.ndarray
+            imgs: 图像list or 图像 np.ndarray len(imgs)一个与batch_size匹配 
             shapes: 对应图像列表中每个图像的shape 比如 [img1.shape,img2.shape,.....,img_n.shape]
                     如果可以肯定整个列表中图像shape都不会发生变化，那么直接输入一个图像的shape tuple即可　比如　(H,W,C)
-            *args:
-            **kwargs:
 
         Returns:
             detections:探测到的bboxs_list 其长度为图像列表长度，每个其中的bboxs对应一个imgs中的图像中的目标bboxs
