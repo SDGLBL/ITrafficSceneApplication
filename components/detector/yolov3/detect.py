@@ -17,8 +17,8 @@ from matplotlib.ticker import NullLocator
 
 def get_yolov3(
         img_size = 608,
-        model_def = "components/detector/yolov3/config/yolov3.cfg",
-        weights_path="components/detector/yolov3/weights/yolov3.weights",
+        model_def = "./components/detector/yolov3/config/yolov3.cfg",
+        weights_path="./components/detector/yolov3/weights/yolov3.weights",
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")):
 
     # Set up model

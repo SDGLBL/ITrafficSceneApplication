@@ -1,15 +1,13 @@
 import torch
-from torch.multiprocessing import Process,Queue
-from utils import Yolov3TaskBuilder
 from utils.registry import build_from_cfg
 from components.backbones.registry import BACKBONE_COMPONENT
-from components.detector.registry import DETECTOR
 from components.head.registry import HEAD
 
 
 if __name__ == '__main__':
-    # cuda 只支持由spawn产生的进程
-    #multiprocessing.set_start_method('forkserver')
+    """这只是一个演示脚本
+       演示了从项目根目录读取test.mp4文件并写入到save.mp4文件
+    """    
     components = {
         'head_detector':[
             {
@@ -25,16 +23,20 @@ if __name__ == '__main__':
             }
         ],
         'backbones_components_cfgs':[
-            [{
-                'type':'WriteVideoBackboneComponent',
-                'resolution':(1280,720),
-                'fps':30
-            }]
+            [
+                {
+                    'type':'DrawBoundingBoxComponent'
+                },
+                {
+                    'type':'WriteVideoComponent',
+                    'resolution':(1280,720),
+                    'fps':30
+                }
+            ]
         ]
     }
     video_head = build_from_cfg(components['head_detector'][0],HEAD)
-    #detector = build_from_cfg(components['head_detector'][1],DETECTOR)
-    vwriter = build_from_cfg(components['backbones_components_cfgs'][0][0],BACKBONE_COMPONENT)
+    vwriter = build_from_cfg(components['backbones_components_cfgs'][0][1],BACKBONE_COMPONENT)
 
     for index,imgs in enumerate(video_head):
         if index > 20 :

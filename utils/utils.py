@@ -2,7 +2,7 @@ from components.detector.yolov3 import load_classes
 import numpy as np
 import random
 import cv2
-import logging
+
 
 
 
@@ -22,7 +22,7 @@ def draw_label(
     Returns:
         绘制后的图像
     """
-    thickness = len(img) // 400
+    thickness = len(img) // 200
     for bbox in bboxs:
         x1,y1,x2,y2,obj_conf,cls_conf,cls_pred = bbox
         x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
@@ -50,17 +50,3 @@ def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/da
     return bbox_colors
 
 
-def get_logger(
-    level=logging.INFO,
-    filename='log.txt'
-    ,filemode="w"
-    , format="%(asctime)s %(name)s:%(levelname)s:%(message)s"
-    , datefmt="%d-%M-%Y %H:%M:%S"):
-
-    logging.basicConfig(
-        level=level,
-        filename=filename,
-        filemode=filemode,
-        format=format,
-        datefmt=datefmt)
-    return logging.getLogger(__name__)

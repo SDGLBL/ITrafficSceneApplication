@@ -20,12 +20,14 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
             if img is not None:
                 imgs.append(img)
             else:
-                return StopIteration
+                raise StopIteration
         return imgs
 
     def __getitem__(self, index):
         return super().__getitem__(index)
 
+    def __len__(self):
+        return super().__len__()//self.step
 
     def get_shape(self):
         return (int(self.height),int(self.width),3)
