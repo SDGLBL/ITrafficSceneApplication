@@ -1,12 +1,13 @@
-from .registry import HEAD
-from .base import BaseVideoPipeline
 import mmcv
+
+from .base import BaseVideoPipeline
+from .registry import HEAD
 
 
 @HEAD.register_module
 class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
 
-    def __init__(self, filename,step, cache_capacity=10):
+    def __init__(self, filename, step, cache_capacity=10):
         self.step = step
         super().__init__(filename, cache_capacity)
 
@@ -27,7 +28,7 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
         return super().__getitem__(index)
 
     def __len__(self):
-        return super().__len__()//self.step
+        return super().__len__()
 
     def get_shape(self):
         return (int(self.height),int(self.width),3)

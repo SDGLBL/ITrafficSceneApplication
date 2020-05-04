@@ -1,19 +1,19 @@
 from __future__ import division
 
-from components.detector.yolov3.utils.utils import *
-from components.detector.yolov3.utils.parse_config import *
-from test import evaluate
-
-from terminaltables import AsciiTable
-
+import argparse
+import datetime
 import os
 import time
-import datetime
-import argparse
 
 import torch
-from torch.utils.data import DataLoader
+from terminaltables import AsciiTable
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
+
+from components.detector.yolov3.utils.parse_config import *
+from components.detector.yolov3.utils.utils import *
+from .models import Darknet
+from .test import evaluate
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

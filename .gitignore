@@ -142,6 +142,7 @@ cython_debug/
 *.jpg
 *.png
 *.weights
+*.pth
 *.python
 *.74
 *.mp4

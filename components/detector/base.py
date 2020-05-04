@@ -1,15 +1,17 @@
-from typing import Any
 from multiprocessing import Lock
 import numpy as np
-from .yolov3 import load_classes
 import torch
+
+from .yolov3 import load_classes
+
 
 class BaseDetector(object):
     """
     探测器基类：用于探测出图像中的目标
     必须实现__call__方法
     """
-    def __init__(self,model,device,batch_size=1):
+
+    def __init__(self, model, device, batch_size=1):
         """
 
         Args:
@@ -21,6 +23,7 @@ class BaseDetector(object):
             raise AssertionError('batch_size不能为0或者负数')
         self.model = model
         self.device = device
+        self.model.to(self.device)
         self.classes = load_classes('./components/detector/yolov3/data/coco.names')
         self.batch_size = batch_size
         self.pLock = Lock()
@@ -40,21 +43,10 @@ class BaseDetector(object):
             raise AssertionError("传入的图像数量必须与batch_size匹配")
         return imgs
 
-    def afterprocessing(self,detections:torch.Tensor):
-        """
-        结果处理函数:将神经网络前传的结果进行处理
-        Args:
-            detections:神经网络的前传输出
-
-        Returns:
-            bboxs,
-        """
-        pass
-
-    def __call__(self, imgs:np.ndarray,*args, **kwargs):
+    def afterprocessing(self, detections: torch.Tensor, shapes):
 
         pass
 
+    def __call__(self, imgs: np.ndarray, shapes, *args, **kwargs):
 
-
-
+        pass

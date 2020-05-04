@@ -1,14 +1,15 @@
 from __future__ import division
 
-from components.detector.yolov3.utils.utils import *
-from components.detector.yolov3.utils.parse_config import *
-
 import argparse
-import tqdm
 
 import torch
-from torch.utils.data import DataLoader
+import tqdm
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
+
+from components.detector.yolov3.utils.parse_config import *
+from components.detector.yolov3.utils.utils import *
+from .models import Darknet
 
 
 def evaluate(model, path, iou_thres, conf_thres, nms_thres, img_size, batch_size):

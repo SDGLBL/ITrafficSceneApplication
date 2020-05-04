@@ -1,28 +1,16 @@
 from __future__ import division
 
-from components.detector.yolov3 import *
-from .models import Darknet
-import time
-import datetime
-
-from PIL import Image
-
 import torch
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.ticker import NullLocator
+from .models import Darknet
+
 
 def get_yolov3(
-        img_size = 608,
-        model_def = "./components/detector/yolov3/config/yolov3.cfg",
-        weights_path="./components/detector/yolov3/weights/yolov3.weights",
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")):
-
+        img_size=608,
+        model_def="./components/detector/yolov3/config/yolov3.cfg",
+        weights_path="./components/detector/yolov3/weights/yolov3.weights", ):
     # Set up model
-    model = Darknet(model_def, img_size=img_size).to(device)
+    model = Darknet(model_def, img_size=img_size)
     if weights_path.endswith(".weights"):
         # Load darknet weights
         model.load_darknet_weights(weights_path)
