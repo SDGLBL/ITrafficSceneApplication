@@ -59,5 +59,5 @@ if __name__ == '__main__':
     kwargs = drawlabel.process(imgs=imgs, detections=output)
     print(et - st)
     imgs = kwargs['imgs']
-    plt.imshow(cv2.cvtColor(imgs[0], cv2.COLOR_BGR2RGB))
+    plt.imshow(cv2.cvtColor(imgs[1], cv2.COLOR_BGR2RGB))
     plt.show()

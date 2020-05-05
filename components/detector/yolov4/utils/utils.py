@@ -229,10 +229,10 @@ def get_region_boxes1(output, conf_thresh, num_classes, anchors, num_anchors, on
 
     anchor_w = np.array(anchors).reshape((num_anchors, anchor_step))[:, 0]
     anchor_h = np.array(anchors).reshape((num_anchors, anchor_step))[:, 1]
-    anchor_w = np.expand_dims(np.expand_dims(anchor_w, axis=1).repeat(batch, 1), axis=2).repeat(h * w, axis=1).reshape(
-        batch * num_anchors * h * w)  # cuda()
-    anchor_h = np.expand_dims(np.expand_dims(anchor_h, axis=1).repeat(batch, 1), axis=2).repeat(h * w, axis=1).reshape(
-        batch * num_anchors * h * w)  # cuda()
+    anchor_w = np.expand_dims(np.expand_dims(anchor_w, axis=1).repeat(batch, 1), axis=2) \
+        .repeat(h * w, axis=2).transpose(1, 0, 2).reshape(batch * num_anchors * h * w)
+    anchor_h = np.expand_dims(np.expand_dims(anchor_h, axis=1).repeat(batch, 1), axis=2) \
+        .repeat(h * w, axis=2).transpose(1, 0, 2).reshape(batch * num_anchors * h * w)
     ws = np.exp(output[2]) * anchor_w
     hs = np.exp(output[3]) * anchor_h
 

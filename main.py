@@ -1,6 +1,6 @@
 import torch
 
-from utils.buildline import Yolov3TaskBuilder
+from utils.buildline import YolovTaskBuilder
 
 if __name__ == '__main__':
     """程序运行例子
@@ -11,13 +11,13 @@ if __name__ == '__main__':
             {
                 'type': 'VideoFileHead',
                 'filename': './test.mp4',
-                'step': 16,
+                'step': 8,
                 'cache_capacity': 100
             },
             {
-                'type': 'Yolov3Detector',
+                'type': 'Yolov4Detector',
                 'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-                'batch_size': 16
+                'batch_size': 8
             }
         ],
         'backbones_components_cfgs': [
@@ -33,6 +33,6 @@ if __name__ == '__main__':
             ]
         ]
     }
-    task = Yolov3TaskBuilder(components=components)
+    task = YolovTaskBuilder(components=components)
     task.start()
 

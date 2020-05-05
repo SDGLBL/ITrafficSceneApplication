@@ -125,6 +125,7 @@ class Yolov3Detector(BaseDetector):
         return detections
 
 
+@DETECTOR.register_module
 class Yolov4Detector(BaseDetector):
 
     def __init__(self, device,

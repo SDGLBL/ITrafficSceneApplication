@@ -1,1 +1,1 @@
-from .builder import Yolov3TaskBuilder
+from .builder import YolovTaskBuilder

@@ -1,13 +1,16 @@
-from torch.multiprocessing import Process,Pipe,Queue
 from _queue import Empty
-from ..registry import build_from_cfg
+
+from torch.multiprocessing import Process, Queue
+
 from components.backbones.registry import BACKBONE_COMPONENT
 from components.detector.registry import DETECTOR
 from components.head.registry import HEAD
-from .base import BaseBuild
 from utils import get_logger
+from .base import BaseBuild
+from ..registry import build_from_cfg
 
 Loger = get_logger()
+
 
 def backbone(bccfgs, reciveq):
     """backbone
@@ -75,10 +78,9 @@ def head_detector_component(hdcfg, send_qs):
         return
 
 
+class YolovTaskBuilder(BaseBuild):
 
-class Yolov3TaskBuilder(BaseBuild):
-
-    def __init__(self,components):
+    def __init__(self, components):
         self.component = components
         self.head = None
         self.backbones = None
