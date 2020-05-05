@@ -8,7 +8,7 @@ from .registry import HEAD
 class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
 
     def __init__(self, filename, step, cache_capacity=10):
-        if step % 2 != 0:
+        if step % 2 != 0 and step != 1:
             raise AttributeError('步长必须为2的倍数')
         self.step = step
         super().__init__(filename, cache_capacity)

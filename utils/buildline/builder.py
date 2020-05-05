@@ -1,4 +1,4 @@
-from _queue import Empty
+from queue import Empty
 
 from torch.multiprocessing import Process, Queue
 
@@ -88,7 +88,6 @@ class YolovTaskBuilder(BaseBuild):
         self.build()
 
     def build(self):
-        global send_qs
         self.head_detector_cfg = self.component['head_detector']
         self.backbones_components_cfgs = self.component['backbones_components_cfgs']
         # 根据数据处理主干的长度创建多个进程通信队列，用于进程通信

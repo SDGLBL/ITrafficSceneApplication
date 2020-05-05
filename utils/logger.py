@@ -71,7 +71,7 @@ config_info_for_linux = {
             'backupCount': 50,
             # If delay is true,
             # then file opening is deferred until the first call to emit().
-            'delay': True,
+            'delay': False,
             'filename': 'logs/main.log',
             'formatter': 'verbose'
         }
@@ -79,7 +79,7 @@ config_info_for_linux = {
     'loggers': {
         'default': {
             'handlers': ['console','file'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     }
 }
@@ -95,10 +95,12 @@ def get_logger(filename='logs/main.log'):
         logging.config.dictConfig(config_info_for_linux)
     else:
         raise EnvironmentError('运行环境错误，该程序不能在{0}上运行'.format(platform.system()))
+    logging.basicConfig(level=logging.DEBUG)
     return logging.getLogger(__name__)
 
 def t1():
     logger = get_logger(filename='test1.txt')
+    print(logger)
     for _ in range(10):
         logger.info('process 1 1')
 def t2():

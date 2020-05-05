@@ -14,7 +14,7 @@ class FpsCollectorComponent(BaseBackboneComponent):
         self.isPrint = isPrint
         self.currentStep = 0
         self.figureStep = figureStep
-        self.logger = get_logger(filename='logs/fpsCollect.txt')
+        self.logger = get_logger(filename='logs/fpsCollect.log')
         self.startTime = None
         self.endTime = None
 

@@ -22,7 +22,7 @@ class BaseDetector(object):
         """
         if batch_size <= 0:
             raise AssertionError('batch_size不能为0或者负数')
-        if batch_size % 2 != 0:
+        if batch_size % 2 != 0 and batch_size != 1:
             raise AttributeError('batch_size必须为2的倍数')
         self.model = model
         self.device = device
