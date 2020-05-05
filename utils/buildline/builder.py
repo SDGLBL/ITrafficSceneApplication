@@ -5,7 +5,7 @@ from torch.multiprocessing import Process, Queue
 from components.backbones.registry import BACKBONE_COMPONENT
 from components.detector.registry import DETECTOR
 from components.head.registry import HEAD
-from utils import get_logger
+from utils.logger import get_logger
 from .base import BaseBuild
 from ..registry import build_from_cfg
 

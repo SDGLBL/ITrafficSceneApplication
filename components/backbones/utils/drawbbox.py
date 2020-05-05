@@ -1,6 +1,7 @@
-from ..registry import BACKBONE_COMPONENT
+from utils.utils import draw_label, get_random_bbox_colors
 from ..base import BaseBackboneComponent
-from utils import draw_label,get_random_bbox_colors
+from ..registry import BACKBONE_COMPONENT
+
 
 @BACKBONE_COMPONENT.register_module
 class DrawBoundingBoxComponent(BaseBackboneComponent):
