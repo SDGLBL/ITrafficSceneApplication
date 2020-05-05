@@ -29,6 +29,11 @@ start setup.bat
 
 Then place them in components/detector/yolov3/weights
 
+- [Download weights for yolov4](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights)
+
+Then place it in components/detector/yolov4/weight
+If the path not exist,please mkdir by yourself.
+
 ### References
 
 - https://github.com/eriklindernoren/PyTorch-YOLOv3
