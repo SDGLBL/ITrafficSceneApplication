@@ -1,10 +1,8 @@
-import concurrent_log_handler
-import cloghandler
-import logging.config
 import logging
+import logging.config
+import logging.config
 import platform
 from multiprocessing import Process
-
 
 config_info_for_windows = {
     'version': 1,

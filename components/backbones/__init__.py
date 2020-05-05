@@ -1,1 +1,1 @@
-from .utils import WriteVideoComponent,DrawBoundingBoxComponent
+from .utils import WriteVideoComponent, DrawBoundingBoxComponent, FpsCollectorComponent

@@ -2,9 +2,6 @@ from __future__ import division
 
 import argparse
 
-import torch
-import tqdm
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from components.detector.yolov3.utils.parse_config import *

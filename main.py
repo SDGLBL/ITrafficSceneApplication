@@ -11,19 +11,23 @@ if __name__ == '__main__':
             {
                 'type': 'VideoFileHead',
                 'filename': './test.mp4',
-                'step': 8,
+                'step': 16,
                 'cache_capacity': 100
             },
             {
                 'type': 'Yolov4Detector',
                 'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-                'batch_size': 8
+                'batch_size': 16
             }
         ],
         'backbones_components_cfgs': [
             [
                 {
                     'type': 'DrawBoundingBoxComponent'
+                },
+                {
+                    'type': 'FpsCollectorComponent',
+                    'isPrint': True
                 },
                 {
                     'type': 'WriteVideoComponent',
