@@ -89,9 +89,9 @@ config_info_for_linux = {
 def get_logger(filename='logs/main.log'):
     config_info_for_windows['handlers']['file']['filename'] = filename
     config_info_for_linux['handlers']['file']['filename'] = filename
-    if platform.system() is 'Windows':
+    if platform.system() == 'Windows':
         logging.config.dictConfig(config_info_for_windows)
-    elif platform.system() is 'Linux':
+    elif platform.system() == 'Linux':
         logging.config.dictConfig(config_info_for_linux)
     else:
         raise EnvironmentError('运行环境错误，该程序不能在{0}上运行'.format(platform.system()))
