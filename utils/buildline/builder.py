@@ -1,14 +1,14 @@
 from queue import Empty
-
+import torch
 from torch.multiprocessing import Process, Queue
-
+from torch import multiprocessing
 from components.backbones.registry import BACKBONE_COMPONENT
 from components.detector.registry import DETECTOR
 from components.head.registry import HEAD
 from utils.logger import get_logger
 from .base import BaseBuild
 from ..registry import build_from_cfg
-
+import time
 Loger = get_logger()
 
 
@@ -71,6 +71,7 @@ def head_detector_component(hdcfg, send_qs):
     finally:
         del detector
         del video_head
+        torch.cuda.empty_cache()
         for send_q in send_qs:
             send_q.close()
             del send_q
@@ -100,5 +101,8 @@ class YolovTaskBuilder(BaseBuild):
         for backbone_components_cfg, reciveq in zip(self.backbones_components_cfgs,[x for x in self.send_qs]):
             backbone_p = Process(target=backbone, args=(backbone_components_cfg, reciveq,))
             backbone_p.start()
+        # 在linux中spawn进程使用的变量会被主进程的gc回收导致子进程中对象无法初始化因此需要睡眠主进程稍微等待一下
+        time.sleep(10)
+
 
 
