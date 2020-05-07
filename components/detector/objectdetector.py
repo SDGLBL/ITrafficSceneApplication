@@ -161,7 +161,8 @@ class Yolov4Detector(BaseDetector):
                     torch.Tensor
                 """
         img = F.to_tensor(img)
-
+        # Pad to square resolution
+        img, _ = pad_to_square(img, 0)
         # Resize
         img = resize(img, self.img_size)
         # Res
@@ -197,27 +198,49 @@ class Yolov4Detector(BaseDetector):
                 continue
             if isinstance(shapes, list):
                 for ashape in shapes:
-                    width = ashape[1]
-                    height = ashape[0]
+                    max_shape = max(shapes[:-1])
+                    min_shape = min(shapes[:-1])
+                    pad_size = (max_shape - min_shape) // 2
+                    width = shapes[1]
+                    height = shapes[0]
                     for i in range(len(detections_for_one)):
                         bbox = detections_for_one[i]
-                        x1 = int((bbox[0] - bbox[2] / 2.0) * width)
-                        y1 = int((bbox[1] - bbox[3] / 2.0) * height)
-                        x2 = int((bbox[0] + bbox[2] / 2.0) * width)
-                        y2 = int((bbox[1] + bbox[3] / 2.0) * height)
+                        x1 = int((bbox[0] - bbox[2] / 2.0) * max_shape)
+                        y1 = int((bbox[1] - bbox[3] / 2.0) * max_shape)
+                        x2 = int((bbox[0] + bbox[2] / 2.0) * max_shape)
+                        y2 = int((bbox[1] + bbox[3] / 2.0) * max_shape)
+                        # 如果是按照长度作为pad后的正方图像大小,则需要平移y轴一个padsize
+                        if width == max_shape:
+                            y1 -= pad_size
+                            y2 -= pad_size
+                        # if height == max_shape
+                        else:
+                            x1 -= pad_size
+                            x2 -= pad_size
                         obj_conf = detections_for_one[i][4]
                         cls_conf = detections_for_one[i][5]
                         cls_pred = detections_for_one[i][6]
                         detections_for_one[i] = [x1, y1, x2, y2, obj_conf, cls_conf, cls_pred]
             elif isinstance(shapes, tuple):
+                max_shape = max(shapes[:-1])
+                min_shape = min(shapes[:-1])
+                pad_size = (max_shape - min_shape) // 2
                 width = shapes[1]
                 height = shapes[0]
                 for i in range(len(detections_for_one)):
                     bbox = detections_for_one[i]
-                    x1 = int((bbox[0] - bbox[2] / 2.0) * width)
-                    y1 = int((bbox[1] - bbox[3] / 2.0) * height)
-                    x2 = int((bbox[0] + bbox[2] / 2.0) * width)
-                    y2 = int((bbox[1] + bbox[3] / 2.0) * height)
+                    x1 = int((bbox[0] - bbox[2] / 2.0) * max_shape)
+                    y1 = int((bbox[1] - bbox[3] / 2.0) * max_shape)
+                    x2 = int((bbox[0] + bbox[2] / 2.0) * max_shape)
+                    y2 = int((bbox[1] + bbox[3] / 2.0) * max_shape)
+                    # 如果是按照长度作为pad后的正方图像大小,则需要平移y轴一个padsize
+                    if width == max_shape:
+                        y1 -= pad_size
+                        y2 -= pad_size
+                    # if height == max_shape
+                    else:
+                        x1 -= pad_size
+                        x2 -= pad_size
                     obj_conf = detections_for_one[i][4]
                     cls_conf = detections_for_one[i][5]
                     cls_pred = detections_for_one[i][6]
