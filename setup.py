@@ -151,6 +151,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
 
 
 if __name__ == "__main__":
+    import platform
     write_version_py()
     setup(
         name='ITrafficSceneApplication',
@@ -169,3 +170,5 @@ if __name__ == "__main__":
         },
         zip_safe=False
     )
+
+        
