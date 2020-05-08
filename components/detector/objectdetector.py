@@ -6,6 +6,7 @@ from .base import BaseDetector
 from .registry import DETECTOR
 from .yolov3 import get_yolov3, pad_to_square, resize, non_max_suppression, rescale_boxes
 from .yolov4 import get_yolov4, get_region_boxes1, nms
+import time
 
 
 @DETECTOR.register_module
@@ -24,7 +25,7 @@ class Yolov3Detector(BaseDetector):
             nms_thres (float, optional): 非极大值抑制阈值. Defaults to 0.4.
             img_size (int, optional): 网络输入大小. Defaults to 416.
             batch_size (int, optional): 批处理大小. Defaults to 1.
-        """                 
+        """                          
         # 神经网络输入图像大小
         self.img_size = img_size
         # 置信度阈值
