@@ -45,7 +45,7 @@ venv/Scripts/activate
 ```
 (venv) pip install opencv-python==3.4.1.15
 (venv) pip install opencv-contrib-python==3.4.1.15
-```
+````
 
 **Otherwise**
 
@@ -95,3 +95,4 @@ If the path not exist,please mkdir by yourself.
 
 - https://github.com/eriklindernoren/PyTorch-YOLOv3
 - https://github.com/zeusees/HyperLPR
+``
