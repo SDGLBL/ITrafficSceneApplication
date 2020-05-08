@@ -1,24 +1,81 @@
 # Intelligent traffic scene application
-3
 ### Requirements
 
 - Windows or Linux
 - CUDA == 10.1
 - cuDNN >= 7.4 for CUDA 10.1
 - python3.7
+- opencv-python==3.4.1.15
+- opencv-contrib-python==3.4.1.15
 
 ### How to setup
 
-#### Linux
+#### Linux 
 
 ```bash
-bash setup.sh
+# install virtualenv
+$ pip3 install virtualenv
+# create virtual env
+$ virtualenv -p python3 ./venv
+# activate virtual env
+$ source venv/bin/activate
+# setup project
+(venv) $ python setup.py develop
 ```
 
-#### Windows(cmd or powershell)
+#### Windows (CMD)
+
+```cmd
+# install virtualenv
+pip3 install virtualenv
+# create virtual en
+virtualenv venv
+# activate virtual env
+venv/Scripts/activate
+# setup project
+(venv) python setup.py develop
+```
+
+### How to compile opencv  and opencv-contrib for linux
+
+- **Compiling opencv is not a necessary choice . Opencv is compiled to make better use of the ffmpeg encoder, thus reducing the video output size.**
+
+**If you don't want to compile opencv,just run the following code**
 
 ```
-start setup.bat
+(venv) pip install opencv-python==3.4.1.15
+(venv) pip install opencv-contrib-python==3.4.1.15
+```
+
+**Otherwise**
+
+- The following compilation procedure is only applicable to python3.7, please modify the first statement if you are compiling in another version of python
+
+```bash
+$ export PYTHON_VERSION="python3.7"
+$ sudo -i
+$ wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/ffmpeg/7:3.4.6-0ubuntu0.18.04.1/ffmpeg_3.4.6.orig.tar.xz
+$ tar -xf ffmpeg_3.4.6.orig.tar.xz
+$ cd ffmpeg-3.4.6
+$ apt-get install ${PYTHON_VERSION}
+$ apt-get install python3-dev
+$ apt-get instal python3-numpy
+$ apt-get install yasm
+$ ./config --enable-shared --prefix=/usr
+$ make
+$ make install
+$ cd ..
+$ apt-get install build-essential git
+$ apt-get install cmake
+$ apt-get install libavcodec-dev libavformat-dev libswscale-dev
+$ apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
+$ git clone https://github.com/opencv/opencv.git
+$ git clone https://github.com/opencv/opencv_contrib
+$ cd opencv
+$ cd build && cd build
+$ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTALL_PREFIX=/usr/local PYTHON3_EXECUTABLE = /usr/bin/python3 PYTHON_INCLUDE_DIR = /usr/include/python PYTHON_INCLUDE_DIR2 = /usr/include/x86_64-linux-gnu/${PYTHON_VERSION}m PYTHON_LIBRARY = /usr/lib/x86_64-linux-gnu/lib${PYTHON_VERSION}m.so PYTHON3_NUMPY_INCLUDE_DIRS = /usr/lib/python3/dist-packages/numpy/core/include/ -D OPENCV_ENABLE_NONFREE=ON -DOPENCV_EXTRA_MODULES_PATH=.../opencv_contrib/modules/ ..
+$ make -j<cpu core number>
+$ make install
 ```
 
 ### PretrainedWeights
