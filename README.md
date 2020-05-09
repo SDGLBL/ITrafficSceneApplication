@@ -53,22 +53,21 @@ venv/Scripts/activate
 
 ```bash
 $ export PYTHON_VERSION="python3.7"
-$ sudo -i
 $ wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/ffmpeg/7:3.4.6-0ubuntu0.18.04.1/ffmpeg_3.4.6.orig.tar.xz
 $ tar -xf ffmpeg_3.4.6.orig.tar.xz
 $ cd ffmpeg-3.4.6
-$ apt-get install ${PYTHON_VERSION}
-$ apt-get install python3-dev
-$ apt-get instal python3-numpy
-$ apt-get install yasm
+$ sudo apt-get install ${PYTHON_VERSION}
+$ sudo apt-get install python3-dev
+$ sudo apt-get instal python3-numpy
+$ sudo apt-get install yasm
 $ ./configure --enable-shared --prefix=/usr
 $ make
-$ make install
+$ sudo make install
 $ cd ..
-$ apt-get install build-essential git
-$ apt-get install cmake
-$ apt-get install libavcodec-dev libavformat-dev libswscale-dev
-$ apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
+$ sudo apt-get install build-essential git
+$ sudo apt-get install cmake
+$ sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev
+$ sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
 $ git clone https://github.com/opencv/opencv.git
 $ git clone https://github.com/opencv/opencv_contrib
 $ cd opencv_contrib
@@ -77,9 +76,9 @@ $ cd ..
 $ cd opencv
 $ git checkout 3.4 && git pull origin 3.4
 $ mkdir build && cd build
-$ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTALL_PREFIX=/usr/local PYTHON3_EXECUTABLE = /usr/bin/python3 PYTHON_INCLUDE_DIR = /usr/include/python PYTHON_INCLUDE_DIR2 = /usr/include/x86_64-linux-gnu/${PYTHON_VERSION}m PYTHON_LIBRARY = /usr/lib/x86_64-linux-gnu/lib${PYTHON_VERSION}m.so PYTHON3_NUMPY_INCLUDE_DIRS = /usr/lib/python3/dist-packages/numpy/core/include/ -D OPENCV_ENABLE_NONFREE=ON -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules/ ..
+$ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTALL_PREFIX=/usr/local PYTHON3_EXECUTABLE = /usr/bin/python3 PYTHON_INCLUDE_DIR = /usr/include/python PYTHON_INCLUDE_DIR2 = /usr/include/x86_64-linux-gnu/${PYTHON_VERSION}m PYTHON_LIBRARY = /usr/lib/x86_64-linux-gnu/lib${PYTHON_VERSION}m.so PYTHON3_NUMPY_INCLUDE_DIRS = /usr/lib/python3/dist-packages/numpy/core/include/ -D OPENCV_ENABLE_NONFREE=ON -DOPENCV_EXTRA_MODULES_PATH=/home/${USER}/opencv_contrib/modules/ ..
 $ make -j<cpu core number>
-$ make install
+$ sudo make install
 ```
 
 ### PretrainedWeights
