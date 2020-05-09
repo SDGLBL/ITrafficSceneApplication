@@ -46,10 +46,10 @@ class BaseDetector(object):
             raise AssertionError("传入的图像数量必须与batch_size匹配")
         return imgs
 
-    def afterprocessing(self, detections: torch.Tensor, shapes):
+    def afterprocessing(self, detections: torch.Tensor, imgs_info:list):
 
         pass
 
-    def __call__(self, imgs: np.ndarray, shapes, *args, **kwargs):
+    def __call__(self, imgs: np.ndarray, imgs_info:list, *args, **kwargs):
 
         pass

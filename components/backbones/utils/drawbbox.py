@@ -12,11 +12,15 @@ class DrawBoundingBoxComponent(BaseBackboneComponent):
     def process(self, **kwargs):
         super().process(**kwargs)
         imgs = kwargs['imgs']
-        detections = kwargs['detections']
-        for img, bboxs in zip(imgs, detections):
+        imgs_info = kwargs['imgs_info']
+        for img, img_info in zip(imgs, imgs_info):
+            bboxs = [obj['bbox'] for obj in img_info['objects']]
+            obj_confs = [obj['obj_conf'] for obj in img_info['objects']]
+            cls_confs = [obj['cls_conf'] for obj in img_info['objects']]
+            cls_preds = [obj['cls_pred'] for obj in img_info['objects']]
             if bboxs is not None:
                 # 探测到了bboxs才进行绘制
-                draw_label(bboxs, img, self.colors)
+                draw_label(bboxs,obj_confs,cls_confs,cls_preds,img, self.colors)
         return kwargs
 
 

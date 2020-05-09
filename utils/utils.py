@@ -8,13 +8,19 @@ import cv2
 
 def draw_label(
         bboxs,
+        obj_confs,
+        cls_confs,
+        cls_preds,
         img:np.ndarray,
         bbox_colors,
         classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
     绘制bbox
     Args:
-        bboxs: bboxs
+        bboxs: bboxs,
+        obj_confs:每个bbox对应的object置信度list
+        cls_confs:每个bbox对应的分类置信度list
+        cls_preds:每个bbox对应的分类id list
         img: 图像
         bbox_colors:　图像颜色数组
         classes: 类别数组
@@ -23,8 +29,8 @@ def draw_label(
         绘制后的图像
     """
     thickness = len(img) // 200
-    for bbox in bboxs:
-        x1,y1,x2,y2,obj_conf,cls_conf,cls_pred = bbox
+    for bbox,obj_conf,cls_conf,cls_pred in zip(bboxs,obj_confs,cls_confs,cls_preds):
+        x1,y1,x2,y2 = bbox
         x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
         class_label = classes[int(cls_pred)]
         color = bbox_colors[int(cls_pred)]

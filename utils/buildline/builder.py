@@ -24,9 +24,9 @@ def backbone(bccfgs, reciveq):
     backbone_components = [build_from_cfg(bccfg, BACKBONE_COMPONENT) for bccfg in bccfgs]
     try:
         while True:
-            imgs, detections = reciveq.get(timeout=10)
+            imgs, imgs_info = reciveq.get(timeout=10)
             # 首先由该管道内的第一个组件处理数据
-            kwargs = backbone_components[0].process(imgs=imgs,detections=detections)
+            kwargs = backbone_components[0].process(imgs=imgs,imgs_info=imgs_info)
             if not isinstance(kwargs,dict):
                 raise AttributeError('每个组件处理后返回的数据必须为字典')
             if len(backbone_components) > 1:
@@ -61,11 +61,11 @@ def head_detector_component(hdcfg, send_qs):
     Loger.info('create '+str(detector))
     img_shape = video_head[0].shape[:2]
     try:
-        for imgs in video_head:
-            detections = detector(imgs, img_shape)
+        for imgs,imgs_info in video_head:
+            imgs_info = detector(imgs, imgs_info)
             # 使用队列向body发送神经网络处理的数据
             for send_q in send_qs:
-                send_q.put((imgs, detections),timeout=10)
+                send_q.put((imgs, imgs_info),timeout=10)
     except Exception as e:
         Loger.exception(e)
     finally:
