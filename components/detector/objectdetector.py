@@ -86,23 +86,21 @@ class Yolov3Detector(BaseDetector):
         """
         # NMS
         detections = non_max_suppression(detections,self.conf_thres,self.nms_thres)
-        # 非极大值抑制后可能出现没有任何目标被探测出
-        results = [None for _ in range(len(detections))]
         for index,detections_for_one in enumerate(detections):
+            imgs_info[index]['objects'] = []
             if detections_for_one is None:
                 # 没有探测到任何东西直接跳过
                 continue
             shape = imgs_info[index]['shape']
             detections_for_one = rescale_boxes(detections_for_one, self.img_size, shape[:2])
-            imgs_info[index]['objects'] = []
             for x1, y1, x2, y2, obj_conf, cls_conf, cls_pred in detections_for_one:
                 one_object_info = {
-                    'bbox':[x1,y1,x2,y2],
-                    'obj_conf':obj_conf,
-                    'cls_conf':cls_conf,
-                    'cls_pred':cls_pred
+                    'bbox': [x1.item(), y1.item(), x2.item(), y2.item()],
+                    'obj_conf': obj_conf.item(),
+                    'cls_conf': cls_conf.item(),
+                    'cls_pred': cls_pred.item()
                 }
-                imgs_info[index]['object'].append(one_object_info)
+                imgs_info[index]['objects'].append(one_object_info)
         return imgs_info
     
     
@@ -222,41 +220,40 @@ class Yolov4Detector(BaseDetector):
         detections = [np.array(bboxs) for bboxs in detections]
         # 非极大值抑制后可能出现没有任何目标被探测出
         for index, detections_for_one in enumerate(detections):
+            imgs_info[index]['objects'] = []
             if detections_for_one is None:
                 # 没有探测到任何东西直接跳过
                 continue
-            for img_info in imgs_info:
-                img_shape = img_info['shape'] # 获取图像shape
-                max_shape = max(img_shape[:-1])
-                min_shape = min(img_shape[:-1])
-                pad_size = (max_shape - min_shape) // 2
-                width = img_shape[1]
-                height = img_shape[0]
-                for i in range(len(detections_for_one)):
-                    bbox = detections_for_one[i]
-                    x1 = int((bbox[0] - bbox[2] / 2.0) * max_shape)
-                    y1 = int((bbox[1] - bbox[3] / 2.0) * max_shape)
-                    x2 = int((bbox[0] + bbox[2] / 2.0) * max_shape)
-                    y2 = int((bbox[1] + bbox[3] / 2.0) * max_shape)
-                    # 如果是按照长度作为pad后的正方图像大小,则需要平移y轴一个padsize
-                    if width == max_shape:
-                        y1 -= pad_size
-                        y2 -= pad_size
-                    # if height == max_shape
-                    else:
-                        x1 -= pad_size
-                        x2 -= pad_size
-                    obj_conf = detections_for_one[i][4]
-                    cls_conf = detections_for_one[i][5]
-                    cls_pred = detections_for_one[i][6]
-                    detections_for_one[i] = [x1, y1, x2, y2, obj_conf, cls_conf, cls_pred]
-            imgs_info[index]['objects'] = []
+            img_shape = imgs_info[index]['shape']  # 获取图像shape
+            max_shape = max(img_shape[:-1])
+            min_shape = min(img_shape[:-1])
+            pad_size = (max_shape - min_shape) // 2
+            width = img_shape[1]
+            height = img_shape[0]
+            for i in range(len(detections_for_one)):
+                bbox = detections_for_one[i]
+                x1 = int((bbox[0] - bbox[2] / 2.0) * max_shape)
+                y1 = int((bbox[1] - bbox[3] / 2.0) * max_shape)
+                x2 = int((bbox[0] + bbox[2] / 2.0) * max_shape)
+                y2 = int((bbox[1] + bbox[3] / 2.0) * max_shape)
+                # 如果是按照长度作为pad后的正方图像大小,则需要平移y轴一个padsize
+                if width == max_shape:
+                    y1 -= pad_size
+                    y2 -= pad_size
+                # if height == max_shape
+                else:
+                    x1 -= pad_size
+                    x2 -= pad_size
+                obj_conf = detections_for_one[i][4]
+                cls_conf = detections_for_one[i][5]
+                cls_pred = detections_for_one[i][6]
+                detections_for_one[i] = [x1, y1, x2, y2, obj_conf, cls_conf, cls_pred]
             for x1, y1, x2, y2, obj_conf, cls_conf, cls_pred in detections_for_one:
                 one_object_info = {
-                    'bbox':[x1,y1,x2,y2],
-                    'obj_conf':obj_conf,
-                    'cls_conf':cls_conf,
-                    'cls_pred':cls_pred
+                    'bbox': [x1, y1, x2, y2],
+                    'obj_conf': obj_conf,
+                    'cls_conf': cls_conf,
+                    'cls_pred': cls_pred
                 }
                 imgs_info[index]['objects'].append(one_object_info)
         return imgs_info

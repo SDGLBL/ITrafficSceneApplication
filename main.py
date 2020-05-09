@@ -1,6 +1,8 @@
-import torch
 import multiprocessing as mp
 import platform
+
+import torch
+
 from utils.buildline import YolovTaskBuilder
 
 if __name__ == '__main__':
@@ -19,7 +21,7 @@ if __name__ == '__main__':
                 'cache_capacity': 100
             },
             {
-                'type': 'Yolov4Detector',
+                'type': 'Yolov3Detector',
                 'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
                 'batch_size': 8
             }
@@ -35,7 +37,7 @@ if __name__ == '__main__':
                 },
                 {
                     'type': 'WriteVideoComponent',
-                    'resolution': (1280, 720),
+                    'resolution': (480, 360),
                     'fps': 30
                 }
             ]
