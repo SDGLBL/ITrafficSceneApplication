@@ -32,10 +32,10 @@ if __name__ == '__main__':
     for name in tqdm(imgs_name):
         img_path = os.path.join(imgs_dir,name)
         img = cv2.imread(img_path)
-        shape = img.shape
         imgs = [img]
-        detections = detector(imgs,shape)
-        kwargs = dlc.process(imgs=imgs,detections=detections)
+        imgs_info = [{'shape':img.shape}]
+        detections = detector(imgs,imgs_info)
+        kwargs = dlc.process(imgs=imgs,imgs_info=imgs_info)
         output = kwargs['imgs'][0]
         save_name = name.split('.')[0]+'_result.jpg'
         save_path = os.path.join(save_dir,save_name)
