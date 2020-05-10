@@ -77,7 +77,7 @@ config_info_for_linux = {
         }
     },
     'loggers': {
-        'default': {
+        '': {
             'handlers': ['console','file'],
             'level': 'DEBUG',
         },
