@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import torch
 import platform
-from utils.buildline.builder_q import YolovTaskBuilder
+from utils.buildline.builder_2 import YolovTaskBuilder
 
 if __name__ == '__main__':
     mp.set_start_method('spawn',force=True)
@@ -20,8 +20,13 @@ if __name__ == '__main__':
         'tracker_cfg': {
             'type': 'SORT_Track'
         },
-        'backbones_components_cfgs': [
-            [
+        'backbones_components_cfgs': []
+    }
+    task = YolovTaskBuilder(components=components)
+    task.start()
+
+"""
+[
                 {
                     'type': 'DrawBoundingBoxAndIdComponent'
                 },
@@ -33,7 +38,4 @@ if __name__ == '__main__':
                     'write_path': './save.avi'
                 }
             ]
-        ]
-    }
-    task = YolovTaskBuilder(components=components)
-    task.start()
+"""

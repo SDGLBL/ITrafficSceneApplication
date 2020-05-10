@@ -1,3 +1,9 @@
+"""该构造器为build_2, 与bulid.py的区别在于 head与detector 被设计为分立的进程。
+
+Raises:
+    2020-5-9：将之改为最新的流处理形(img, info)式并上传
+"""
+
 from queue import Empty
 import torch
 from torch.multiprocessing import Process, Queue
@@ -22,12 +28,11 @@ def head_component(cfg, send_qs):
     """    
     Loger.info('head_component {0} start'.format(cfg))
     video_head = build_from_cfg(cfg, HEAD)
-    img_shape = video_head[0].shape[:2]
     Loger.info('create ' + str(video_head)+' and which len is {}'.format(len(video_head)))
     try:
-        for imgs in video_head:
+        for imgs, imgs_info in video_head:
             for send_q in send_qs:
-                send_q.put((imgs, img_shape),timeout=10)
+                send_q.put((imgs, imgs_info),timeout=10)
     except Exception as e:
         Loger.exception(e)
     finally:
@@ -52,12 +57,13 @@ def detector_component(cfg, reciveq, send_qs):
     try:
         while True:
             # print(reciveq.qsize())
-            imgs,img_shape = reciveq.get(timeout=10)
-            detections = detector(imgs, img_shape)
+            imgs,imgs_info = reciveq.get(timeout=10)
+            #print(imgs_info)
+            imgs_info = detector(imgs, imgs_info)
             # print(detections)
             # print('-------------------')
             for send_q in send_qs:
-                send_q.put((imgs, detections), timeout=10)
+                send_q.put((imgs, imgs_info), timeout=10)
     except Exception as e:
         Loger.exception(e)
     finally:
@@ -83,15 +89,12 @@ def tracker_component(cfg, reciveq, send_qs):
     Loger.info('create '+str(tracker))
     try:
         while True:
-            [imgs, detections] = reciveq.get(timeout=100)
+            [imgs, imgs_info] = reciveq.get(timeout=100)
             # 取出每一帧的img, bboxs，进行追踪操作，并逐帧发送到下一个进程
             for i in range(len(imgs)):
-                bboxs = tracker(detections[i])
-                if bboxs is not None:
-                    for class_name in bboxs:
-                        print(class_name + str(bboxs[class_name].astype(int)))
+                img_info = tracker(imgs_info[i])
                 for send_q in send_qs:
-                    send_q.put((imgs[i], bboxs), timeout=100)
+                    send_q.put((imgs[i], img_info), timeout=100)
     except Exception as e:
         Loger.exception(e)
     finally:
