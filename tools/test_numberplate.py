@@ -17,3 +17,7 @@ if __name__ == "__main__":
     result = HyperLPR_plate_recognition(img)
     et = time()
     print('识别车牌结果为:{0},耗时为{1}'.format(result,et-st))
+    st = time()
+    result = HyperLPR_plate_recognition(img)
+    et = time()
+    print('识别车牌结果为:{0},耗时为{1}'.format(result,et-st))
