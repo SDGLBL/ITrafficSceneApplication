@@ -4,6 +4,7 @@ from torch.multiprocessing import Process, Queue
 from torch import multiprocessing
 from components.backbones.registry import BACKBONE_COMPONENT
 from components.detector.registry import DETECTOR
+from components.tracker.registry import TRACKER
 from components.head.registry import HEAD
 from utils.logger import get_logger
 from .base import BaseBuild
@@ -41,6 +42,39 @@ def backbone(bccfgs, reciveq):
     except Exception as e:
         Loger.exception(e)
     return
+
+
+def tracker_component(cfg, reciveq, send_qs):
+    """跟踪组件
+
+    Arguments:
+        cfg {dict} -- 描述跟踪器参数
+        reciveq {Pipe} -- 信息流入接口，用于用于接收来自detector的图片数据流,信息输入格式为(imgs, detection)
+        send_qs {list[Queue]} -- Queues,向主干进程发送数据，数据格式为(img, bboxs)
+        (注，发送为单帧图像而非图片组，bboxs为以类名为key的dict格式,详情请见components.tarcker.SORT_Track类的具体实现)
+    """    
+    Loger.info('tracker_component {0} start'.format(cfg))
+    tracker = build_from_cfg(cfg, TRACKER)
+    Loger.info('create '+str(tracker))
+    try:
+        while True:
+            imgs, imgs_info = reciveq.get(timeout=10)
+            # 取出每一帧的img, bboxs，进行追踪操作，并逐帧发送到下一个进程
+            imgs_info_new = []
+            for img,img_info in zip(img,imgs_info):
+                img_info = tracker(img,img_info)
+                imgs_info_new.append(img_info)
+            for send_q in send_qs:
+                send_q.put((imgs,imgs_info_new),timeout=10)
+    except Exception as e:
+        Loger.exception(e)
+    finally:
+        del tracker
+        for send_q in send_qs:
+            send_q.close()
+            del send_q
+        Loger.info('release source')
+        return
 
 
 
@@ -89,7 +123,8 @@ class YolovTaskBuilder(BaseBuild):
         self.build()
 
     def build(self):
-        self.head_detector_cfg = self.component['head_detector']
+        self.head_detector_cfg = self.component['head_detector_cfg']
+        self.tracker_cfg = self.component['tracker_cfg']
         self.backbones_components_cfgs = self.component['backbones_components_cfgs']
         # 根据数据处理主干的长度创建多个进程通信队列，用于进程通信
         self.send_qs = [Queue() for _ in range(len(self.backbones_components_cfgs))]
@@ -97,12 +132,13 @@ class YolovTaskBuilder(BaseBuild):
     def start(self):
         head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,[x for x in self.send_qs],))
         head_detctor.start()
+
         # 启动主干进程
         for backbone_components_cfg, reciveq in zip(self.backbones_components_cfgs,[x for x in self.send_qs]):
             backbone_p = Process(target=backbone, args=(backbone_components_cfg, reciveq,))
             backbone_p.start()
         # 在linux中spawn进程使用的变量会被主进程的gc回收导致子进程中对象无法初始化因此需要睡眠主进程稍微等待一下
-        time.sleep(10)
+        time.sleep(20)
 
 
 

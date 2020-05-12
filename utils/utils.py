@@ -15,6 +15,7 @@ def draw_label(
         cls_preds,
         img:np.ndarray,
         bbox_colors,
+        ids,
         classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
     绘制bbox
@@ -31,13 +32,13 @@ def draw_label(
         绘制后的图像
     """
     thickness = len(img) // 200
-    for bbox,obj_conf,cls_conf,cls_pred in zip(bboxs,obj_confs,cls_confs,cls_preds):
+    for bbox,obj_conf,cls_conf,cls_pred,id in zip(bboxs,obj_confs,cls_confs,cls_preds,ids):
         x1,y1,x2,y2 = bbox
         x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
         class_label = classes[int(cls_pred)]
         color = bbox_colors[int(cls_pred)]
         cv2.rectangle(img,(x1,y1),(x2,y2),color,thickness)
-        put_str = class_label+' '+str(cls_conf)[:4]
+        put_str = class_label+' '+str(cls_conf)[:4]+' '+str(id)
         cv2.putText(img,put_str,(x1,y1-5),cv2.FONT_HERSHEY_COMPLEX,1,color,2)
     return img
 
