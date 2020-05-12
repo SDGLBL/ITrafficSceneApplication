@@ -13,9 +13,9 @@ def draw_label(
         obj_confs,
         cls_confs,
         cls_preds,
+        ids,
         img:np.ndarray,
         bbox_colors,
-        ids,
         classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
     绘制bbox
@@ -38,7 +38,10 @@ def draw_label(
         class_label = classes[int(cls_pred)]
         color = bbox_colors[int(cls_pred)]
         cv2.rectangle(img,(x1,y1),(x2,y2),color,thickness)
-        put_str = class_label+' '+str(cls_conf)[:4]+' '+str(id)
+        if id is not None:
+            put_str = class_label+' '+str(cls_conf)[:4]+' {0}'.format(id)
+        else:
+            put_str = class_label+' '+str(cls_conf)[:4]
         cv2.putText(img,put_str,(x1,y1-5),cv2.FONT_HERSHEY_COMPLEX,1,color,2)
     return img
 

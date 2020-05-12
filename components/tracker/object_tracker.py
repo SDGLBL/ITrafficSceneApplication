@@ -102,12 +102,14 @@ class DeepSortTracker(BaseTracker):
             bboxs {np.narray} -- 重写img_info['objects']，添加 id 属性后返回
         """
         bboxs = []
-        other_info = []
+        other_infos = []
         for obj in img_info['objects']:
             bboxs.append(obj['bbox'])
+            other_info = []
             other_info.append(obj['obj_conf'])
             other_info.append(obj['cls_conf'])
             other_info.append(obj['cls_pred'])
+            other_infos.append(other_info)
         # 将bbox_xyxy转换为bbox_xywh以可以让deepsort接收
         for index,bbox in enumerate(bboxs):
             x1,y1,x2,y2 = bbox
@@ -117,7 +119,7 @@ class DeepSortTracker(BaseTracker):
             h = y2 - y1
             bboxs[index] = [x_center,y_center,w,h]
         bboxs = np.array(bboxs)
-        return bboxs,other_info
+        return bboxs,other_infos
 
 
 
@@ -142,14 +144,10 @@ class DeepSortTracker(BaseTracker):
             img {np.ndarray} -- 原图像
             img_info {dict} -- 略
         """
-        # 如果img_info缺少关键数据则返回原数据
-        if 'objects' not in img_info.keys():
-            print('cant found \'objects\' in img_info')
-            print(img_info)
+        if len(img_info['objects']) == 0:
             return img_info
-        print(img_info)
-        bboxs,other_info = self.preprocessing(img_info)
-        output,del_ids = self.deepsort.update(bboxs,other_info,img)
+        bboxs,other_infos = self.preprocessing(img_info)
+        output,del_ids = self.deepsort.update(bboxs,other_infos,img)
         return self.afterprocessing(img_info, output,del_ids)
 
 

@@ -18,9 +18,10 @@ class DrawBoundingBoxComponent(BaseBackboneComponent):
             obj_confs = [obj['obj_conf'] for obj in img_info['objects']]
             cls_confs = [obj['cls_conf'] for obj in img_info['objects']]
             cls_preds = [obj['cls_pred'] for obj in img_info['objects']]
+            ids = [obj['id'] if 'id' in obj.keys() else 'None' for obj in img_info['objects'] ]
             if bboxs is not None:
                 # 探测到了bboxs才进行绘制
-                draw_label(bboxs,obj_confs,cls_confs,cls_preds,img, self.colors)
+                draw_label(bboxs,obj_confs,cls_confs,cls_preds,ids,img, self.colors)
         return kwargs
 
 

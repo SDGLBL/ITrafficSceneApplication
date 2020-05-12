@@ -43,7 +43,6 @@ def backbone(bccfgs, reciveq):
         Loger.exception(e)
     return
 
-
 def tracker_component(cfg, reciveq, send_qs):
     """跟踪组件
 
@@ -61,9 +60,12 @@ def tracker_component(cfg, reciveq, send_qs):
             imgs, imgs_info = reciveq.get(timeout=10)
             # 取出每一帧的img, bboxs，进行追踪操作，并逐帧发送到下一个进程
             imgs_info_new = []
-            for img,img_info in zip(img,imgs_info):
+            st = time.time()
+            for img,img_info in zip(imgs,imgs_info):
                 img_info = tracker(img,img_info)
                 imgs_info_new.append(img_info)
+            et = time.time()
+            print('track a imgs use {0}'.format(et-st))
             for send_q in send_qs:
                 send_q.put((imgs,imgs_info_new),timeout=10)
     except Exception as e:
@@ -75,7 +77,6 @@ def tracker_component(cfg, reciveq, send_qs):
             del send_q
         Loger.info('release source')
         return
-
 
 
 def head_detector_component(hdcfg, send_qs):
@@ -124,15 +125,17 @@ class YolovTaskBuilder(BaseBuild):
 
     def build(self):
         self.head_detector_cfg = self.component['head_detector_cfg']
-        self.tracker_cfg = self.component['tracker_cfg']
         self.backbones_components_cfgs = self.component['backbones_components_cfgs']
+        self.tracker_cfg = self.component['tracker_cfg']
         # 根据数据处理主干的长度创建多个进程通信队列，用于进程通信
+        self.detector_to_tracker_q = Queue(maxsize =30)
         self.send_qs = [Queue() for _ in range(len(self.backbones_components_cfgs))]
 
     def start(self):
         head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,[x for x in self.send_qs],))
         head_detctor.start()
-
+        tracker = Process(target=tracker_component, args=(self.tracker_cfg, self.detector_to_tracker_q, self.send_qs))
+        tracker.start()
         # 启动主干进程
         for backbone_components_cfg, reciveq in zip(self.backbones_components_cfgs,[x for x in self.send_qs]):
             backbone_p = Process(target=backbone, args=(backbone_components_cfg, reciveq,))

@@ -5,6 +5,7 @@ import argparse
 import torch
 import warnings
 import numpy as np
+
 from .detector import build_detector
 from .deep_sort import build_tracker
 from .utils.draw import draw_boxes
