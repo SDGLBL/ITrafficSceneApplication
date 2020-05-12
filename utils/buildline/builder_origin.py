@@ -43,41 +43,6 @@ def backbone(bccfgs, reciveq):
         Loger.exception(e)
     return
 
-def tracker_component(cfg, reciveq, send_qs):
-    """跟踪组件
-
-    Arguments:
-        cfg {dict} -- 描述跟踪器参数
-        reciveq {Pipe} -- 信息流入接口，用于用于接收来自detector的图片数据流,信息输入格式为(imgs, detection)
-        send_qs {list[Queue]} -- Queues,向主干进程发送数据，数据格式为(img, bboxs)
-        (注，发送为单帧图像而非图片组，bboxs为以类名为key的dict格式,详情请见components.tarcker.SORT_Track类的具体实现)
-    """    
-    Loger.info('tracker_component {0} start'.format(cfg))
-    tracker = build_from_cfg(cfg, TRACKER)
-    Loger.info('create '+str(tracker))
-    try:
-        while True:
-            imgs, imgs_info = reciveq.get(timeout=10)
-            # 取出每一帧的img, bboxs，进行追踪操作，并逐帧发送到下一个进程
-            imgs_info_new = []
-            # st = time.time()
-            for img,img_info in zip(imgs,imgs_info):
-                img_info = tracker(img,img_info)
-                imgs_info_new.append(img_info)
-            # et = time.time()
-            # print('track a imgs use {0}'.format(et-st))
-            for send_q in send_qs:
-                send_q.put((imgs,imgs_info_new),timeout=10)
-    except Exception as e:
-        Loger.exception(e)
-    finally:
-        del tracker
-        for send_q in send_qs:
-            send_q.close()
-            del send_q
-        Loger.info('release source')
-        return
-
 
 def head_detector_component(hdcfg, send_qs):
     """head_detector
@@ -99,10 +64,8 @@ def head_detector_component(hdcfg, send_qs):
         for imgs,imgs_info in video_head:
             imgs_info = detector(imgs, imgs_info)
             # 使用队列向body发送神经网络处理的数据
-            # for send_q in send_qs:
-            st = time.time()
-            send_qs.put((imgs, imgs_info),timeout=10)
-            print('send imgs and imgs_info use {0}'.format(time.time() - st))
+            for send_q in send_qs:
+                send_q.put((imgs, imgs_info),timeout=10)
     except Exception as e:
         Loger.exception(e)
     finally:
@@ -128,16 +91,12 @@ class YolovTaskBuilder(BaseBuild):
     def build(self):
         self.head_detector_cfg = self.component['head_detector_cfg']
         self.backbones_components_cfgs = self.component['backbones_components_cfgs']
-        self.tracker_cfg = self.component['tracker_cfg']
         # 根据数据处理主干的长度创建多个进程通信队列，用于进程通信
-        self.detector_to_tracker_q = Queue(maxsize =30)
         self.send_qs = [Queue() for _ in range(len(self.backbones_components_cfgs))]
 
     def start(self):
-        head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,self.detector_to_tracker_q,))
+        head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,[x for x in self.send_qs],))
         head_detctor.start()
-        tracker = Process(target=tracker_component, args=(self.tracker_cfg, self.detector_to_tracker_q, self.send_qs))
-        tracker.start()
         # 启动主干进程
         for backbone_components_cfg, reciveq in zip(self.backbones_components_cfgs,[x for x in self.send_qs]):
             backbone_p = Process(target=backbone, args=(backbone_components_cfg, reciveq,))

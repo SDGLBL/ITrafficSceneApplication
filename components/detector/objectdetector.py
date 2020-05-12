@@ -7,6 +7,7 @@ from .registry import DETECTOR
 from .yolov3 import get_yolov3, pad_to_square, resize, non_max_suppression, rescale_boxes
 from .yolov4 import get_yolov4, get_region_boxes1, nms
 import time
+import cv2
 
 
 @DETECTOR.register_module
@@ -66,12 +67,19 @@ class Yolov3Detector(BaseDetector):
         Returns:
             torch.Tensor
         """
+        # Resize
+        img_max_len = max(img.shape[:2])
+        img_min_len = min(img.shape[:2])
+        scale_num = img_max_len // self.img_size
+        if img.shape[0] == img_max_len:
+            target_size = (img_min_len//scale_num,self.img_size)
+            img = cv2.resize(img,target_size)
+        else:
+            target_size = (self.img_size,img_min_len//scale_num)
+            img = cv2.resize(img,target_size)
         img = F.to_tensor(img)
         # Pad to square resolution
         img, _ = pad_to_square(img, 0)
-        # Resize
-        img = resize(img, self.img_size)
-        # Res
         return img
 
 
@@ -122,10 +130,17 @@ class Yolov3Detector(BaseDetector):
             imgs_info: 图像信息list,其中每个img_info添加了obejcts
 
         """
+        st = time.time()
         imgs_batch = self.preprocessing(imgs)
+        print('preprocessing use {0}'.format(time.time() - st))
+        st = time.time()
         with torch.no_grad():
             detections = self.model(imgs_batch)
+            torch.cuda.synchronize()
+        print('inference use {0}'.format(time.time() - st))
+        st = time.time()
         imgs_info = self.afterprocessing(detections,imgs_info)
+        print('afterprocessing use {0}'.format(time.time() - st))
         return imgs_info
 
 
@@ -180,12 +195,19 @@ class Yolov4Detector(BaseDetector):
             Returns:
                 torch.Tensor
         """
+        # Resize
+        img_max_len = max(img.shape[:2])
+        img_min_len = min(img.shape[:2])
+        scale_num = img_max_len // self.img_size
+        if img.shape[0] == img_max_len:
+            target_size = (img_min_len//scale_num,self.img_size)
+            img = cv2.resize(img,target_size)
+        else:
+            target_size = (self.img_size,img_min_len//scale_num)
+            img = cv2.resize(img,target_size)
         img = F.to_tensor(img)
         # Pad to square resolution
         img, _ = pad_to_square(img, 0)
-        # Resize
-        img = resize(img, self.img_size)
-        # Res
         return img
 
     def afterprocessing(self, detections: list, imgs_info:list):
