@@ -5,7 +5,7 @@ import argparse
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 from components.backbones import DrawBoundingBoxComponent
-from components.detector import Yolov4Detector
+from components.detector import Yolov3Detector
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-td',type=str,default='./test_imgs',help='the test images dir')
@@ -18,7 +18,7 @@ if __name__ == '__main__':
        演示了从项目根目录读取test.mp4文件并写入到save.mp4文件
     """
     args = parse_args()
-    detector = Yolov4Detector(
+    detector = Yolov3Detector(
         device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'), batch_size=1, 
         img_size=608)
     if not os.path.exists(args.td):
