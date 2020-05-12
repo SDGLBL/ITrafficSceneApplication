@@ -60,12 +60,12 @@ def tracker_component(cfg, reciveq, send_qs):
             imgs, imgs_info = reciveq.get(timeout=10)
             # 取出每一帧的img, bboxs，进行追踪操作，并逐帧发送到下一个进程
             imgs_info_new = []
-            st = time.time()
+            # st = time.time()
             for img,img_info in zip(imgs,imgs_info):
                 img_info = tracker(img,img_info)
                 imgs_info_new.append(img_info)
-            et = time.time()
-            print('track a imgs use {0}'.format(et-st))
+            # et = time.time()
+            # print('track a imgs use {0}'.format(et-st))
             for send_q in send_qs:
                 send_q.put((imgs,imgs_info_new),timeout=10)
     except Exception as e:
@@ -99,8 +99,8 @@ def head_detector_component(hdcfg, send_qs):
         for imgs,imgs_info in video_head:
             imgs_info = detector(imgs, imgs_info)
             # 使用队列向body发送神经网络处理的数据
-            for send_q in send_qs:
-                send_q.put((imgs, imgs_info),timeout=10)
+            # for send_q in send_qs:
+            send_qs.put((imgs, imgs_info),timeout=10)
     except Exception as e:
         Loger.exception(e)
     finally:
@@ -132,7 +132,7 @@ class YolovTaskBuilder(BaseBuild):
         self.send_qs = [Queue() for _ in range(len(self.backbones_components_cfgs))]
 
     def start(self):
-        head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,[x for x in self.send_qs],))
+        head_detctor = Process(target=head_detector_component,args=(self.head_detector_cfg,self.detector_to_tracker_q,))
         head_detctor.start()
         tracker = Process(target=tracker_component, args=(self.tracker_cfg, self.detector_to_tracker_q, self.send_qs))
         tracker.start()
