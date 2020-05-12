@@ -14,12 +14,12 @@ if __name__ == '__main__':
         'head_detector_cfg': [
             {
                 'type': 'VideoFileHead',
-                'filename': './lot_5.mp4',
+                'filename': './video-02.mp4',
                 'step': 8,
                 'cache_capacity': 100
             },
             {
-                'type': 'Yolov4Detector',
+                'type': 'Yolov3Detector',
                 'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
                 'batch_size': 8
             }

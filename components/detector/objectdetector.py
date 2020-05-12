@@ -1,12 +1,11 @@
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
-
 from .base import BaseDetector
 from .registry import DETECTOR
 from .yolov3 import get_yolov3, pad_to_square, resize, non_max_suppression, rescale_boxes
 from .yolov4 import get_yolov4, get_region_boxes1, nms
-import time
+from time import time
 import cv2
 
 
@@ -70,12 +69,12 @@ class Yolov3Detector(BaseDetector):
         # Resize
         img_max_len = max(img.shape[:2])
         img_min_len = min(img.shape[:2])
-        scale_num = img_max_len // self.img_size
+        scale_num = img_max_len / self.img_size
         if img.shape[0] == img_max_len:
-            target_size = (img_min_len//scale_num,self.img_size)
+            target_size = (int(img_min_len/scale_num),self.img_size)
             img = cv2.resize(img,target_size)
         else:
-            target_size = (self.img_size,img_min_len//scale_num)
+            target_size = (self.img_size,int(img_min_len/scale_num))
             img = cv2.resize(img,target_size)
         img = F.to_tensor(img)
         # Pad to square resolution
@@ -130,28 +129,33 @@ class Yolov3Detector(BaseDetector):
             imgs_info: 图像信息list,其中每个img_info添加了obejcts
 
         """
-        st = time.time()
+        t0 = time()
         imgs_batch = self.preprocessing(imgs)
-        print('preprocessing use {0}'.format(time.time() - st))
-        st = time.time()
+        t1 = time()
         with torch.no_grad():
             detections = self.model(imgs_batch)
             torch.cuda.synchronize()
-        print('inference use {0}'.format(time.time() - st))
-        st = time.time()
-        imgs_info = self.afterprocessing(detections,imgs_info)
-        print('afterprocessing use {0}'.format(time.time() - st))
+        t2 = time()
+        imgs_info = self.afterprocessing(detections, imgs_info)
+        t3 = time()
+        if False:
+            print('|-----------------------------------|')
+            print('preprocessing use {0}'.format(t1-t0))
+            print('inference use {0}'.format(t2-t1))
+            print('afterprocessing use {0}'.format(t3-t2))
+            print('|-----------------------------------|')
         return imgs_info
 
 
 @DETECTOR.register_module
 class Yolov4Detector(BaseDetector):
 
-    def __init__(self, device,
-                 conf_thres=0.8,
-                 nms_thres=0.4,
-                 img_size=416,
-                 batch_size=1):
+    def __init__(
+        self, device,
+        conf_thres=0.8,
+        nms_thres=0.4,
+        img_size=416,
+        batch_size=1):
         """Yolov4目标探测网络
         Args:
             device (torch.device): 模型运行硬件 cuda or cpu
@@ -198,12 +202,12 @@ class Yolov4Detector(BaseDetector):
         # Resize
         img_max_len = max(img.shape[:2])
         img_min_len = min(img.shape[:2])
-        scale_num = img_max_len // self.img_size
+        scale_num = img_max_len / self.img_size
         if img.shape[0] == img_max_len:
-            target_size = (img_min_len//scale_num,self.img_size)
+            target_size = (int(img_min_len/scale_num),self.img_size)
             img = cv2.resize(img,target_size)
         else:
-            target_size = (self.img_size,img_min_len//scale_num)
+            target_size = (self.img_size,int(img_min_len/scale_num))
             img = cv2.resize(img,target_size)
         img = F.to_tensor(img)
         # Pad to square resolution
@@ -227,17 +231,19 @@ class Yolov4Detector(BaseDetector):
         anchor_step = len(anchors) // num_anchors
         detections = [detection.cpu().numpy() for detection in detections]
         bboxs_for_imgs = []
-        for i in range(3):
+        for i in range(1,3):
             masked_anchors = []
             for m in anchor_masks[i]:
                 masked_anchors += anchors[m * anchor_step:(m + 1) * anchor_step]
             masked_anchors = [anchor / strides[i] for anchor in masked_anchors]
             bboxs_for_imgs.append(get_region_boxes1(detections[i], 0.6, 80, masked_anchors, len(anchor_masks[i])))
-            # boxes.append(get_region_boxes(list_boxes[i], 0.6, 80, masked_anchors, len(anchor_masks[i])))
 
         bboxs_for_imgs = [
-            bboxs_for_imgs[0][index] + bboxs_for_imgs[1][index] + bboxs_for_imgs[2][index]
+            bboxs_for_imgs[0][index] + bboxs_for_imgs[1][index]
             for index in range(self.batch_size)]
+        # bboxs_for_imgs = [
+        #     bboxs_for_imgs[0][index] + bboxs_for_imgs[1][index] + bboxs_for_imgs[2][index]
+        #     for index in range(self.batch_size)]
         # 分别对每一张图片的结果进行nms
         detections = [nms(bboxs, self.nms_thres) for bboxs in bboxs_for_imgs]
         detections = [np.array(bboxs) for bboxs in detections]
@@ -296,8 +302,19 @@ class Yolov4Detector(BaseDetector):
         Returns:
             imgs_info: 图像信息list,其中每个img_info添加了obejcts
         """
+        t0 = time()
         imgs_batch = self.preprocessing(imgs)
+        t1 = time()
         with torch.no_grad():
             detections = self.model(imgs_batch)
+            torch.cuda.synchronize()
+        t2 = time()
         imgs_info = self.afterprocessing(detections, imgs_info)
+        t3 = time()
+        if False:
+            print('|-----------------------------------|')
+            print('preprocessing use {0}'.format(t1-t0))
+            print('inference use {0}'.format(t2-t1))
+            print('afterprocessing use {0}'.format(t3-t2))
+            print('|-----------------------------------|')
         return imgs_info
