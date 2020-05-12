@@ -95,7 +95,8 @@ Then place it in components/detector/yolov4/weight,If the path not exist,please 
 
 
 - [Download ckpt.t7 for DeepSort](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
-The place it in components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
+
+Then place it in components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
 
 ### References
 
