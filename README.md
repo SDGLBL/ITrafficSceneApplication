@@ -91,11 +91,16 @@ Then place them in components/detector/yolov3/weights
 
 - [Download weights for yolov4](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights)
 
-Then place it in components/detector/yolov4/weight
-If the path not exist,please mkdir by yourself.
+Then place it in components/detector/yolov4/weight,If the path not exist,please mkdir by yourself.
+
+
+- [Download ckpt.t7 for DeepSort](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
+The place it in components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
 
 ### References
 
 - https://github.com/eriklindernoren/PyTorch-YOLOv3
+- https://github.com/Tianxiaomo/pytorch-YOLOv4
+- https://github.com/ZQPei/deep_sort_pytorch
 - https://github.com/zeusees/HyperLPR
 ``

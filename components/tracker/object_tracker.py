@@ -89,7 +89,6 @@ class DeepSortTracker(BaseTracker):
     def __init__(self):
         super().__init__()
         self.cfg = get_deepsort_config('components/tracker/deep_sort_pytorch/configs/deep_sort.yaml')
-        print(self.cfg)
         self.deepsort = build_tracker(self.cfg,True)
 
     def preprocessing(self, img_info):
