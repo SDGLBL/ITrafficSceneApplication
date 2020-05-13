@@ -10,15 +10,18 @@
 
 ### How to setup
 
+
 #### Linux 
 
 ```bash
 # install virtualenv
 $ pip3 install virtualenv
 # create virtual env
-$ virtualenv -p python3 ./venv
+$ virtualenv --system-site-packages -p python3 ./venv
 # activate virtual env
 $ source venv/bin/activate
+# first you need install pytorch-cuda10.1
+(venv) $ pip install torch==1.5.0+cu101 torchvision==0.6.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 # setup project
 (venv) $ python setup.py develop
 ```
@@ -29,9 +32,11 @@ $ source venv/bin/activate
 # install virtualenv
 pip3 install virtualenv
 # create virtual en
-virtualenv venv
+virtualenv --system-site-packages -p python3 ./venv
 # activate virtual env
 venv/Scripts/activate
+# first you need install pytorch-cuda10.1
+(venv)pip install torch==1.5.0+cu101 torchvision==0.6.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 # setup project
 (venv) python setup.py develop
 ```

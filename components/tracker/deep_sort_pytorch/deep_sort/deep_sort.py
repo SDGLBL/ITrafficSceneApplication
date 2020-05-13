@@ -49,9 +49,10 @@ class DeepSort(object):
             obj_conf = track.other_info[0]
             cls_conf = track.other_info[1]
             obj_pred = track.other_info[2]
-            outputs.append(np.array([x1,y1,x2,y2,obj_conf,cls_conf,obj_pred,track_id], dtype=np.int))
+            outputs.append(np.array([x1,y1,x2,y2,obj_conf,cls_conf,obj_pred,track_id], dtype=np.float))
         if len(outputs) > 0:
             outputs = np.stack(outputs,axis=0)
+        # print(outputs)
         return outputs,del_ids
 
 
