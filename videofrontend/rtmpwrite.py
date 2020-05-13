@@ -15,7 +15,7 @@ class Live(object):
     def read_frame(self):
         print("开启推流")
         cap = cv.VideoCapture(0)
-        print('asda')
+
         # Get video information
         fps = int(cap.get(cv.CAP_PROP_FPS))
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
