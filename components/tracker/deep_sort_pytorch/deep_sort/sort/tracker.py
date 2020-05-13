@@ -81,7 +81,7 @@ class Tracker:
         del_ids = []
         for t in self.tracks:
             if t.is_deleted():
-                del_ids.append(self.t.track_id)
+                del_ids.append(t.track_id)
             else:
                 t_trackers.append(t)
         self.tracks = t_trackers
