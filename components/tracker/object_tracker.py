@@ -146,7 +146,9 @@ class DeepSortTracker(BaseTracker):
         if len(img_info['objects']) == 0:
             return img_info
         bboxs,other_infos = self.preprocessing(img_info)
+        # print('input other info is {}'.format(other_infos))
         output,del_ids = self.deepsort.update(bboxs,other_infos,img)
+        # print('output other info is {}'.format(output))
         return self.afterprocessing(img_info, output,del_ids)
 
 

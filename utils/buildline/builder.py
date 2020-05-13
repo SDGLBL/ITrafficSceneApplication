@@ -100,9 +100,9 @@ def head_detector_component(hdcfg, send_qs):
             imgs_info = detector(imgs, imgs_info)
             # 使用队列向body发送神经网络处理的数据
             # for send_q in send_qs:
-            st = time.time()
+            # st = time.time()
             send_qs.put((imgs, imgs_info),timeout=10)
-            print('send imgs and imgs_info use {0}'.format(time.time() - st))
+            # print('send imgs and imgs_info use {0}'.format(time.time() - st))
     except Exception as e:
         Loger.exception(e)
     finally:
