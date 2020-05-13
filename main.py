@@ -14,14 +14,14 @@ if __name__ == '__main__':
         'head_detector_cfg': [
             {
                 'type': 'VideoFileHead',
-                'filename': './test.mp4',
-                'step': 8,
+                'filename': './lot_15.mp4',
+                'step': 16,
                 'cache_capacity': 100
             },
             {
-                'type': 'Yolov3Detector',
+                'type': 'Yolov4Detector',
                 'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-                'batch_size': 8
+                'batch_size': 16
             }
         ],
         'tracker_cfg': {
@@ -39,7 +39,14 @@ if __name__ == '__main__':
                 {
                     'type': 'WriteVideoComponent',
                     'resolution': (1920, 1080),
-                    'fps': 30
+                    'fps': 30,
+                    'fourcc': 'MJPG',
+                    'write_path': './save.avi'
+                }
+            ],
+            [
+                {
+                    'type':'infoPort'
                 }
             ]
         ]

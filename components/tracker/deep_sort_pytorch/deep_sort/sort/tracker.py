@@ -6,7 +6,7 @@ from . import linear_assignment
 from . import iou_matching
 from .track import Track
 
-
+# 修改：邱祺，2020-5-13，class Tracker:def update
 class Tracker:
     """
     This is the multi-target tracker.
@@ -67,17 +67,28 @@ class Tracker:
         # Run matching cascade.
         matches, unmatched_tracks, unmatched_detections = \
             self._match(detections)
-        del_ids = []
         # Update track set.
         for track_idx, detection_idx in matches:
             self.tracks[track_idx].update(
                 self.kf, detections[detection_idx])
         for track_idx in unmatched_tracks:
             self.tracks[track_idx].mark_missed()
-            del_ids.append(self.tracks[track_idx].track_id)
         for detection_idx in unmatched_detections:
             self._initiate_track(detections[detection_idx])
-        self.tracks = [t for t in self.tracks if not t.is_deleted()]
+        # self.tracks = [t for t in self.tracks if not t.is_deleted()] 删除一行
+        # 修改代码：添加：
+        t_trackers = []
+        del_ids = []
+        for t in self.tracks:
+            if t.is_deleted():
+                del_ids.append(self.t.track_id)
+            else:
+                t_trackers.append(t)
+        self.tracks = t_trackers
+        # 修改结束
+
+
+
 
         # Update distance metric.
         active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
@@ -104,19 +115,19 @@ class Tracker:
 
             return cost_matrix
 
-        # Split track set into confirmed and unconfirmed tracks.
+        # 将tracks分成确认和未确认两种
         confirmed_tracks = [
             i for i, t in enumerate(self.tracks) if t.is_confirmed()]
         unconfirmed_tracks = [
             i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
 
-        # Associate confirmed tracks using appearance features.
+        # 使用外观特征关联确认track
         matches_a, unmatched_tracks_a, unmatched_detections = \
             linear_assignment.matching_cascade(
                 gated_metric, self.metric.matching_threshold, self.max_age,
                 self.tracks, detections, confirmed_tracks)
 
-        # Associate remaining tracks together with unconfirmed tracks using IOU.
+        # 使用IOU将剩余的目标与未确认的track关联在一起。
         iou_track_candidates = unconfirmed_tracks + [
             k for k in unmatched_tracks_a if
             self.tracks[k].time_since_update == 1]
