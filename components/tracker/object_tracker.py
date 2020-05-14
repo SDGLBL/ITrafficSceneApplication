@@ -143,8 +143,6 @@ class DeepSortTracker(BaseTracker):
             img {np.ndarray} -- 原图像
             img_info {dict} -- 略
         """
-        if len(img_info['objects']) == 0:
-            return img_info
         bboxs,other_infos = self.preprocessing(img_info)
         # print('input other info is {}'.format(other_infos))
         output,del_ids = self.deepsort.update(bboxs,other_infos,img)

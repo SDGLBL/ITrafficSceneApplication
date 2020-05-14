@@ -102,6 +102,7 @@ def head_detector_component(hdcfg, send_qs):
             # for send_q in send_qs:
             # st = time.time()
             send_qs.put((imgs, imgs_info),timeout=10)
+            #print('send a data and quene len is {}'.format(send_qs.qsize()))
             # print('send imgs and imgs_info use {0}'.format(time.time() - st))
     except Exception as e:
         Loger.exception(e)
@@ -112,7 +113,7 @@ def head_detector_component(hdcfg, send_qs):
         for send_q in send_qs:
             send_q.close()
             del send_q
-        Loger.info('release source')
+        Loger.info('head detector release source')
         return
 
 
@@ -130,7 +131,7 @@ class YolovTaskBuilder(BaseBuild):
         self.backbones_components_cfgs = self.component['backbones_components_cfgs']
         self.tracker_cfg = self.component['tracker_cfg']
         # 根据数据处理主干的长度创建多个进程通信队列，用于进程通信
-        self.detector_to_tracker_q = Queue(maxsize =30)
+        self.detector_to_tracker_q = Queue(maxsize =10)
         self.send_qs = [Queue() for _ in range(len(self.backbones_components_cfgs))]
 
     def start(self):

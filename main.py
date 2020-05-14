@@ -30,22 +30,6 @@ if __name__ == '__main__':
         'backbones_components_cfgs': [
             [
                 {
-                    'type': 'DrawBoundingBoxComponent'
-                },
-                {
-                    'type': 'FpsCollectorComponent',
-                    'isPrint': True
-                },
-                {
-                    'type': 'WriteVideoComponent',
-                    'resolution': (1920, 1080),
-                    'fps': 30,
-                    'fourcc': 'MJPG',
-                    'write_path': './save.avi'
-                }
-            ],
-            [
-                {
                     'type':'infoPort'
                 }
             ]
