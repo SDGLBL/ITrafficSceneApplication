@@ -30,9 +30,9 @@ if __name__ == '__main__':
         'backbones_components_cfgs': [
             [
                 {
-                    'type':'infoPort'
-                    #'type':'stateAnalysis',
-                    #'eModelPath':'components/backbones/environmentModeling/eModeldata/lot_15.emd'
+                    #'type':'infoPort'
+                    'type':'stateAnalysis',
+                    'eModelPath':'components/backbones/environmentModeling/eModeldata/lot_15.emd'
                 }
             ]
         ]

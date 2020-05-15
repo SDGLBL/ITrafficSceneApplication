@@ -16,7 +16,6 @@ class stateAnalysis(BaseBackboneComponent):
 
     def dotByStopLine(self, dot:list):
         k, b = self.stopLine
-        print( '#' + str(self.avgBbox/4) + '#' + str(k) + '#' + str(b) + '#' + str(k*dot[0] + b - dot[1]))
         if k*dot[0] + b - dot[1] > self.avgBbox/4:
             return 1
         elif k*dot[0] + b - dot[1] < -self.avgBbox/4:
@@ -54,7 +53,7 @@ class stateAnalysis(BaseBackboneComponent):
                     pass
                 else:
                     self.objDict[id]['passState'] = passState
-                    print('ID为：' + id + '的车辆过线，计数器加一')
+                    print('ID为：' + str(id) + '的车辆过线，计数器加一')
                     self.passCount += 1
                 self.objDict[id]['path'].append(centre)
                 self.objDict[id]['time'].append(img_info['index'])

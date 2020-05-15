@@ -162,7 +162,7 @@ class speedMap:
     def getStopLine(self, adjust=0.5):
         mainMask = self.getMainMask(th=0.1)
         tStopMask = np.zeros(self.mapSize, dtype=float)
-        tStopMask[mainMask==0] = self.stopMap[mainMask==0]       # 只关心关键区域的
+        tStopMask[mainMask!=0] = self.stopMap[mainMask!=0]       # 只关心关键区域的
         index = np.argmax(tStopMask)
         y = index//tStopMask.shape[1]
         x = index - y*tStopMask.shape[1]
