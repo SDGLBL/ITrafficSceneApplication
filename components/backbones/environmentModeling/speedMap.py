@@ -83,22 +83,21 @@ class speedMap:
         Keyword Arguments:
             direction {bool} -- 速度方向，默认为远离摄像头方向 (default: {True})
             th {float} -- 阈值，0.3表示取出该地图中大于 0.3倍最大值的数据制成蒙版，一般th越小，蒙版区域越大(default: {0.1})
-
+            updata {bool} -- 表示是否更新，为True表示无论曾经是否生成过都重新生成
         Returns:
             [type] -- [description]
-        """        
+        """      
         map = self.speedMapMain
-        mask = np.zeros(self.mapSize, dtype=np.uint8)
+        mainMask = np.zeros(self.mapSize, dtype=np.uint8)
         if self.mainAxis > 0:
             direction = not direction
-
         if direction:
             th = np.max(map) * th
-            mask[map > th] = 255
+            mainMask[map > th] = 255
         else:
             th = np.max(-map) * th
-            mask[map < -th] = 255
-        return mask
+            mainMask[map < -th] = 255
+        return mainMask
 
     def getStopMask(self, th=0.5, adjust = 0.5):
         mainMask = self.getMainMask(th=0.1)
@@ -160,3 +159,27 @@ class speedMap:
         data = signal.medfilt(data, 2*(self.avgBbox//2)+1)
         return data
 
+    def getStopLine(self, adjust=0.5):
+        mainMask = self.getMainMask(th=0.1)
+        tStopMask = np.zeros(self.mapSize, dtype=float)
+        tStopMask[mainMask==0] = self.stopMap[mainMask==0]       # 只关心关键区域的
+        index = np.argmax(tStopMask)
+        y = index//tStopMask.shape[1]
+        x = index - y*tStopMask.shape[1]
+
+        # 加上偏移量：
+        x = int(x + self.avgBbox * math.cos(self.mainAxis)*adjust)
+        y = int(y + self.avgBbox * math.sin(self.mainAxis)*adjust)
+
+        # 得到k、b的值：
+        k = math.tan(self.secondaryAxis)
+        b = y - k*x
+        return k,b
+
+    def dotByStopLine(self, dot:list):
+        k, b = self.getStopLine()
+        return k*dot[0] + b - dot[1]
+        
+    def dotInMainMask(self, dot:list):
+        mainMask = self.getMainMask()
+        return mainMask[int(dot[1]), int(dot[0])] != 0

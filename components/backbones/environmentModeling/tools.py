@@ -31,4 +31,4 @@ def getDirection(v:list):
 def getAvgBbox(bbox):
     w = bbox[2] - bbox[0]
     h = bbox[3] - bbox[1]
-    return (w-h)/2
+    return (w+h)/2
