@@ -2,25 +2,28 @@ from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 from .tools import get_centre,vLen, getDirection, getAvgBbox
 from .speedMap import speedMap
+from .eModel import eModel
 from scipy import stats
 from sklearn.cluster import KMeans
 import cv2
+import pickle
 
 
 @BACKBONE_COMPONENT.register_module
 class infoPort(BaseBackboneComponent):
-    def __init__(self, speedTh=10, pathLTh=5):
+    def __init__(self, modelName='lot_15', speedTh=10, pathLTh=5, minDataSize=5000):
         self.tPaths = {}                # 路径缓存池
         self.highGradePaths = []        # 优质路径收集
         self.highGradeSpeed = []        # 优质速度矢量收集
         self.speedTh = speedTh          # 速度阈值，超过该速度才会被保存
         self.pathLTh = pathLTh          # 路径长度阈值，超过该长度才会被保存
-        self.minDataSize = 5000        # 表示需要收集的最小数据量，用highGradeSpeed的长度进行评估
+        self.minDataSize = minDataSize  # 表示需要收集的最小数据量，用highGradeSpeed的长度进行评估
         self.sMap = None
         self.avgBbox = 99               # 平均大小
         self.mainMapSavePath = './mainMap.jpg'      # 速度图保存地址
         self.stopMapSavePath = './stopMap.jpg'      # 停止图保存地址
         self.classFilter = [2]          # 只对classFilter中的类别进行统计
+        self.modelName = modelName
 
     def img_info2Path(self, img_info):
         """整合img_info，将之转换为路径的形式
@@ -113,6 +116,11 @@ class infoPort(BaseBackboneComponent):
         stopMask = self.sMap.getStopMask()
         cv2.imwrite(self.stopMapSavePath, stopMask)
         print('停止区域蒙版已经存储为' + self.stopMapSavePath)
+        eM = eModel(sMap=self.sMap,paths=self.highGradePaths)
+        eM.save(self.modelName)
+            
+
+
 
     def process(self, **kwargs):
         imgs_info = kwargs['imgs_info']
