@@ -2,7 +2,8 @@
 ### Requirements
 
 - Windows or Linux
-- CUDA == 10.1
+- CUDA == 10.1.243
+wget http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
 - cuDNN >= 7.4 for CUDA 10.1
 - python3.7
 - opencv-python==3.4.1.15
