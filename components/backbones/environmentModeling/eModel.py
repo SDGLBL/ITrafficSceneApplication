@@ -13,6 +13,6 @@ class eModel():
     @staticmethod
     def load(modelPath):
         with open(modelPath, 'rb') as f:
-            return pickle.load(modelPath)
+            return pickle.load(f)
 
 

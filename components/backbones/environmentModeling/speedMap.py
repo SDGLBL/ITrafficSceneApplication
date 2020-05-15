@@ -175,11 +175,3 @@ class speedMap:
         k = math.tan(self.secondaryAxis)
         b = y - k*x
         return k,b
-
-    def dotByStopLine(self, dot:list):
-        k, b = self.getStopLine()
-        return k*dot[0] + b - dot[1]
-        
-    def dotInMainMask(self, dot:list):
-        mainMask = self.getMainMask()
-        return mainMask[int(dot[1]), int(dot[0])] != 0
