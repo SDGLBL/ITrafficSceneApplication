@@ -14,14 +14,17 @@ class DrawBoundingBoxComponent(BaseBackboneComponent):
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
         for img, img_info in zip(imgs, imgs_info):
+            # 首先检查是否探测到了bbox
+            if 'objects' not in img_info.keys():
+                # 说明没有经过探测器所以没用Objects信息
+                continue
             bboxs = [obj['bbox'] for obj in img_info['objects']]
             obj_confs = [obj['obj_conf'] for obj in img_info['objects']]
             cls_confs = [obj['cls_conf'] for obj in img_info['objects']]
             cls_preds = [obj['cls_pred'] for obj in img_info['objects']]
-            ids = [obj['id'] if 'id' in obj.keys() else 'None' for obj in img_info['objects'] ]
-            if bboxs is not None:
-                # 探测到了bboxs才进行绘制
-                draw_label(bboxs,obj_confs,cls_confs,cls_preds,ids,img, self.colors)
+            ids = [obj['id'] if 'id' in obj.keys() else 'None' for obj in img_info['objects']]
+
+            draw_label(bboxs, obj_confs, cls_confs, cls_preds, ids, img, self.colors)
         return kwargs
 
 

@@ -1,12 +1,14 @@
+from time import time
+
+import cv2
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
+
 from .base import BaseDetector
 from .registry import DETECTOR
-from .yolov3 import get_yolov3, pad_to_square, resize, non_max_suppression, rescale_boxes
+from .yolov3 import get_yolov3, pad_to_square, non_max_suppression, rescale_boxes
 from .yolov4 import get_yolov4, get_region_boxes1, nms
-from time import time
-import cv2
 
 
 @DETECTOR.register_module
@@ -110,10 +112,8 @@ class Yolov3Detector(BaseDetector):
                 }
                 imgs_info[index]['objects'].append(one_object_info)
         return imgs_info
-    
-    
 
-    def __call__(self, imgs: list,imgs_info: list, *args, **kwargs):
+    def __call__(self, **kwargs):
         """
         YoLov3前传函数
         Args:
@@ -129,6 +129,8 @@ class Yolov3Detector(BaseDetector):
             imgs_info: 图像信息list,其中每个img_info添加了obejcts
 
         """
+        imgs = kwargs['imgs']
+        imgs_info = kwargs['imgs_info']
         t0 = time()
         imgs_batch = self.preprocessing(imgs)
         t1 = time()
@@ -144,7 +146,7 @@ class Yolov3Detector(BaseDetector):
             print('inference use {0}'.format(t2-t1))
             print('afterprocessing use {0}'.format(t3-t2))
             print('|-----------------------------------|')
-        return imgs_info
+        return {'imgs': imgs, 'imgs_info': imgs_info}
 
 
 @DETECTOR.register_module
@@ -287,7 +289,7 @@ class Yolov4Detector(BaseDetector):
                 imgs_info[index]['objects'].append(one_object_info)
         return imgs_info
 
-    def __call__(self, imgs: np.ndarray, imgs_info:list, *args, **kwargs):
+    def __call__(self, **kwargs):
         """
         YoLov4前传函数
         Args:
@@ -302,7 +304,8 @@ class Yolov4Detector(BaseDetector):
         Returns:
             imgs_info: 图像信息list,其中每个img_info添加了obejcts
         """
-        t0 = time()
+        imgs = kwargs['imgs']
+        imgs_info = kwargs['imgs_info']
         imgs_batch = self.preprocessing(imgs)
         t1 = time()
         with torch.no_grad():
@@ -317,4 +320,4 @@ class Yolov4Detector(BaseDetector):
             print('inference use {0}'.format(t2-t1))
             print('afterprocessing use {0}'.format(t3-t2))
             print('|-----------------------------------|')
-        return imgs_info
+        return {'imgs': imgs, 'imgs_info': imgs_info}

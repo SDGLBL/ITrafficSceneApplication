@@ -139,6 +139,7 @@ dmypy.json
 cython_debug/
 
 # custom file
+test.py
 *.jpg
 *.png
 *.weights

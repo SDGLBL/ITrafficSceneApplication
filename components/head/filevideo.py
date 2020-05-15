@@ -40,7 +40,7 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
                 self.start_index += 1
             else:
                 raise StopIteration
-        return imgs,imgs_info
+        return {'imgs': imgs, 'imgs_info': imgs_info}
 
     def __getitem__(self, index):
         return super().__getitem__(index)

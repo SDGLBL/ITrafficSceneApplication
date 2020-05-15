@@ -1,11 +1,11 @@
-from components.detector.yolov3 import load_classes
-import numpy as np
-from hyperlpr import HyperLPR_plate_recognition
 import math
 import random
+
 import cv2
+import numpy as np
+from hyperlpr import HyperLPR_plate_recognition
 
-
+from components.detector.yolov3 import load_classes
 
 
 def draw_label(
@@ -32,17 +32,20 @@ def draw_label(
         绘制后的图像
     """
     thickness = len(img) // 200
-    for bbox,obj_conf,cls_conf,cls_pred,id in zip(bboxs,obj_confs,cls_confs,cls_preds,ids):
-        x1,y1,x2,y2 = bbox
-        x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
+    for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
+        if bbox is None:
+            # 如果bbox为None说明这个目标
+            continue
+        x1, y1, x2, y2 = bbox
+        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
         class_label = classes[int(cls_pred)]
         color = bbox_colors[int(cls_pred)]
-        cv2.rectangle(img,(x1,y1),(x2,y2),color,thickness)
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
         if id is not None:
-            put_str = class_label+' '+str(cls_conf)[:4]+' {0}'.format(id)
+            put_str = class_label + ' ' + str(cls_conf)[:4] + ' {0}'.format(id)
         else:
-            put_str = class_label+' '+str(cls_conf)[:4]
-        cv2.putText(img,put_str,(x1,y1-5),cv2.FONT_HERSHEY_COMPLEX,1,color,2)
+            put_str = class_label + ' ' + str(cls_conf)[:4]
+        cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
     return img
 
 
