@@ -3,6 +3,8 @@ import logging.config
 import logging.config
 import platform
 from multiprocessing import Process
+import os.path as osp
+import os
 
 config_info_for_windows = {
     'version': 1,
@@ -89,6 +91,8 @@ config_info_for_linux = {
 def get_logger(filename='logs/main.log'):
     config_info_for_windows['handlers']['file']['filename'] = filename
     config_info_for_linux['handlers']['file']['filename'] = filename
+    if not osp.exists('logs'):
+        os.mkdir('logs')
     if platform.system() == 'Windows':
         logging.config.dictConfig(config_info_for_windows)
     elif platform.system() == 'Linux':
