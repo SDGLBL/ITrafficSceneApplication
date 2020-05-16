@@ -8,8 +8,29 @@
 - opencv-python==3.4.1.15
 - opencv-contrib-python==3.4.1.15
 CUDA：http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
-### How to setup
-### Docker setup (only for Linux and Docker==19.03)
+
+### PretrainedWeights
+
+- [Download weights for vanilla YOLOv3](https://pjreddie.com/media/files/yolov3.weights)
+- [Download weights for tiny YOLOv3](https://pjreddie.com/media/files/yolov3-tiny.weights)
+- [Download weights for backbones network](https://pjreddie.com/media/files/darknet53.conv.74)
+
+Then place them in components/detector/yolov3/weights
+
+- [Download weights for yolov4](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights)
+
+Then place it in components/detector/yolov4/weight,If the path not exist,please mkdir by yourself.
+
+
+- [Download ckpt.t7 for DeepSort](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
+
+Then place it in components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
+
+### Docker setup
+#### If docker setup (only for Linux and Docker==19.03)
+
+**No need to install cuda and cudnn by yourself**
+
 ```bash
 # At the first of all, you need install NVIDIA Container Runtime
 curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
@@ -26,8 +47,11 @@ docker build -t ${USER}/itsa-develop .
 docker run -it -p 8022:22 --gpus all  --network host ${USER}/itsa-develop
 # then use IDE to connect localhost:8022 for develop
 ```
+-----
 
-#### Linux 
+### None Docker setup
+
+#### If linux (need to install cuda and cudnn by yourselfy )
 
 ```bash
 # install virtualenv
@@ -42,7 +66,7 @@ $ source venv/bin/activate
 (venv) $ python setup.py develop
 ```
 
-#### Windows (CMD)
+#### If windows ( need to install cuda and cudnn by yourself)
 
 ```cmd
 # install virtualenv
@@ -57,18 +81,27 @@ venv/Scripts/activate
 (venv) python setup.py develop
 ```
 
-### How to compile opencv  and opencv-contrib for linux
-
-- **Compiling opencv is not a necessary choice . Opencv is compiled to make better use of the ffmpeg encoder, thus reducing the video output size.**
-
-**If you don't want to compile opencv,just run the following code**
+#### Last step
 
 ```
+# you need install opencv by youself
 (venv) pip install opencv-python==3.4.1.15
 (venv) pip install opencv-contrib-python==3.4.1.15
-````
+```
 
-**Otherwise**
+**However, opencv installed in this way does not support h264 encoded video output on Linux, so if you need to reduce the size of the video output on Linux, please follow the instructions of opencv compilation**
+
+----
+
+### How to start
+
+
+
+----------
+
+
+
+### opencv compilation
 
 - The following compilation procedure is only applicable to python3.7, please modify the first statement if you are compiling in another version of python
 
@@ -101,23 +134,6 @@ $ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTA
 $ make -j<cpu core number>
 $ sudo make install
 ```
-
-### PretrainedWeights
-
-- [Download weights for vanilla YOLOv3](https://pjreddie.com/media/files/yolov3.weights)
-- [Download weights for tiny YOLOv3](https://pjreddie.com/media/files/yolov3-tiny.weights)
-- [Download weights for backbones network](https://pjreddie.com/media/files/darknet53.conv.74)
-
-Then place them in components/detector/yolov3/weights
-
-- [Download weights for yolov4](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights)
-
-Then place it in components/detector/yolov4/weight,If the path not exist,please mkdir by yourself.
-
-
-- [Download ckpt.t7 for DeepSort](https://drive.google.com/drive/folders/1xhG0kRH1EX5B9_Iz8gQJb7UNnn_riXi6)
-
-Then place it in components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
 
 ### References
 
