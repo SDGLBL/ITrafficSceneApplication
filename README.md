@@ -9,7 +9,23 @@
 - opencv-contrib-python==3.4.1.15
 CUDA：http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
 ### How to setup
-
+### Docker setup (only for Linux and Docker==19.03)
+```bash
+# At the first of all, you need install NVIDIA Container Runtime
+curl -s -L https://nvidia.github.io/nvidia-container-runtime/gpgkey | \
+  sudo apt-key add -
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-container-runtime/$distribution/nvidia-container-runtime.list | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-runtime.list
+sudo apt-get update
+# install NVIDIA Container Runtime
+apt-get install nvidia-container-runtime
+# build your develop image
+docker build -t ${USER}/itsa-develop .
+# start your container and expose a ssh port for develop IDE to use
+docker run -it -p 8022:22 --gpus all  --network host ${USER}/itsa-develop
+# then use IDE to connect localhost:8022 for develop
+```
 
 #### Linux 
 
