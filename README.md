@@ -3,12 +3,11 @@
 
 - Windows or Linux
 - CUDA == 10.1.243
-wget http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
 - cuDNN >= 7.4 for CUDA 10.1
 - python3.7
 - opencv-python==3.4.1.15
 - opencv-contrib-python==3.4.1.15
-
+CUDA：http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
 ### How to setup
 
 
@@ -16,7 +15,7 @@ wget http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installer
 
 ```bash
 # install virtualenv
-$ pip3 install virtualenv
+$ sudo pip3 install -U virtualenv
 # create virtual env
 $ virtualenv --system-site-packages -p python3 ./venv
 # activate virtual env
@@ -31,7 +30,7 @@ $ source venv/bin/activate
 
 ```cmd
 # install virtualenv
-pip3 install virtualenv
+pip3 install -U virtualenv
 # create virtual en
 virtualenv --system-site-packages -p python3 ./venv
 # activate virtual env
@@ -64,7 +63,7 @@ $ tar -xf ffmpeg_3.4.6.orig.tar.xz
 $ cd ffmpeg-3.4.6
 $ sudo apt-get install ${PYTHON_VERSION}
 $ sudo apt-get install python3-dev
-$ sudo apt-get instal python3-numpy
+$ sudo apt-get install python3-numpy
 $ sudo apt-get install yasm
 $ ./configure --enable-shared --prefix=/usr
 $ make
@@ -73,7 +72,7 @@ $ cd ..
 $ sudo apt-get install build-essential git
 $ sudo apt-get install cmake
 $ sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev
-$ sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev
+$ sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libgtk2.0-dev
 $ git clone https://github.com/opencv/opencv.git
 $ git clone https://github.com/opencv/opencv_contrib
 $ cd opencv_contrib
