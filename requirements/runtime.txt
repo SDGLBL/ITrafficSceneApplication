@@ -42,4 +42,3 @@ Vizer==0.1.5
 wcwidth==0.1.9
 xmltodict==0.12.0
 Django==2.2.12
-mmcv==0.5.1
