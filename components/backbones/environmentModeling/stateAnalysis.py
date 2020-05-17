@@ -3,6 +3,8 @@ from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 from .tools import get_centre, projection, vLen
 import math
+from utils.dao import get_current_time
+from utils.utils import identify_number_plate
 
 @BACKBONE_COMPONENT.register_module
 class stateAnalysis(BaseBackboneComponent):
@@ -41,7 +43,7 @@ class stateAnalysis(BaseBackboneComponent):
     def dotInMainMask(self, dot:list):
         return self.mainMask[int(dot[1]), int(dot[0])] != 0
 
-    def inputObj(self, obj):
+    def inputObj(self, img, obj):
         returnInfo = None
         # 过滤掉不在检测范围内的目标
         if obj['cls_pred'] not in self.classes.keys():
@@ -66,8 +68,15 @@ class stateAnalysis(BaseBackboneComponent):
         number_plate = None
         if self.appropriatePhoto(centre) and self.objDict[id]['number_plate'] is None:
             # todo:拍照识别
-            print(str(id) + '适合拍照')
-            pass
+            bbox = [
+                int(obj['bbox'][0]),
+                int(obj['bbox'][1]),
+                int(obj['bbox'][2]),
+                int(obj['bbox'][3])
+            ]
+            number_plate = identify_number_plate(img, bbox=bbox)
+            if number_plate != None:
+                self.objDict[id]['number_plate'] = number_plate
         # 2.过线检测：
         passState = self.dotByStopLine(centre)
         cls_name = max(self.objDict[id]['maybe_classes'],key=self.objDict[id]['maybe_classes'].get)
@@ -76,9 +85,9 @@ class stateAnalysis(BaseBackboneComponent):
             self.objDict[id]['passState'] = passState
             returnInfo = {}
             returnInfo['obj_type'] = cls_name
-            returnInfo['number_plate'] = number_plate
+            returnInfo['number_plate'] = self.objDict[id]['number_plate']
             returnInfo['id'] = id
-            returnInfo['time'] = None
+            returnInfo['time'] = get_current_time()
             self.passCount += 1
             print('ID为：' + str(id) + self.classes[cls_name] + '的车辆过线，计数器加一，PassCount' + str(self.passCount))
             print(returnInfo)
@@ -90,12 +99,12 @@ class stateAnalysis(BaseBackboneComponent):
             self.objDict[id]['maybe_classes'][cls_pred] = 0
         self.objDict[id]['maybe_classes'][cls_pred] += 1
 
-    def analysis(self, img_info):
+    def analysis(self, img, img_info):
         objs = img_info['objects']
         pass_info = []
         # 新目标添加统计
         for obj in objs:
-            returnInfo = self.inputObj(obj)
+            returnInfo = self.inputObj(img, obj)
             if returnInfo is not None:
                 pass_info.append(returnInfo)
         img_info['passCount'] = self.passCount
@@ -103,7 +112,8 @@ class stateAnalysis(BaseBackboneComponent):
 
     def process(self, **kwargs):
         imgs_info = kwargs['imgs_info']
-        for img_info in imgs_info:
+        imgs = kwargs['imgs']
+        for i in range(len(imgs_info)):
             #print('正在处理第'+ str(img_info['index']) + '张图片：')
-            self.analysis(img_info) 
+            self.analysis(imgs[i],imgs_info[i]) 
         return kwargs
