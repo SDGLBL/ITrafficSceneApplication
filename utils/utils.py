@@ -15,6 +15,7 @@ def draw_label(
         cls_preds,
         ids,
         img:np.ndarray,
+        passCount,
         bbox_colors,
         classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """
@@ -46,6 +47,7 @@ def draw_label(
         else:
             put_str = class_label + ' ' + str(cls_conf)[:4]
         cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
+    cv2.putText(img, 'carNumber:' + str(passCount), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,255), 2)
     return img
 
 

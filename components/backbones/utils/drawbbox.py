@@ -23,8 +23,9 @@ class DrawBoundingBoxComponent(BaseBackboneComponent):
             cls_confs = [obj['cls_conf'] for obj in img_info['objects']]
             cls_preds = [obj['cls_pred'] for obj in img_info['objects']]
             ids = [obj['id'] if 'id' in obj.keys() else 'None' for obj in img_info['objects']]
+            passCount = img_info['passCount']
 
-            draw_label(bboxs, obj_confs, cls_confs, cls_preds, ids, img, self.colors)
+            draw_label(bboxs, obj_confs, cls_confs, cls_preds, ids, img, passCount,self.colors)
         return kwargs
 
 
