@@ -4,6 +4,7 @@ from queue import Empty
 from threading import Thread
 from task.build import TaskBuilder
 from task.configs.yolov3task import Yolov3TaskCfg
+from task.configs.preheat import PreheatTaskCfg
 
 def read_info_from_task(mqs):
     try:
@@ -18,8 +19,12 @@ if __name__ == '__main__':
     # Linux平台启动
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
+<<<<<<< HEAD
+    task = TaskBuilder(PreheatTaskCfg)
+=======
     task = TaskBuilder(Yolov3TaskCfg)
     mqs = task.build()
+>>>>>>> b1c91dc1cb3ea162464857c959fbd674d2510b4f
     task.start()
     readt = Thread(target=read_info_from_task,args=(mqs,))
     readt.start()
