@@ -39,7 +39,7 @@ def __head_process(head_cfg, sendqs, timeout):
     except KeyboardInterrupt:
         logger.info('user stop the head process')
     except Full:
-        logger.info('head管道长时间爆满，可能detector出现了问题')
+        logger.info('通向探测器的队列已满')
     except Exception as e:
         logger.exception(e)
     finally:
@@ -63,6 +63,8 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout):
         logger.info('user stop the detector process')
     except Empty:
         logger.info('head不再发送数据detector自动释放')
+    except Full:
+        logger.exception('通向某一条主干或者跟踪器的队列已满')
     except Exception as e:
         logger.exception(e)
     finally:
@@ -89,6 +91,8 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
         logger.info('user stop the detector process')
     except Empty:
         logger.info('detector不再发送数据tracker自动释放')
+    except Full:
+        logger.exception('通向某一条主干的队列已满')
     except Exception as e:
         logger.exception(e)
     finally:
@@ -99,7 +103,7 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
         logger.info('release the tracker source')
 
 
-def __backbone_process(backbone_cfg: list, recivq: Queue, timeout):
+def __backbone_process(backbone_cfg: list, recivq: Queue ,sendq: Queue, timeout):
     # 实例化一个backbone里面所有的组件
     backbone_components = [__build_backbone_component(bbcfg) for bbcfg in backbone_cfg]
     logger.info('create backbone {0} '.format(backbone_cfg))
@@ -113,11 +117,15 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, timeout):
                 for backbone_component in backbone_components[1:]:
                     kwargs = backbone_component(**kwargs)
                 # 处理到最后的数据直接清楚
-            del kwargs
+            for img_info in kwargs['imgs_info']:
+                sendq.put(img_info,timeout=timeout)
     except KeyboardInterrupt:
         logger.info('user stop a backbone_process process')
     except Empty:
         logger.info('backbone normal stoped')
+    except Full as e:
+        logger.exception(e)
+        logger.warning('通向主进程的队列已满，请检查主进程是否正常取出数据')
     except Exception as e:
         logger.exception(e)
     return
@@ -131,8 +139,8 @@ def build_process(cfg_type, cfg, recivqs, sendqs, timeout):
     elif cfg_type == 'tracker':
         return [Process(target=__tracker_process, args=(cfg[0], recivqs[0], sendqs, timeout,))]
     elif cfg_type == 'backbones':
-        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, timeout)) for backbone_cfg, recivq in
-                zip(cfg, recivqs)]
+        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout,)) 
+        for backbone_cfg, recivq,sendq in zip(cfg, recivqs,sendqs)]
     else:
         raise AttributeError('暂时不支持类型为{}的组件'.format(cfg_type))
 

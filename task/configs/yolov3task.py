@@ -15,11 +15,6 @@ Yolov3TaskCfg = {
             'batch_size': 8
         }
     ],
-    'tracker': [
-        {
-            'type': 'DeepSortTracker'
-        }
-    ],
     'backbones': [
         [
             {

@@ -5,13 +5,12 @@ from task.utils import build_process
 from torch.multiprocessing import Process, Queue
 
 class TaskBuilder(BaseBuild):
-    def __init__(self, cfg,timeout=10, maxsize=30):
+    def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg
         self.task_args =  []
-        self.build(timeout,maxsize)
 
-    def build(self,timeout, maxsize):
+    def build(self,timeout=10, maxsize=30):
         detector_cfg = None
         if 'detector' in self.cfg.keys():
             detector_cfg = self.cfg['detector']
@@ -40,7 +39,9 @@ class TaskBuilder(BaseBuild):
                 qnum = len(compile_list[i + 1][1])
                 sendqs = [Queue(maxsize=maxsize) for _ in range(qnum)]
                 sendqs_list.append(sendqs)
-        sendqs_list.append(None)
+        backbone_num = len(compile_list[-1][1])
+        backbone2main = [Queue(maxsize=50) for _ in range(backbone_num)]
+        sendqs_list.append(backbone2main)
         recivqs_list.append(None)
         for sendqs in sendqs_list:
             recivqs_list.append(sendqs)
@@ -51,7 +52,7 @@ class TaskBuilder(BaseBuild):
             tc_type = tc[0]
             tc_cfg = tc[1]
             self.task_args.append((tc_type, tc_cfg, recivq, sendqs, timeout))
-            # self.task.append(build_process(tc_type, tc_cfg, recivq, sendqs, timeout))
+        return backbone2main
 
     def start(self, join=False):
         for args in self.task_args:

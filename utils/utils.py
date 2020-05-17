@@ -95,6 +95,7 @@ def bboxdistance(bbox1,bbox2):
     x2_c,y2_c = bbox2center(bbox2)
     return math.sqrt((y2_c-y1_c)**2+(x2_c-x1_c)**2)
 
+
 def identify_number_plate(img:np.ndarray,bbox=None):
     """
     识别车牌号码
@@ -111,9 +112,13 @@ def identify_number_plate(img:np.ndarray,bbox=None):
     """      
     assert len(bbox) == 4,'bbox must is [x1,y1,x2,y2]'
     if bbox is not None:
-        return HyperLPR_plate_recognition(img[bbox[0]:bbox[2],bbox[1]:bbox[3]])
+        x1,y1,x2,y2 = bbox
+        # 放大两倍 提高探测率
+        img = cv2.resize(img[x1:x2,y1:y2],None,fx=2,fy=2,interpolation=cv2.INTER_CUBIC)
+        return HyperLPR_plate_recognition(img)
     else:
         return HyperLPR_plate_recognition(img)
+
 
 
 
