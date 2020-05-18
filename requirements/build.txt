@@ -1,2 +1,2 @@
 numpy>=1.18.4
-pywin32;platform_system == "Windows"
+pywin32;platform_system=="Windows"

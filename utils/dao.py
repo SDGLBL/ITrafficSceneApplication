@@ -1,16 +1,20 @@
-import pymysql
-from .logger import get_logger
-from pymysql import cursors
 import datetime
+
+import pymysql
+from pymysql import cursors
+
+from .logger import get_logger
+
 logger = get_logger(filename='logs/database.log')
 
+
 def get_connection(
-    host:str,
-    user:str,
-    password:str,
-    db:str,
-    charset='utf8mb4',
-    cursorclass=cursors.DictCursor):
+        host: str,
+        user: str,
+        password: str,
+        db: str,
+        charset='utf8mb4',
+        cursorclass=cursors.DictCursor):
     """获取数据库连接
 
     Arguments:
@@ -58,9 +62,9 @@ def excute_sql(connection:pymysql.Connection,sql_str:str,args=(),is_return=False
     try:
         with connection.cursor() as cursor:
             if len(args) != 0:
-                cursor.excute_sql(sql_str,args)
+                cursor.execute(sql_str, args)
             else:
-                cursor.excute_sql(sql_str)
+                cursor.execute(sql_str)
         if is_return:
             result = cursor.fetchone()
             return result

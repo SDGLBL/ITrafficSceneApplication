@@ -4,7 +4,7 @@ import random
 import cv2
 import numpy as np
 from hyperlpr import HyperLPR_plate_recognition
-from matplotlib import pyplot as plt
+
 from components.detector.yolov3 import load_classes
 
 
@@ -16,8 +16,7 @@ def draw_label(
         ids,
         img: np.ndarray,
         passCount,
-        bbox_colors,
-        classes=load_classes('./components/detector/yolov3/data/coco.names')):
+        bbox_colors):
     """
     绘制bbox
     Args:
@@ -39,7 +38,7 @@ def draw_label(
             continue
         x1, y1, x2, y2 = bbox
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-        class_label = classes[int(cls_pred)]
+        class_label = cls_pred
         color = bbox_colors[int(cls_pred)]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
         if id is not None:
@@ -97,10 +96,10 @@ def bboxdistance(bbox1, bbox2):
     return math.sqrt((y2_c - y1_c) ** 2 + (x2_c - x1_c) ** 2)
 
 
-i = 1
-j = 1
+# i = 1
+# j = 1
 
-def identify_number_plate(img: np.ndarray, bbox=None):
+def identify_number_plate(img: np.ndarray, bbox):
     """
     识别车牌号码
 
@@ -125,16 +124,22 @@ def identify_number_plate(img: np.ndarray, bbox=None):
         img = img[y1:y2, x1:x2]
         if img.shape[0] == 0 or img.shape[1] == 0:
             return None
-        global i
-        global j
+        # global i
+        # global j
         result = HyperLPR_plate_recognition(img)
         # plt.imsave('save/target{}.jpg'.format(j), img)
+<<<<<<< HEAD
         j+=1
         if len(result) > 0 and result[0][1] > 0.95:
             # plt.imsave('target{}.jpg'.format(i), img)
             i += 1
             return result
+=======
+        # j+=1
+        if len(result) > 0 and result[0][1] > 0.95:
+            # plt.imsave('target{}.jpg'.format(i), img)
+            # i += 1
+            return result[0][0]
+>>>>>>> 03b6bb90c45acb483fbda4f2209a373ccbcaeee1
         else:
             return None
-    else:
-        return HyperLPR_plate_recognition(img)
