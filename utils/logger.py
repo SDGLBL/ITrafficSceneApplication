@@ -1,10 +1,10 @@
 import logging
 import logging.config
 import logging.config
+import os
+import os.path as osp
 import platform
 from multiprocessing import Process
-import os.path as osp
-import os
 
 config_info_for_windows = {
     'version': 1,
@@ -34,7 +34,7 @@ config_info_for_windows = {
             # If delay is true,
             # then file opening is deferred until the first call to emit().
             'delay': True,
-            'filename': 'main.log',
+            'filename': 'logs/main.log',
             'formatter': 'verbose'
         }
     },

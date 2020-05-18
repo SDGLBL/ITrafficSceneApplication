@@ -108,7 +108,7 @@ class Yolov3Detector(BaseDetector):
                     'bbox': [x1.item(), y1.item(), x2.item(), y2.item()],
                     'obj_conf': obj_conf.item(),
                     'cls_conf': cls_conf.item(),
-                    'cls_pred': cls_pred.item()
+                    'cls_pred': self.classes[int(cls_pred.item())]
                 }
                 imgs_info[index]['objects'].append(one_object_info)
         return imgs_info
@@ -284,7 +284,7 @@ class Yolov4Detector(BaseDetector):
                     'bbox': [x1, y1, x2, y2],
                     'obj_conf': obj_conf,
                     'cls_conf': cls_conf,
-                    'cls_pred': cls_pred
+                    'cls_pred': self.classes[int(cls_pred.item())]
                 }
                 imgs_info[index]['objects'].append(one_object_info)
         return imgs_info
