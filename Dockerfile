@@ -1,6 +1,7 @@
 FROM sdglbl/itswork
 
 # Install ITrafficSceneApplication
+ENV LANG C.UTF-8
 COPY . /ITrafficSceneApplication
 WORKDIR /ITrafficSceneApplication
 RUN echo "[easy_install]" >> ~/.pydistutils.cfg \
