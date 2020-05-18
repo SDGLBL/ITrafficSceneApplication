@@ -24,8 +24,9 @@ PreheatTaskCfg = {
         [
             {
                 # 'type': 'infoPort'
-                'type': 'stateAnalysis',
-                'eModelPath': 'components/backbones/environmentModeling/eModeldata/lot_15.emd'
+                # 'type': 'stateAnalysis',
+                # 'eModelPath': 'components/backbones/environmentModeling/eModeldata/lot_15.emd'
+                'type':'saveImgInfo'
             }
         ]
     ]
