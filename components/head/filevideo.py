@@ -1,13 +1,20 @@
 import mmcv
 
+from utils.dao import get_current_time
 from .base import BaseVideoPipeline
 from .registry import HEAD
-from utils.dao import get_current_time
+
 
 @HEAD.register_module
 class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
-
     def __init__(self, filename, step, cache_capacity=10):
+        """
+        文件视频读取Head
+        Args:
+            filename: 视频文件路径
+            step: 一次读取多少张图片
+            cache_capacity: 缓冲区大小
+        """
         if step % 2 != 0 and step != 1:
             raise AttributeError('步长必须为2的倍数')
         self.step = step

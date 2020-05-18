@@ -122,16 +122,17 @@ def identify_number_plate(img: np.ndarray, bbox):
         x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
         x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
         img = img[y1:y2, x1:x2]
+        # 如果截取的车辆画面任何一个维度大小为0则直接不识别
         if img.shape[0] == 0 or img.shape[1] == 0:
             return None
-        # global i
-        # global j
+        # 如果截取的车辆画面比例悬殊直接不识别
+        if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
+            return None
+        # 如果截取到的车辆占整幅画面的占比低于5%则直接选择不识别
+        if (img.shape[0] * img.shape[1]) / (img_shape[0] * img_shape[1]) < 0.05:
+            return None
         result = HyperLPR_plate_recognition(img)
-        # plt.imsave('save/target{}.jpg'.format(j), img)
-        # j+=1
         if len(result) > 0 and result[0][1] > 0.95:
-            # plt.imsave('target{}.jpg'.format(i), img)
-            # i += 1
             return result[0][0]
         else:
             return None

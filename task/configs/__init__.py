@@ -1,3 +1,3 @@
-from .yolov3task import *
+from .fakeinfo import *
 from .preheat import *
-from .fakedemo import *
+from .yolov3task import *

@@ -1,13 +1,23 @@
+import json
+
 import mmcv
 
 from .base import BaseVideoPipeline
 from .registry import HEAD
-import json
+
 
 @HEAD.register_module
 class EquivalentHead(mmcv.VideoReader, BaseVideoPipeline):
-
     def __init__(self, filename, json_filename, step, cache_capacity=10):
+        """
+        虚拟数据读取头
+        通过读取已经生成的json和视频文件伪造出神经网络运行的效果，以给其他开发人员进行调试使用
+        Args:
+            filename: 视频路径
+            json_filename: json数据路径
+            step: 一次读取几张图片
+            cache_capacity: 缓存区大小
+        """
         if step % 2 != 0 and step != 1:
             raise AttributeError('步长必须为2的倍数')
         self.step = step

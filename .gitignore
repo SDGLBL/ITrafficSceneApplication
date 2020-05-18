@@ -152,4 +152,5 @@ test.py
 *.t7
 *.avi
 *.so
+*.json
 logs
