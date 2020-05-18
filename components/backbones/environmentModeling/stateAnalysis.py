@@ -83,11 +83,13 @@ class stateAnalysis(BaseBackboneComponent):
         lastPassState = self.objDict[id]['passState']
         if passState == 1 and lastPassState == -1 and cls_name in self.classes.keys():      # 只检测由-1 到 1 的跳变
             self.objDict[id]['passState'] = passState
-            returnInfo = {}
+            returnInfo = {'info_type': 'pass'}
+            returnInfo['id'] = id
+            returnInfo['start_time'] = get_current_time()
+            returnInfo['end_time'] = get_current_time()
+            returnInfo['passage_ type'] = None
             returnInfo['obj_type'] = cls_name
             returnInfo['number_plate'] = self.objDict[id]['number_plate']
-            returnInfo['id'] = id
-            returnInfo['time'] = get_current_time()
             self.passCount += 1
             print('ID为：' + str(id) + self.classes[cls_name] + '的车辆过线，计数器加一，PassCount' + str(self.passCount))
             print(returnInfo)
@@ -100,15 +102,15 @@ class stateAnalysis(BaseBackboneComponent):
         self.objDict[id]['maybe_classes'][cls_pred] += 1
 
     def analysis(self, img, img_info):
+        img_info['analysis'] = []
         objs = img_info['objects']
-        pass_info = []
         # 新目标添加统计
         for obj in objs:
             returnInfo = self.inputObj(img, obj)
             if returnInfo is not None:
-                pass_info.append(returnInfo)
-        img_info['passCount'] = self.passCount
-        img_info['pass_info'] = pass_info
+                img_info['analysis'].append(returnInfo)
+                # print(img_info['analysis'])
+        img_info['pass_count'] = self.passCount
 
     def process(self, **kwargs):
         imgs_info = kwargs['imgs_info']

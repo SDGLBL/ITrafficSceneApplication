@@ -128,10 +128,10 @@ def identify_number_plate(img: np.ndarray, bbox=None):
         global i
         global j
         result = HyperLPR_plate_recognition(img)
-        plt.imsave('save/target{}.jpg'.format(j), img)
+        # plt.imsave('save/target{}.jpg'.format(j), img)
         j+=1
         if len(result) > 0 and result[0][1] > 0.95:
-            plt.imsave('target{}.jpg'.format(i), img)
+            # plt.imsave('target{}.jpg'.format(i), img)
             i += 1
             return result
         else:
