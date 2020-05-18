@@ -13,7 +13,7 @@ class saveImgInfo(BaseBackboneComponent):
         super().process(**kwargs)
         imgs_info = kwargs['imgs_info']
         for img_info in imgs_info:
-            print(img_info)
+            #print(img_info)
             with open(self.savePath,'a+', encoding='utf-8') as f:
                 line = json.dumps(img_info, ensure_ascii=False)
                 f.write(line+'\n')

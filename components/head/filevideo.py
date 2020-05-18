@@ -2,7 +2,7 @@ import mmcv
 
 from .base import BaseVideoPipeline
 from .registry import HEAD
-
+from utils.dao import get_current_time
 
 @HEAD.register_module
 class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
@@ -33,7 +33,7 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
             if img is not None:
                 imgs.append(img)
                 imgs_info.append({
-                    'time':None, # 使用的时间
+                    'time':get_current_time(), # 使用的时间
                     'index':self.start_index, # 对应视频中的第几帧
                     'shape':img.shape # 图像的shape (H,W,C)
                     })

@@ -16,11 +16,7 @@ class stateAnalysis(BaseBackboneComponent):
         self.mainAxis = eM.sMap.mainAxis
         if self.mainAxis > 0:
             self.mainAxis -= math.pi
-        self.classes = {
-            2:'car',
-            5:'bus',
-            7:'truck'
-        }
+        self.classes = ['car', 'bus', 'truck']
         self.objDict = {}
         self.passCount = 0
 
@@ -46,7 +42,7 @@ class stateAnalysis(BaseBackboneComponent):
     def inputObj(self, img, obj):
         returnInfo = None
         # 过滤掉不在检测范围内的目标
-        if obj['cls_pred'] not in self.classes.keys():
+        if obj['cls_pred'] not in self.classes:
             return
         
         id = obj['id']
@@ -81,7 +77,7 @@ class stateAnalysis(BaseBackboneComponent):
         passState = self.dotByStopLine(centre)
         cls_name = max(self.objDict[id]['maybe_classes'], key=self.objDict[id]['maybe_classes'].get)
         lastPassState = self.objDict[id]['passState']
-        if passState == 1 and lastPassState == -1 and cls_name in self.classes.keys():      # 只检测由-1 到 1 的跳变
+        if passState == 1 and lastPassState == -1 and cls_name in self.classes:      # 只检测由-1 到 1 的跳变
             self.objDict[id]['passState'] = passState
             returnInfo = {'info_type': 'pass'}
             returnInfo['id'] = id
@@ -91,8 +87,9 @@ class stateAnalysis(BaseBackboneComponent):
             returnInfo['obj_type'] = cls_name
             returnInfo['number_plate'] = self.objDict[id]['number_plate']
             self.passCount += 1
-            print('ID为：' + str(id) + self.classes[cls_name] + '的车辆过线，计数器加一，PassCount' + str(self.passCount))
-            print(returnInfo)
+            print('ID为：' + str(id) + cls_name + '的车辆过线，计数器加一，PassCount' + str(self.passCount))
+            #print(returnInfo)
+            return returnInfo
 
         # 3. 数据更新：
         self.objDict[id]['path'].append(centre)
