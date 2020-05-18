@@ -5,7 +5,7 @@ from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 
 
-
+@BACKBONE_COMPONENT.register_module
 class InformationCollectorComponent(BaseBackboneComponent):
     def __init__(
         self,
@@ -19,6 +19,6 @@ class InformationCollectorComponent(BaseBackboneComponent):
     def process(self, **kwargs):
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
-        for img,imgs_info in zip(imgs,imgs_info):
+        for img,img_info in zip(imgs,imgs_info):
             pass
         return kwargs

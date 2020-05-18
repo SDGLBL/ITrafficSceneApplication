@@ -1,2 +1,2 @@
-from .utils import WriteVideoComponent, DrawBoundingBoxComponent, FpsCollectorComponent,RtmpWriteComponent
+from .utils import WriteVideoComponent, DrawBoundingBoxComponent, FpsCollectorComponent,RtmpWriteComponent,InformationCollectorComponent
 from .environmentModeling import infoPort, stateAnalysis
