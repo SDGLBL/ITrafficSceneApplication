@@ -10,8 +10,8 @@ def read_info_from_task(mqs):
     try:
         while True:
             for mq in mqs:
-                img_info = mq.get(timeout=5)
-                print('探测到{}个目标'.format(len(img_info['objects'])))
+                img_info = mq.get(timeout=15)
+                # print('探测到{}个目标'.format(len(img_info['objects'])))
     except Empty:
         print('主进程结束')
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # Linux平台启动
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-    task = TaskBuilder(Yolov3TaskCfg)
+    task = TaskBuilder(PreheatTaskCfg)
     mqs = task.build()
     task.start()
     readt = Thread(target=read_info_from_task,args=(mqs,))

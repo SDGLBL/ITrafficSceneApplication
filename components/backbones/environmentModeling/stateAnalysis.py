@@ -35,10 +35,10 @@ class stateAnalysis(BaseBackboneComponent):
     
     def appropriatePhoto(self, dot:list):
         k, b = self.stopLine
-        if -self.avgBbox < k*dot[0] + b - dot[1] < self.avgBbox:
+        if -self.avgBbox*1.5 < k*dot[0] + b - dot[1] < self.avgBbox*1.5:
             return True
         else:
-            return False
+            return True
      
     def dotInMainMask(self, dot:list):
         return self.mainMask[int(dot[1]), int(dot[0])] != 0
@@ -75,11 +75,11 @@ class stateAnalysis(BaseBackboneComponent):
                 int(obj['bbox'][3])
             ]
             number_plate = identify_number_plate(img, bbox=bbox)
-            if number_plate != None:
+            if number_plate is not None:
                 self.objDict[id]['number_plate'] = number_plate
         # 2.过线检测：
         passState = self.dotByStopLine(centre)
-        cls_name = max(self.objDict[id]['maybe_classes'],key=self.objDict[id]['maybe_classes'].get)
+        cls_name = max(self.objDict[id]['maybe_classes'], key=self.objDict[id]['maybe_classes'].get)
         lastPassState = self.objDict[id]['passState']
         if passState == 1 and lastPassState == -1 and cls_name in self.classes.keys():      # 只检测由-1 到 1 的跳变
             self.objDict[id]['passState'] = passState
