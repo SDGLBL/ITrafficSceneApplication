@@ -39,7 +39,7 @@ def draw_label(
         x1, y1, x2, y2 = bbox
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
         class_label = cls_pred
-        color = bbox_colors[int(cls_pred)]
+        color = bbox_colors[cls_pred]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
         if id is not None:
             put_str = class_label + ' ' + str(cls_conf)[:4] + ' {0}'.format(id)
@@ -60,9 +60,10 @@ def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/da
 
     """
     # Bounding-box colors
-    bbox_colors = []
-    for _ in range(len(classes)):
-        bbox_colors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+    bbox_colors = {}
+    for i in range(len(classes)):
+        key = classes[i]
+        bbox_colors[key] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     return bbox_colors
 
 

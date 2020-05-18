@@ -29,8 +29,8 @@ FakedTaskCfg = {
             {
                 'type': 'InformationCollectorComponent',
                 'host': 'localhost',
-                'user': '此处填入数据库用户名',
-                'password': '此处填数据库密码',
+                'user': 'lijie',
+                'password': '8241660925',
                 'db': 'itsa'
             }
         ]

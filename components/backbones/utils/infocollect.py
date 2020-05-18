@@ -37,7 +37,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 object_id = int(info['id'])  # 目标id
                 start_time = info['start_time']  # 被开始跟踪时间点
                 end_time = info['end_time']  # 结束跟踪时间点
-                passage_type = info['passage_ type']  # 通行类型  直行 左转 右行
+                passage_type = info['passage_type']  # 通行类型  直行 左转 右行
                 obj_type = info['obj_type']  # 目标类型
                 number_plate = info['number_plate']  # 车牌号 车牌号
                 if passage_type == None:
