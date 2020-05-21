@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import pymysql
 from pymysql import cursors
@@ -74,6 +75,16 @@ def excute_sql(connection:pymysql.Connection,sql_str:str,args=(),is_return=False
         logger.exception(e)
     return None
 
-    
+
 def get_current_time():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def fomate_time2time(fomate_time: str):
+    ts = time.strptime(fomate_time, "%Y-%m-%d %H:%M:%S")
+    return time.mktime(ts)
+
+
+def time2fomate_time(nomal_time):
+    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(nomal_time))
+    return format_time

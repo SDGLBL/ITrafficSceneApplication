@@ -81,7 +81,7 @@ def bbox2center(bbox):
     return x_c, y_c
 
 
-def bboxdistance(bbox1, bbox2):
+def bbox_distance(bbox1, bbox2):
     """
     计算两个bbox之间的距离
 
@@ -92,9 +92,22 @@ def bboxdistance(bbox1, bbox2):
     Returns:
         float -- 距离
     """
-    x1_c, y1_c = bbox2center(bbox1)
-    x2_c, y2_c = bbox2center(bbox2)
-    return math.sqrt((y2_c - y1_c) ** 2 + (x2_c - x1_c) ** 2)
+    point1 = bbox2center(bbox1)
+    point2 = bbox2center(bbox2)
+    return point_distance(point1, point2)
+
+
+def point_distance(point1, point2):
+    """
+    计算两点的距离
+    Args:
+        point1: 第一个点
+        point2: 第二个点
+
+    Returns:
+        float -- 距离
+    """
+    return math.sqrt((point2[1] - point1[1]) ** 2 + (point2[0] - point1[0]) ** 2)
 
 
 # i = 1
@@ -119,7 +132,7 @@ def identify_number_plate(img: np.ndarray, bbox):
         img_shape = img.shape
         h = img_shape[0]
         w = img_shape[1]
-        x1, y1, x2, y2 = bbox
+        x1, y1, x2, y2 = [int(x) for x in bbox]
         x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
         x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
         img = img[y1:y2, x1:x2]

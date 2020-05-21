@@ -12,6 +12,7 @@ from utils.registry import build_from_cfg
 
 logger = get_logger()
 
+
 def __build_head_component(head_component_cfg):
     return build_from_cfg(head_component_cfg, HEAD)
 
@@ -103,7 +104,7 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
         logger.info('release the tracker source')
 
 
-def __backbone_process(backbone_cfg: list, recivq: Queue ,sendq: Queue, timeout):
+def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout):
     # 实例化一个backbone里面所有的组件
     backbone_components = [__build_backbone_component(bbcfg) for bbcfg in backbone_cfg]
     logger.info('create backbone {0} '.format(backbone_cfg))
@@ -118,7 +119,7 @@ def __backbone_process(backbone_cfg: list, recivq: Queue ,sendq: Queue, timeout)
                     kwargs = backbone_component(**kwargs)
                 # 处理到最后的数据直接清楚
             for img_info in kwargs['imgs_info']:
-                sendq.put(img_info,timeout=timeout)
+                sendq.put(img_info, timeout=timeout)
     except KeyboardInterrupt:
         logger.info('user stop a backbone_process process')
     except Empty:
@@ -139,8 +140,7 @@ def build_process(cfg_type, cfg, recivqs, sendqs, timeout):
     elif cfg_type == 'tracker':
         return [Process(target=__tracker_process, args=(cfg[0], recivqs[0], sendqs, timeout,))]
     elif cfg_type == 'backbones':
-        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout,)) 
-        for backbone_cfg, recivq,sendq in zip(cfg, recivqs,sendqs)]
+        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout,))
+                for backbone_cfg, recivq, sendq in zip(cfg, recivqs, sendqs)]
     else:
         raise AttributeError('暂时不支持类型为{}的组件'.format(cfg_type))
-

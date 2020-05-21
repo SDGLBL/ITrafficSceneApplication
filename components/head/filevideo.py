@@ -32,7 +32,7 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
 
         Returns:
             tuple(imgs,imgs_info): imgs是图像list，imgs_info则是每张图像的必需信息
-        """        
+        """
         imgs = []
         imgs_info = []
         for _ in range(self.step):
@@ -40,10 +40,10 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
             if img is not None:
                 imgs.append(img)
                 imgs_info.append({
-                    'time':get_current_time(), # 使用的时间
-                    'index':self.start_index, # 对应视频中的第几帧
-                    'shape':img.shape # 图像的shape (H,W,C)
-                    })
+                    'time': get_current_time(),  # 使用的时间
+                    'index': self.start_index,  # 对应视频中的第几帧
+                    'shape': img.shape  # 图像的shape (H,W,C)
+                })
                 self.start_index += 1
             else:
                 raise StopIteration
@@ -56,11 +56,7 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
         return super().__len__()
 
     def get_shape(self):
-        return (int(self.height),int(self.width),3)
+        return (int(self.height), int(self.width), 3)
 
     def get_fps(self):
         return self.fps
-
-
-
-
