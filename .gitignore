@@ -153,4 +153,5 @@ test.py
 *.avi
 *.so
 *.json
+*.emd
 logs

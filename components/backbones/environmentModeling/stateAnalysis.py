@@ -83,7 +83,7 @@ class stateAnalysis(BaseBackboneComponent):
             returnInfo['id'] = id
             returnInfo['start_time'] = get_current_time()
             returnInfo['end_time'] = get_current_time()
-            returnInfo['passage_ type'] = None
+            returnInfo['passage_type'] = None
             returnInfo['obj_type'] = cls_name
             returnInfo['number_plate'] = self.objDict[id]['number_plate']
             self.passCount += 1
