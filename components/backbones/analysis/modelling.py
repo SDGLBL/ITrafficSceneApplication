@@ -39,7 +39,6 @@ class Modelling(BaseBackboneComponent):
                 speedDir = getDirection([speedX, speedY])
                 path['speeds'].append([speedX, speedY, speedLen, speedDir])
                 self.speeds.append([speedX, speedY, speedLen, speedDir])
-                print('数据收集进度：{}/{}'.format(str(len(self.speeds)), str(self.dataNum)))
                 bbox = path['bboxs'][i]
                 avgBbox = getAvgBbox(bbox)
                 if avgBbox == 0:
@@ -177,9 +176,11 @@ class Modelling(BaseBackboneComponent):
         imgs_info = kwargs['imgs_info']
         for img, img_info in zip(imgs, imgs_info):
             self.dataPreparation(img, img_info)
+        print('数据收集进度：{}/{}'.format(str(len(self.speeds)), str(self.dataNum)))
         # 建模开始
         if len(self.speeds) > self.dataNum:
             self.makeModel()
+            print('建模完毕，关闭进程')
             exit()
 
         return kwargs
