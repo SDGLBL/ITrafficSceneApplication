@@ -1,10 +1,11 @@
 import torch
+from cfg import Cfg
 Yolov3TaskCfg = {
     'head': [
         {
             'type': 'VideoFileHead',
             'filename': './test.mp4',
-            'step': 8,
+            'step': Cfg.batch_size,
             'cache_capacity': 100
         }
     ],
@@ -12,7 +13,7 @@ Yolov3TaskCfg = {
         {
             'type': 'Yolov3Detector',
             'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-            'batch_size': 8
+            'batch_size': Cfg.batch_size
         }
     ],
     'backbones': [
@@ -22,7 +23,7 @@ Yolov3TaskCfg = {
             },
             {
                 'type': 'FpsCollectorComponent',
-                'isPrint': True
+                'isPrint': Cfg.is_print_fps
             },
             {
                 'type': 'WriteVideoComponent',

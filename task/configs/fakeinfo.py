@@ -1,10 +1,11 @@
+from cfg import Cfg
 FakedTaskCfg = {
     'head': [
         {
             'type': 'EquivalentHead',
             'filename': './lot_15.mp4',
             'json_filename': './img_info.json',
-            'step': 8,
+            'step': Cfg.batch_size,
             'cache_capacity': 100
         }
     ],
@@ -17,7 +18,7 @@ FakedTaskCfg = {
             # fps计数组件
             {
                 'type': 'FpsCollectorComponent',
-                'isPrint': True
+                'isPrint': Cfg.is_print_fps
             },
             # 写视频流
             {
@@ -25,14 +26,14 @@ FakedTaskCfg = {
                 'resolution': (1920, 1080),
                 'fps': 30
             },
-            # # 数据库写入组件
-            # {
-            #     'type': 'InformationCollectorComponent',
-            #     'host': 'localhost',
-            #     'user': 'lijie',
-            #     'password': '8241660925',
-            #     'db': 'itsa'
-            # }
+            # 数据库写入组件
+            {
+                'type': 'InformationCollectorComponent',
+                'host': Cfg.host,
+                'user': Cfg.user,
+                'password': Cfg.password,
+                'db': Cfg.database
+            }
         ]
     ]
 }
