@@ -91,10 +91,10 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                                 'id': obj_id,
                                 'start_time': time2fomate_time(start_time),
                                 'end_time': time2fomate_time(end_time),
-                                'passage_type': 'stop',
+                                'passage_type': 'None',  # 因为是违法停车，所以没有通行类型
                                 'obj_type': obj['cls_pred'],
                                 'number_plate': self.objs[obj_id]['number_plate'],
-                                # 'imgs': self.objs[obj_id]['imgs']
+                                'imgs': self.objs[obj_id]['imgs']
                             })
                             self.no_record_id.append(obj_id)
                             del self.objs[obj_id]
@@ -110,6 +110,8 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         elif point_distance(point, self.objs[obj_id]['point']) > 100:
                             # print('{}移动了我们认为改目标不算违章停车那就更新它的start_time'.format(obj_id))
                             self.objs[obj_id]['start_time'] = fomate_time2time(img_info['time'])
+                            # 刷新违规截图
+                            self.objs[obj_id]['imgs'][0] = img
                             self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
                         else:
                             # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))

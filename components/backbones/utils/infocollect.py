@@ -1,3 +1,9 @@
+import os
+import os.path as osp
+from functools import reduce
+
+import cv2
+
 from utils.dao import get_connection, excute_sql
 from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
@@ -16,10 +22,14 @@ class InformationCollectorComponent(BaseBackboneComponent):
             password: str,
             db: str,
             verbose=False,
-            process_type=['pass']):
+            img_save_path='criminal',
+            process_type=['pass', 'illegal_parking']):
         super().__init__()
         self.connection = get_connection(host, user, password, db)
         self.process_type = process_type
+        self.img_save_path = img_save_path
+        if not osp.exists(img_save_path):
+            os.mkdir(img_save_path)
         self.verbose = verbose
 
     def process(self, **kwargs):
@@ -40,8 +50,6 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 passage_type = info['passage_type']  # 通行类型  直行 左转 右行
                 obj_type = info['obj_type']  # 目标类型
                 number_plate = info['number_plate']  # 车牌号 车牌号
-                if passage_type == None:
-                    passage_type = 'straight'
                 # 处理通过信息
                 if info_type == 'pass':
                     start_time_id = start_time + ' ' + str(object_id)
@@ -50,6 +58,32 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
                         'VALUES (%s,%s,%s,%s,%s,%s)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
+                        False
+                    )
+                elif info_type == 'illegal_parking':
+                    start_time_id = start_time + ' ' + str(object_id)
+                    excute_sql(
+                        self.connection,
+                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'VALUES (%s,%s,%s,%s,%s,%s)',
+                        (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
+                        False
+                    )
+                    # 因为违规停车还是违规行为，需要记录到违规记录中
+                    # 首先取出违规图像并保存
+                    save_paths = []
+                    for index, img in enumerate(info['imgs']):
+                        save_path = osp.join(self.img_save_path, start_time_id + ' ' + str(index) + '.jpg')
+                        save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
+                        cv2.imwrite(save_path, img)
+                        save_paths.append(save_path)
+                    # 将保存的图像路径拼接起来存入数据库
+                    img_path = reduce(lambda x, y: x + '_' + y, save_paths)
+                    excute_sql(
+                        self.connection,
+                        'INSERT INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'VALUES (%s,%s,%s,%s)',
+                        (start_time_id, number_plate, img_path, info_type),
                         False
                     )
                 continue

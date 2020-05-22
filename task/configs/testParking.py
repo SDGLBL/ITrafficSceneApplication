@@ -20,21 +20,15 @@ TestParkingTaskCfg = {
                 'type': 'ParkingMonitoringComponent',
                 'monitoring_area': None,
                 'allow_stop_time': 20
+            },
+            # 数据库写入组件
+            {
+                'type': 'InformationCollectorComponent',
+                'host': 'localhost',
+                'user': 'lijie',
+                'password': '8241660925',
+                'db': 'itsa'
             }
-            # # 写视频流
-            # {
-            #     'type': 'WriteVideoComponent',
-            #     'resolution': (1920, 1080),
-            #     'fps': 30
-            # },
-            # # 数据库写入组件
-            # {
-            #     'type': 'InformationCollectorComponent',
-            #     'host': 'localhost',
-            #     'user': 'lijie',
-            #     'password': '8241660925',
-            #     'db': 'itsa'
-            # }
         ]
     ]
 }
