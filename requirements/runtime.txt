@@ -46,3 +46,4 @@ mmcv==0.5.4
 addict==2.2.1
 yapf==0.30.0
 pymysql==0.9.3
+redis==3.5.2
