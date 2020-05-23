@@ -138,8 +138,8 @@ class Modelling(BaseBackboneComponent):
             stopLine = [k, b]
         elif len(stopDots) > 1:
             stopDots = np.array(stopDots)
-            ys = stopDots[:, 0]
-            xs = stopDots[:, 1]
+            ys = stopDots[:, 1]
+            xs = stopDots[:, 0]
             arg = np.polyfit(xs, ys, 1)
             k = arg[0]
             b = arg[1]
@@ -159,8 +159,12 @@ class Modelling(BaseBackboneComponent):
 
         # 储存：
         model = {
+            'type': 'crossroad',
+            'avg_bbox':self.avgBbox ,
             'main_axis': mainAxis,
             'second_axis': secondAxis,
+            'transform_mat': transformMat,
+            'inv_transform_mat': invTransformMat,
             'main_map': speedMap,
             'stop_line': stopLine,
             'lane_maps': laneMaps,
@@ -169,7 +173,7 @@ class Modelling(BaseBackboneComponent):
             'reachable_mat':reachableMat
         }
         with open(self.modelPath, 'wb') as f:
-            pickle.dump(self, f)
+            pickle.dump(model, f)
 
     def process(self, **kwargs):
         imgs = kwargs['imgs']

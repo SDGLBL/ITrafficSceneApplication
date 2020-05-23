@@ -54,7 +54,7 @@ def getAxis(speedDirs, coreNam=2):
         axis.append(c[0])
     return axis
 
-
+# 将路径缕直，存储在'zipDots'中
 def straighten(path, stepTh):
     dots = path['dots']
     indexs = path['indexs']
@@ -77,7 +77,7 @@ def straighten(path, stepTh):
     path['indexs'] = tIndexs
     return path
 
-
+# 将路径转化为特征路径，存储在'fun_dots'中
 def pathFitting(path, transformMat):
     dots = path['zipDots']
     dots = np.array(dots)
@@ -111,7 +111,7 @@ def pathFitting(path, transformMat):
     # drawDot(fDots,bg,(255,0,0))
     return path
 
-
+# 高斯聚类函数，得到聚类后的波峰状况
 def gaussianCumulative(valus, var):
     max = np.max(valus)
     min = np.min(valus)
@@ -127,7 +127,7 @@ def gaussianCumulative(valus, var):
     max_peak = signal.find_peaks(y, 0)
     return len(max_peak[0]), max_peak[0]
 
-
+# 已弃用
 def differenceDirection(dots,benchmarkDir):
     diffDirs = []
     for i in range(1, len(dots)):
@@ -140,7 +140,7 @@ def differenceDirection(dots,benchmarkDir):
     plt.show()
     return diffDirs
 
-
+# 得到坐标转换矩阵
 def getTransformMat(axis):
     m = axis[0]
     tanM = math.tan(m)
@@ -155,7 +155,7 @@ def getTransformMat(axis):
     invTransformMat = np.linalg.inv(transformMat)
     return transformMat, invTransformMat
 
-
+# 得到关于路径的停止图和速度图
 def getMap(paths, mapSize, stopTh):
     stopMap = np.zeros(mapSize, dtype=float)
     speedMap = np.zeros(mapSize, dtype=float)
@@ -168,7 +168,7 @@ def getMap(paths, mapSize, stopTh):
                 stopMap = bboxAdd(bboxs[i], 1, stopMap, t=0.2)
     return stopMap, speedMap
 
-
+# 内部使用函数，被getMap调用
 def bboxAdd(bbox, speed, map, t=0.7):
         c = getCentre(bbox)
         h = bbox[3] - bbox[1]
@@ -179,7 +179,7 @@ def bboxAdd(bbox, speed, map, t=0.7):
         map[int(c[1] - h):int(c[1] + h), int(c[0] - h):int(c[0] + h)] += speed
         return map
 
-
+# 在命令行下不可使用
 def showMap(map, bg, th):
     th = np.max(map) * th
     tMap = np.zeros([map.shape[0], map.shape[1], 3], dtype=np.uint8)
@@ -188,13 +188,13 @@ def showMap(map, bg, th):
     cv2.imshow('map', showImg)
     cv2.waitKey()
 
-
+# 在命令行下不可使用
 def drawPaths(paths, backgrand, color):
     for path in paths:
         dots = path['dots']
         drawDot(dots, backgrand, color)
 
-
+# 在命令行下不可使用
 def drawDot(dots,backgrand,color):
     for i in range(1, len(dots)):
         dot1 = dots[i - 1]
@@ -203,7 +203,7 @@ def drawDot(dots,backgrand,color):
     # cv2.imshow('bg', backgrand)
     # cv2.waitKey()
 
-
+# 已弃用
 def getLanNum(speedMap, core):
     index = np.argmax(speedMap)
     i0 = index // speedMap.shape[1]
@@ -213,7 +213,7 @@ def getLanNum(speedMap, core):
     print(max_peak)
     return len(max_peak[0])
 
-
+# 已弃用
 def pathCluster(paths, direction, coreNum):
     startDots = []
     for path in paths:
@@ -229,7 +229,7 @@ def pathCluster(paths, direction, coreNum):
     return tPaths
 
 
-# 得到山峰线
+# 得到山峰线，已弃用
 def peakLine(speedMap, starRow, endRow, core, lanNum):
     peakLines = {}
     for i in range(lanNum):
@@ -248,6 +248,8 @@ def peakLine(speedMap, starRow, endRow, core, lanNum):
     print(len(peakLines[0]))
     return peakLines
 
-
-
+# 得到一个以th为阈值的蒙版
+def getMapMask(map, th):
+    th = np.max(map) * th
+    return map >= th
 
