@@ -21,10 +21,11 @@ class InformationCollectorComponent(BaseBackboneComponent):
             user: str,
             password: str,
             db: str,
+            img_save_path=None,
             verbose=False,
-            img_save_path='criminal',
             process_type=['pass', 'illegal_parking']):
         super().__init__()
+        assert img_save_path!=None
         self.connection = get_connection(host, user, password, db)
         self.process_type = process_type
         self.img_save_path = img_save_path
@@ -60,6 +61,8 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
                     )
+                    info['criminal_img_name'] = None  # 因为没有违规所以没有违规图像名称
+                    info['imgs'] = []
                 elif info_type == 'illegal_parking':
                     start_time_id = start_time + ' ' + str(object_id)
                     excute_sql(
@@ -73,7 +76,11 @@ class InformationCollectorComponent(BaseBackboneComponent):
                     # 首先取出违规图像并保存
                     save_paths = []
                     for index, img in enumerate(info['imgs']):
-                        save_path = osp.join(self.img_save_path, start_time_id + ' ' + str(index) + '.jpg')
+                        img_name = start_time_id + ' ' + str(index) + '.jpg'
+                        save_path = osp.join(self.img_save_path, img_name)
+                        # 每次违规最少两张照片，取第二张存储在criminal_img_name
+                        if index == 1:
+                            info['criminal_img_name'] = img_name
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)
