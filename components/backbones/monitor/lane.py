@@ -3,12 +3,12 @@ import numpy as np
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
 from utils.dao import fomate_time2time, time2fomate_time
-from utils.utils import bbox2center, identify_number_plate, point_distance
+from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img
 
 
 @BACKBONE_COMPONENT.register_module
 class LaneMonitoringComponent(BaseBackboneComponent):
-    def __init__(self, monitoring_area: np.ndarray, allow_stop_time=180, check_step=30):
+    def __init__(self, monitoring_area: np.ndarray, no_allow_car={}, check_step=30):
 
         """
         违章占用车道监控类
@@ -21,7 +21,7 @@ class LaneMonitoringComponent(BaseBackboneComponent):
         """
         super().__init__()
         self.monitoring_area = monitoring_area
-        self.allow_stop_time = allow_stop_time
+        self.no_allow_car = no_allow_car
         self.check_step = check_step  # 检查间隔 每隔多少步进行检查 默认为30帧一秒一次
         self.curent_step = 0
         self.objs = {}
@@ -45,7 +45,7 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                         del self.no_record_id[index]
 
             if img.shape[:2] != self.monitoring_area.shape[:2]:
-                raise AttributeError('违规停车监测组件的监测区域遮罩矩阵大小必须与图像大小匹配')
+                raise AttributeError('违法占用车道监测组件的监测区域遮罩矩阵大小必须与图像大小匹配')
 
             # 循环添加当前帧数里面停止在目标到跟踪dict
             for obj in img_info['objects']:
@@ -53,74 +53,27 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                 obj_id = obj['id']
                 if obj_id in self.no_record_id:
                     continue
+                # 如果目标还没有全部出现在视野中直接跳过
+                if not is_bbox_in_img(img,obj['bbox']):
+                    continue
                 x_c, y_c = bbox2center(obj['bbox'])
-                # 如果该目标的中心位于不允许停车区域,将其添加进入跟踪检查字典
-                if self.monitoring_area[int(y_c), int(x_c)] == 0:
-                    number_plate = identify_number_plate(img, obj['bbox'])
-                    # 如果是第一次监测到
-                    if obj_id not in self.objs.keys():
-                        # print('当前时间为{}'.format(img_info['index'] // 30))
-                        # print('id 为 {} 的目标进入禁止停车位置,车牌号为 {}'.format(obj['id'], number_plate))
-                        self.objs[obj_id] = {
-                            'point': (x_c, y_c),
-                            'start_time': fomate_time2time(img_info['time']),
-                            'end_time': None,
-                            'imgs': [img],
-                            'number_plate': number_plate
-                        }
-                    # 如果目标早已被监测，刷新其状态
-                    else:
-                        start_time = self.objs[obj_id]['start_time']
-                        end_time = fomate_time2time(img_info['time'])
-                        point = bbox2center(obj['bbox'])
-                        self.objs[obj_id]['end_time'] = end_time
-                        # print('{}目标早已被监测，刷新其状态'.format(obj_id))
-                        # print('当前时间为{}'.format(img_info['index'] // 30))
-                        # 如果超过允许停车的时间限度且没有移动
-                        # print('{}目标停止时间为{}'.format(obj_id,end_time - start_time))
-                        if end_time - start_time >= self.allow_stop_time and point_distance(point, self.objs[obj_id][
-                            'point']) < 20:
-                            # print('{} 超过允许停止时间限度，且没有移动，进行记录'.format(obj_id))
-                            # 记录最后一张证据图
-                            # 如果是完全不能停车的地方只需要记录一张违规截图
-                            if self.allow_stop_time != 0:
-                                self.objs[obj_id]['imgs'].append(img)
-                            # 如果上次车牌号没检测出来继续检测识别
-                            if self.objs[obj_id]['number_plate'] is None:
-                                self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])
-                            # 在img_info中添加停车违规记录
-                            img_info['analysis'].append({
-                                'info_type': 'illegal_parking',
+                # 如果该目标的中心位于检测区域
+                current_position_type = self.monitoring_area[int(y_c), int(x_c)]
+                start_time = self.objs[obj_id]['start_time']
+                end_time = fomate_time2time(img_info['time'])
+                if current_position_type in self.no_allow_car.keys():
+                    # 如果目标的类别不允许出现在这个区域内则进行记录
+                    if obj['cls_pred'] in self.no_allow_car[current_position_type]:
+                        img_info['analysis'].append({
+                                'info_type': 'illegal_occupation',
                                 'id': obj_id,
                                 'start_time': time2fomate_time(start_time),
                                 'end_time': time2fomate_time(end_time),
-                                'passage_type': 'None',  # 因为是违法停车，所以没有通行类型
+                                'passage_type': 'None',  # 因为是违法占用车道，所以没有通行类型
                                 'obj_type': obj['cls_pred'],
                                 'number_plate': self.objs[obj_id]['number_plate'],
-                                'imgs': self.objs[obj_id]['imgs']
+                                'imgs': [img,img]
                             })
-                            self.no_record_id.append(obj_id)
-                            del self.objs[obj_id]
-                        # 如果没有移动且停车时间还未达到违规范围，刷新其end_time
-                        elif point_distance(point, self.objs[obj_id]['point']) < 20:
-                            # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))
-                            self.objs[obj_id]['end_time'] = fomate_time2time(img_info['time'])
-                            self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
-                            # 如果上次车牌号没检测出来继续检测识别
-                            if self.objs[obj_id]['number_plate'] is None:
-                                self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])
-                        # 如果移动了，我们认为改目标不算违章停车那就更新它的start_time
-                        elif point_distance(point, self.objs[obj_id]['point']) > 100:
-                            # print('{}移动了我们认为改目标不算违章停车那就更新它的start_time'.format(obj_id))
-                            self.objs[obj_id]['start_time'] = fomate_time2time(img_info['time'])
-                            # 刷新违规截图
-                            self.objs[obj_id]['imgs'][0] = img
-                            self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
-                        else:
-                            # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))
-                            self.objs[obj_id]['end_time'] = fomate_time2time(img_info['time'])
-                            self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
-
-        else:
-            self.curent_step += len(imgs_info)
+                        # 将该车辆记录为不再追踪车辆，因为其违法记录已经捕捉
+                        self.no_record_id.append(obj_id)
         return kwargs
