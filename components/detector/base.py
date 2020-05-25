@@ -50,6 +50,6 @@ class BaseDetector(object):
 
         pass
 
-    def __call__(self, imgs: np.ndarray, imgs_info:list, *args, **kwargs):
+    def __call__(self, **kwargs):
 
         pass

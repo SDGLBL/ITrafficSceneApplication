@@ -33,8 +33,8 @@ if __name__ == '__main__':
         img_path = os.path.join(imgs_dir,name)
         img = cv2.imread(img_path)
         imgs = [img]
-        imgs_info = [{'shape':img.shape}]
-        detections = detector(imgs,imgs_info)
+        imgs_info = [{'shape':img.shape,'pass_count':0}]
+        detections = detector(imgs=imgs,imgs_info=imgs_info)
         kwargs = dlc.process(imgs=imgs,imgs_info=imgs_info)
         output = kwargs['imgs'][0]
         save_name = name.split('.')[0]+'_result.jpg'
