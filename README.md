@@ -42,7 +42,7 @@ sudo apt-get update
 # install NVIDIA Container Runtime
 apt-get install nvidia-container-runtime
 # build your develop image
-cd docker && docker build -t ${USER}/itsa-develop ..
+docker build -t ${USER}/itsa-develop .
 # start your container and expose a ssh port for develop IDE to use
 docker run -it -p 8022:22 --gpus all  --network host ${USER}/itsa-develop
 # then use IDE to connect localhost:8022 for develop

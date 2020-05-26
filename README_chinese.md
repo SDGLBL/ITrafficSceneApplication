@@ -43,7 +43,7 @@ sudo apt-get update
 # 安装 NVIDIA Container Runtime
 apt-get install nvidia-container-runtime
 # 构建开发用 image
-cd docker && docker build -t ${USER}/itsa-develop ..
+docker build -t ${USER}/itsa-develop .
 # 开启容器并将8022端口暴露给宿主机，使得宿主机可以通过ssh进行连接（第一次初始化需要自行设定密码和安装sshserver以及开放ssh连接）
 # start your container and expose a ssh port for develop IDE to use
 docker run -it -p 8022:22 --gpus all  ${USER}/itsa-develop
