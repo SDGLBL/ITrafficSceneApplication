@@ -26,7 +26,7 @@
 
 然后将它放置在 components/tracker/deep_sort_pytorch/deep_sort/deep/checkpoint/
 
-### Docker部署
+## Docker部署
 
 ### 基于Docker部署 (只支持Linux和Docker版本为最新版本)
 
@@ -48,19 +48,9 @@ docker build -t ${USER}/itsa-develop .
 # start your container and expose a ssh port for develop IDE to use
 docker run -it --gpus all --network host  ${USER}/itsa-develop
 # 然后就可以使用IDE连接进行开发了
-# 在容器内运行如下命令即可推流
-/usr/local/nginx/sbin/nginx
-ffmpeg -i <video file> -f flv rtmp://127.0.0.1:1935/live
-# 运行如下命令即可开启网页后端服务器
-/usr/local/nginx/sbin/nginx
-PYTHONUNBUFFERED=1
-DJANGO_SETTINGS_MODULE=ITrafficSceneApplication.settings
-python3 manage.py runserver 8000
 ```
 
-----
-
-### 非Docker部署
+## 非Docker部署
 
 #### Linux ( 需要自行安装cuda和cudnn )
 
@@ -102,13 +92,28 @@ venv/Scripts/activate
 
 **但是，以这种方式安装的opencv在Linux上不支持h264编码的视频输出，所以如果需要在Linux上减小视频输出的大小，请按照opencv编译的说明进行操作**
 
------
-
-### How to start
-
-----------
+**如果需要运行演示demo界面需要自行编译支持rtmp推流的nginx以及ffmepg，对此请按照nginx编译说明编码nginx**
 
 
+
+## 如何开始使用demo演示
+
+#### 对于初始化完毕的docker容器或自行编译的环境
+
+```python
+# 运行如下命令即可推流
+/usr/local/nginx/sbin/nginx
+ffmpeg -i <video file name> -f flv rtmp://127.0.0.1:1935/live
+# 运行如下命令即可开启网页后端服务器
+/usr/local/nginx/sbin/nginx
+PYTHONUNBUFFERED=1
+DJANGO_SETTINGS_MODULE=ITrafficSceneApplication.settings
+python3 manage.py runserver 8000
+```
+
+
+
+## 对于非Docker初始化的环境编译说明
 
 ### opencv编译说明
 
@@ -143,6 +148,94 @@ $ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTA
 $ make -j<cpu core number>
 $ sudo make install
 ```
+
+### nginx编译说明
+
+```bash
+# 安装必要的编译dev
+sudo apt-get install build-essential
+sudo apt-get install libtool
+sudo apt-get install libpcre3 libpcre3-dev zlib1g-dev openssl libssl-dev
+# 下载nginx和rtmp推流模块
+wget http://nginx.org/download/nginx-1.15.5.tar.gz
+tar -zxvf nginx-1.13.10.tar.gz
+#下载RTMP
+git clone https://github.com/arut/nginx-rtmp-module.git
+cd nginx-1.15.5/
+# 编译
+./configure --prefix=/usr/local/nginx --add-module=../nginx-rtmp-module --with-http_ssl_module
+make -j<cpu core number>
+make install
+# 编辑/usr/local/nginx/conf/nginx.conf,在文件末尾添加如下内容
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4000;
+        application live {
+             live on;
+
+             # record first 1K of stream
+             record all;
+             record_path /tmp/av;
+             record_max_size 1K;
+ 
+             # append current timestamp to each flv
+             record_unique on;
+ 
+             # publish only from localhost
+             allow publish 127.0.0.1;
+             deny publish all;
+ 
+             #allow play all;
+        }
+    }
+}
+# 对/usr/local/nginx/conf/nginx.conf中的http按照如下进行修改
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+ 
+    sendfile        off;
+ 
+    server_names_hash_bucket_size 128;
+ 
+    client_body_timeout   10;
+    client_header_timeout 10;
+    keepalive_timeout     30;
+    send_timeout          10;
+    keepalive_requests    10;
+ 
+    server {
+        listen       80;
+        server_name  localhost;
+ 
+ 
+        location /stat {
+            rtmp_stat all;
+            rtmp_stat_stylesheet stat.xsl;
+        }
+        location /stat.xsl {
+            root nginx-rtmp-module/;
+        }
+        location /control {
+            rtmp_control all;
+        }
+# For Naxsi remove the single # line for learn mode, or the ## lines for full WAF mode
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+# 运行如下命令检查是否配置成功
+ffmpeg  -i [video file]-f flv rtmp://localhost:1935/live
+```
+
+
 
 ### 引用
 
