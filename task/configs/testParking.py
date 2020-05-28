@@ -20,8 +20,7 @@ TestParkingTaskCfg = {
             {
                 'type': 'ParkingMonitoringComponent',
                 'monitoring_area': None,
-                'allow_stop_time': Cfg.allow_stop_time,
-                'img_save_path':Cfg.img_save_dir
+                'allow_stop_time': Cfg.allow_stop_time
             },
             # 数据库写入组件
             {
@@ -29,7 +28,8 @@ TestParkingTaskCfg = {
                 'host': Cfg.host,
                 'user': Cfg.user,
                 'password': Cfg.password,
-                'db': Cfg.database
+                'db': Cfg.database,
+                'img_save_path':Cfg.img_save_dir
             }
         ]
     ]
