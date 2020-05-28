@@ -1,8 +1,9 @@
+from datetime import datetime
+
 import pymysql
 import redis
 
 from cfg import Cfg
-from task.configs.chenxiaotask import ChenXiaoTaskCfg
 
 
 
@@ -21,25 +22,6 @@ class CarsVolumeDao(object):
         self.redis = redis.StrictRedis(host=Cfg.redis_host, port=Cfg.redis_port,
                                        decode_responses=Cfg.redis_decode_responses,db=Cfg.redis_database)
 
-    """
-    def get_traffic_volume_statistics(self):
-        
-        查询车流量信息
-        :return: 查询结果
-    
-        cursor=self.connection.cursor()
-        cursor.execute("select passage_type, count(*) from traffic GROUP BY passage_type")
-        datas = {'total_cars':0,'straight':0,'left':0,'right':0}
-        total_cars=0
-        rows=cursor.fetchall()
-        for row in rows:
-            print(row)
-            datas[row[0]]=row[1]
-            total_cars += int(row[1])
-
-        datas['total_cars']=total_cars
-        return datas
-    """
 
     def set_traffic_volume_statistics(self, img_info):
         """
@@ -68,7 +50,26 @@ class CarsVolumeDao(object):
                  'truck_pass_count': self.redis.get('truck_pass_count'),
                  'bus_pass_count': self.redis.get('bus_pass_count')}
         return datas
+    def get_traffic_volume_line_chart_statistics(self):
+        """
+        通过时间粒度划分来获取车流量折线图统计数据
+        :return:
+        """
+        data={'pass_count':0,
+               'left_pass_count':0,
+               'right_pass_count':0,
+               'straight_pass_count':0,
+               'time_now':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        total = 0
+        cursor = self.connection.cursor()
+        cursor.execute("select passage_type, count(*) as volume from traffic GROUP BY passage_type")
+        rows=cursor.fetchall()
+        for row in rows:
+            total+=int(row[1])
+            data[row[0]+'_pass_count']=row[1]
+        data['pass_count']=total
 
+        return data
     def reset_all_traffic_volume_statistics(self):
         """
         重置车流量数据
@@ -83,20 +84,3 @@ class CarsVolumeDao(object):
         self.redis.set('bus_pass_count', 0)
 
 
-if __name__ == '__main__':
-    img_info = {'pass_count': '100',
-                'left_pass_count':'25',
-                'right_pass_count': '26',
-                'straight_pass_count': '30',
-                'car_pass_count': '5',
-                'truck_pass_count': '8',
-                'bus_pass_count': '23'}
-
-    car_volume_dao=CarsVolumeDao()
-
-    car_volume_dao.set_traffic_volume_statistics(img_info)
-
-    datas=car_volume_dao.get_traffic_volume_statistics()
-
-
-    print(datas)

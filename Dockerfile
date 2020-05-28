@@ -1,4 +1,4 @@
-FROM sdglbl/itswork
+FROM sdglbl/itsa-runtime
 
 # Install ITrafficSceneApplication
 ENV LANG C.UTF-8

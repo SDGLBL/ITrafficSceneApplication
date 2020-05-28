@@ -136,7 +136,6 @@ class Yolov3Detector(BaseDetector):
         t1 = time()
         with torch.no_grad():
             detections = self.model(imgs_batch)
-            torch.cuda.synchronize()
         t2 = time()
         imgs_info = self.afterprocessing(detections, imgs_info)
         t3 = time()
@@ -310,7 +309,7 @@ class Yolov4Detector(BaseDetector):
         t1 = time()
         with torch.no_grad():
             detections = self.model(imgs_batch)
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
         t2 = time()
         imgs_info = self.afterprocessing(detections, imgs_info)
         t3 = time()

@@ -28,7 +28,8 @@ TestParkingTaskCfg = {
                 'host': Cfg.host,
                 'user': Cfg.user,
                 'password': Cfg.password,
-                'db': Cfg.database
+                'db': Cfg.database,
+                'img_save_path':Cfg.img_save_dir
             }
         ]
     ]
