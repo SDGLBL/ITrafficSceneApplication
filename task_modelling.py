@@ -8,6 +8,7 @@ import numpy as np
 
 from task.build import TaskBuilder
 from task.configs.modelling import ModellingTaskCfg
+from task.configs.modelling2 import ModellingTaskCfg2
 
 
 def read_info_from_task(mqs):

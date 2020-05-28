@@ -8,7 +8,7 @@ from .registry import HEAD
 
 @HEAD.register_module
 class EquivalentHead(mmcv.VideoReader, BaseVideoPipeline):
-    def __init__(self, filename, json_filename, step, cache_capacity=10):
+    def __init__(self, filename, json_filename, step, cache_capacity=10, haveImg=True):
         """
         虚拟数据读取头
         通过读取已经生成的json和视频文件伪造出神经网络运行的效果，以给其他开发人员进行调试使用
@@ -24,6 +24,7 @@ class EquivalentHead(mmcv.VideoReader, BaseVideoPipeline):
         self.start_index = 0
         self.json_filename = json_filename
         self.json_file_read = open(json_filename, 'r', encoding="utf-8")
+        self.haveImg = haveImg
         super().__init__(filename, cache_capacity)
 
     def __iter__(self):
@@ -41,7 +42,10 @@ class EquivalentHead(mmcv.VideoReader, BaseVideoPipeline):
         imgs = []
         imgs_info = []
         for _ in range(self.step):
-            img = self.read()
+            if self.haveImg:
+                img = self.read()
+            else:
+                img = 0
             if img is not None:
                 imgs.append(img)
                 json_str = self.json_file_read.readline()

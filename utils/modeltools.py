@@ -53,4 +53,11 @@ def dotByLine(dot, line, th):
     else:
         return 0
 
-
+def isInSidewalk(dot, emd):
+    status1 = dotByLine(dot, emd['stop_line'], 0)
+    line2 = [emd['stop_line'][0], emd['stop_line'][1]-emd['avg_bbox']]
+    status2 = dotByLine(dot, line2, 0)
+    if status1 != status2:
+        return True
+    else:
+        return False

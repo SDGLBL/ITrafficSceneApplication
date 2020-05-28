@@ -7,7 +7,7 @@ from ..registry import BACKBONE_COMPONENT
 
 @BACKBONE_COMPONENT.register_module
 class Modelling(BaseBackboneComponent):
-    def __init__(self, mainClass=None, speedLenTh=5, dataNum=50000, mapSize=None, stopTh=0.1, sigma=1, modelPath='test.emd'):
+    def __init__(self, mainClass=None, speedLenTh=5, dataNum=30000, mapSize=None, stopTh=0.1, sigma=1, modelPath='test.emd', revise=False):
         self.paths = []
         self.speeds = []
         self.avgBbox = 0
@@ -19,6 +19,7 @@ class Modelling(BaseBackboneComponent):
         self.stopTh = stopTh
         self.sigma = sigma
         self.modelPath = modelPath
+        self.revise = revise
 
     def dataPreparation(self, img, img_info):
         if self.mapSize is None:
@@ -60,14 +61,19 @@ class Modelling(BaseBackboneComponent):
         if mainAxis > 0:
             mainAxis -= math.pi / 2
         print('主轴倾角：' + str(mainAxis) + ',辅轴倾角：' + str(secondAxis))
-        transformMat, invTransformMat = getTransformMat([mainAxis, secondAxis])
+        if self.revise:
+            transformMat, invTransformMat = getTransformMat([mainAxis, secondAxis])
+        else:
+            mainAxis = -math.pi/2
+            secondAxis = 0
+            transformMat, invTransformMat = getTransformMat([-math.pi/2, 0])
 
         # step2 算出特征路径，对数据进行过滤和分类
         importPaths = []
         longPaths = []
         for path in self.paths:
             path = straighten(path, stepTh=self.avgBbox*self.stopTh)  # 过滤掉停止点
-            if len(path['zipDots']) > 50:
+            if len(path['zipDots']) > 20:
                 path = pathFitting(path, invTransformMat)
                 # 得到最大位移，进行方向判定：
                 tMain = path['fun_dots'][:, 0]
@@ -75,7 +81,12 @@ class Modelling(BaseBackboneComponent):
                 if tD > 2 * self.avgBbox:
                     importPaths.append(path)
                 longPaths.append(path)
-
+        print('找到优质路径:' + str(len(importPaths)) + '条')
+        if len(importPaths) < 50:
+            print('找到的有价值的路径过少，可能导致建模失败')
+        elif len(importPaths) == 0:
+            print('没有找到任何有价值的路径，建模结束')
+            exit()
         # step3 提取重要数据
         # 3.1 提取车道数
         startVar = []
@@ -93,6 +104,8 @@ class Modelling(BaseBackboneComponent):
             endVar.append(path['fun_dots'][-1, 1])
         endVar = np.array(endVar)
         dirNum, _ = gaussianCumulative(endVar, self.avgBbox * self.sigma)
+        if dirNum > 3:
+            dirNum = 3
         print('出口方向数：' + str(dirNum))
         endK = KMeans(n_clusters=dirNum)
         endK.fit(endVar[:, np.newaxis])
@@ -128,7 +141,6 @@ class Modelling(BaseBackboneComponent):
             x = int(x + self.avgBbox * math.cos(mainAxis) * 0.5)
             y = int(y + self.avgBbox * math.sin(mainAxis) * 0.5)
             stopDots.append([x, y])
-
         # step3.4 得到停止线：
         stopLine = [0, 0]
         if len(stopDots) == 1:
@@ -146,7 +158,7 @@ class Modelling(BaseBackboneComponent):
             stopLine = [k, b]
         else:
             print('警告：未找到任何停止点！无法得到停止线')
-
+        print('stop line: y = {}*x + {}'.format(stopLine[0], stopLine[1]))
         # 计算出入口可达矩阵
         reachableMat = np.zeros((int(laneNum), int(dirNum)))
         for path in importPaths:
