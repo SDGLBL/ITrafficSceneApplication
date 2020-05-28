@@ -44,9 +44,13 @@ sudo apt-get update
 apt-get install nvidia-container-runtime
 # 构建开发用 image
 docker build -t ${USER}/itsa-develop .
-# 开启容器并将8022端口暴露给宿主机，使得宿主机可以通过ssh进行连接（第一次初始化需要自行设定密码和安装sshserver以及开放ssh连接）
+# 将容器放置在宿主机器网段落使得宿主机可以通过ssh进行连接（第一次初始化需要自行设定密码和安装sshserver以及开放ssh连接）
 # start your container and expose a ssh port for develop IDE to use
-docker run -it -p 8022:22 --gpus all  ${USER}/itsa-develop
+docker run -it --gpus all --network host  ${USER}/itsa-develop
+# 在容器内运行如下命令即可推流
+ffmpeg -i <video file> -f flv rtmp://127.0.0.1:1935/live
+# 运行如下命令即可开启网页后端服务器
+python3 manage.py
 # 然后就可以使用IDE连接进行开发了
 ```
 
