@@ -2,6 +2,8 @@ import json
 import os
 import platform
 import os.path as osp
+from datetime import datetime
+
 import cv2 as cv
 import pymysql
 import redis
@@ -36,7 +38,7 @@ class VehicleViolationDao(object):
                 info.pop('start_time')
                 info.pop('passage_type')
                 info.pop('imgs')
-                info['criminal_img_name']=get_vehicle_violation_imag_path(info['criminal_img_name'])
+                info['criminal_img_path']=get_vehicle_violation_imag_path(info['criminal_img_name'])
                 datas['analysis'].append(info)
 
         if len(datas['analysis'])==0:
@@ -61,10 +63,39 @@ class VehicleViolationDao(object):
 
         return datas
 
+    def get_vehicle_violation_by_number_plate(self,number_plate):
+        """
+        根据车牌号查询查询违规信息
+        :param number_plate:
+        :param task_name:
+        :return: 违规信息有且只有一条
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * from criminal where number_plate=%s",(number_plate))
+        datas = cursor.fetchall()
+        info={}
+        if len(datas)==0:
+            info['isExist']='0'
+            return info
+        else:
+            cursor.execute("SELECT c.criminal_type as info_type, c.start_time_id "
+                           "as id, t.end_time,t.obj_type,c.number_plate,c.img_path "
+                           "FROM criminal c inner join traffic t on c.number_plate = t.number_plate "
+                           "where c.number_plate=%s",(number_plate))
+            data=cursor.fetchone()
+            info['info_type']=data[0]
+            info['id']=data[1].split(" ")[2]
+            info['end_time']=datetime.strftime(data[2],"%Y-%m-%d %H:%M:%S")
+            info['obj_type']=data[3]
+            info['number_plate']=data[4]
+            info['criminal_img_name']=get_vehicle_violation_imag_path(Cfg.img_save_dir,data[5].split("_")[1].split(os.sep)[1])
+            info['isExist']='1'
+            return info
+
     def rset_vehicle_violation_statistics(self):
         """
         重置车辆违规信息
-        :return:
+        :return: Void
         """
         self.redis.delete('analysis')
 

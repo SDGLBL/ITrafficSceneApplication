@@ -6,7 +6,33 @@ class DataMaintenance(object):
     # 车流量Dao
     car_volume_dao = CarsVolumeDao()
     # 折线图历史数据
-    line_chart_datas = []
+    line_chart_datas ={
+            "legend":{
+                "data":["左行驶车流量","右行驶车流量","前行驶车流量","总车流量"]
+            },
+            "xAxis":{
+                "data":[]
+            },
+            "series":[
+                {
+                  "name":"左行驶车流量",
+                  "data":[]
+                },
+                {
+                    "name": "右行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "前行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "总车流量",
+                    "data": []
+                }
+            ],
+            "isExist":0
+        }
     vehicle_volume_dao=VehicleViolationDao()
     #场景编号，1，2，3，4
     scene_number= '-1'
@@ -20,5 +46,31 @@ class DataMaintenance(object):
         DataMaintenance.line_chart_datas.clear()
         DataMaintenance.vehicle_volume_dao.rset_vehicle_violation_statistics()
         DataMaintenance.scene_number='-1'
-
+        DataMaintenance.line_chart_datas ={
+            "legend":{
+                "data":["左行驶车流量","右行驶车流量","前行驶车流量","总车流量"]
+            },
+            "xAxis":{
+                "data":[]
+            },
+            "series":[
+                {
+                  "name":"左行驶车流量",
+                  "data":[]
+                },
+                {
+                    "name": "右行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "前行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "总车流量",
+                    "data": []
+                }
+            ],
+            "isExist":0
+        }
 
