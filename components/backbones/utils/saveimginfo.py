@@ -16,7 +16,8 @@ class SaveImgInfo(BaseBackboneComponent):
         self.savePath = savePath
     
     def preProcess(self, img_info):
-        del img_info['end_path']
+        if 'end_path' in img_info.keys():
+            del img_info['end_path']
 
 
     def process(self, **kwargs):

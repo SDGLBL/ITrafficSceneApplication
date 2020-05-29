@@ -15,22 +15,23 @@ def draw_label(
         cls_preds,
         ids,
         img: np.ndarray,
-        passCount,
+        pass_count,
         bbox_colors):
-    """
-    绘制bbox
+    """[summary]
+
     Args:
-        bboxs: bboxs,
-        obj_confs:每个bbox对应的object置信度list
-        cls_confs:每个bbox对应的分类置信度list
-        cls_preds:每个bbox对应的分类id list
-        img: 图像
-        bbox_colors:　图像颜色数组
-        classes: 类别数组
+        bboxs (list): bboxs
+        obj_confs (list): 每个bbox对应的object置信度list
+        cls_confs (list): 每个bbox对应的分类置信度list
+        cls_preds (list): 每个bbox对应的分类list
+        ids ([type]): 每隔目标的id
+        img (np.ndarray): 图像list
+        pass_count (int): 车辆通行总数量
+        bbox_colors (list): 图像颜色数组
 
     Returns:
-        绘制后的图像
-    """
+        np.ndarray: 绘制后的图像
+    """        
     thickness = len(img) // 200
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
         if bbox is None:
@@ -46,7 +47,7 @@ def draw_label(
         else:
             put_str = class_label + ' ' + str(cls_conf)[:4]
         cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
-    cv2.putText(img, 'carNumber:' + str(passCount), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
+    cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
 
@@ -110,15 +111,54 @@ def point_distance(point1, point2):
     return math.sqrt((point2[1] - point1[1]) ** 2 + (point2[0] - point1[0]) ** 2)
 
 
-# i = 1
-# j = 1
+def get_sub_img(raw_img,bbox):
+    """获取bbox范围内的图像
 
-def identify_number_plate(img: np.ndarray, bbox):
+    Args:
+        raw_img (np.ndarray): 原图像
+        bbox (list): [x1, y1, x2, y2]
+
+    Returns:
+        np.ndarray: 切割出的小图像
+    """    
+    img_shape = raw_img.shape
+    h = img_shape[0]
+    w = img_shape[1]
+    x1, y1, x2, y2 = [int(x) for x in bbox]
+    x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
+    x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
+    img = raw_img[y1:y2, x1:x2]
+    return img
+
+
+def is_bbox_in_img(img,bbox):
+    """判断一个目标是否已经全部进入了图像范围内
+
+    Args:
+        img (np.ndarray): 原图像]
+        bbox (list): [x1, y1, x2, y2]
+
+    Returns:
+        if 目标全部在图像内:
+            返回 True
+        否则
+            返回 False
+    """    
+    img_shape = img.shape
+    h = img_shape[0]
+    w = img_shape[1]
+    x1, y1, x2, y2 = bbox
+    if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
+        return True
+    else:
+        return False
+
+def identify_number_plate(raw_img: np.ndarray, bbox):
     """
     识别车牌号码
 
     Arguments:
-        img {np.ndarray} -- 传入裁减后的汽车图像或者传入未裁减图像和需要识别的车辆的bbox
+        raw_img {np.ndarray} -- 传入裁减后的汽车图像或者传入未裁减图像和需要识别的车辆的bbox
 
     Keyword Arguments:
         bbox {list(int)} -- 需要识别的目标（车辆）的bbox (default: {None})
@@ -129,13 +169,7 @@ def identify_number_plate(img: np.ndarray, bbox):
     """
     assert len(bbox) == 4, 'bbox must is [x1,y1,x2,y2]'
     if bbox is not None:
-        img_shape = img.shape
-        h = img_shape[0]
-        w = img_shape[1]
-        x1, y1, x2, y2 = [int(x) for x in bbox]
-        x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
-        x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
-        img = img[y1:y2, x1:x2]
+        img = get_sub_img(raw_img,bbox)
         # 如果截取的车辆画面任何一个维度大小为0则直接不识别
         if img.shape[0] == 0 or img.shape[1] == 0:
             return None
@@ -143,7 +177,7 @@ def identify_number_plate(img: np.ndarray, bbox):
         if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
             return None
         # 如果截取到的车辆占整幅画面的占比低于5%则直接选择不识别
-        if (img.shape[0] * img.shape[1]) / (img_shape[0] * img_shape[1]) < 0.05:
+        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.05:
             return None
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         result = HyperLPR_plate_recognition(img)

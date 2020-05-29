@@ -1,10 +1,10 @@
-import torch
 from cfg import Cfg
-Yolov3TaskCfg = {
+import torch
+ModellingTaskCfg2 = {
     'head': [
         {
             'type': 'VideoFileHead',
-            'filename': './test.mp4',
+            'filename': './gta5_small.mp4',
             'step': Cfg.batch_size,
             'cache_capacity': 100
         }
@@ -16,19 +16,19 @@ Yolov3TaskCfg = {
             'batch_size': Cfg.batch_size
         }
     ],
+    'tracker': [
+        {
+            'type': 'SORT_Track'
+        }
+    ],
     'backbones': [
         [
             {
-                'type': 'DrawBoundingBoxComponent'  # 画框框
+                'type': 'PathExtract'
             },
             {
-                'type': 'FpsCollectorComponent',
-                'isPrint': Cfg.is_print_fps
-            },
-            {
-                'type': 'WriteVideoComponent',
-                'resolution': (1920, 1080),
-                'fps': 30
+                'type': 'SaveImgInfo',
+                'savePath': './img_infogta5_small.json'
             }
         ]
     ]
