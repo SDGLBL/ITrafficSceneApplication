@@ -1,5 +1,5 @@
 from .environmentModeling import infoPort, stateAnalysis
-from .monitor import ParkingMonitoringComponent
+from .monitor import ParkingMonitoringComponent,LaneMonitoringComponent
 from .utils import WriteVideoComponent, DrawBoundingBoxComponent, FpsCollectorComponent, RtmpWriteComponent, \
     SaveImgInfo, InformationCollectorComponent
 from .environmentModeling import infoPort, stateAnalysis

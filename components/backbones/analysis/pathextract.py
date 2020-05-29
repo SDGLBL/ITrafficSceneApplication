@@ -48,7 +48,7 @@ class PathExtract(BaseBackboneComponent):
 
                 # 在模型存在时，进行车牌识别等操作：
                 if self.model is not None:
-                    if tPath['number_plate'] is None and img_info['index']-tPath['state']>=5:
+                    if tPath['number_plate'] is None and img_info['index']-tPath['state']>=30:
                         tPath['state'] = img_info['index']
                         number_plate = identify_number_plate(img, object['bbox'])
                         if number_plate is not None:
