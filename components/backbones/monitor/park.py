@@ -8,13 +8,14 @@ from utils.utils import bbox2center, identify_number_plate, point_distance
 
 @BACKBONE_COMPONENT.register_module
 class ParkingMonitoringComponent(BaseBackboneComponent):
-    def __init__(self, monitoring_area: np.ndarray, allow_stop_time=180, check_step=30):
+    def __init__(self, monitoring_area: np.ndarray, allow_stop_time=180, check_step=30, is_process=False):
 
         """
         违章停车监控类
         Args:
             monitoring_area: 监控区域蒙版，在此区域内禁止超过allow_stop_time的目标都会被认为是违规停车目标
-            allow_stop_time: 允许最长停车多久，单位为s（根据交通法规为3分钟）
+            allow_stop_time: 允许最长停车多久，单位为s（根据交通法规为3分钟)
+            is_process: 是否开启该组件
         """
         super().__init__()
         self.monitoring_area = monitoring_area
@@ -23,9 +24,12 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
         self.curent_step = 0
         self.objs = {}
         self.no_record_id = []
+        self.is_process = is_process
 
     def process(self, **kwargs):
         super().process(**kwargs)
+        if not self.is_process:
+            return kwargs
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
         if self.curent_step >= self.check_step:

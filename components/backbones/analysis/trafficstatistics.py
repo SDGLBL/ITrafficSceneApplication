@@ -5,7 +5,7 @@ import numpy as np
 
 @BACKBONE_COMPONENT.register_module
 class TrafficStatistics(BaseBackboneComponent):
-    def __init__(self, eModelPath):
+    def __init__(self, eModelPath,is_process=False):
         self.model=emdLoad(eModelPath)
         # 区分左拐右拐直行：
         self.dirK = self.model['dir_classifier']
@@ -36,6 +36,7 @@ class TrafficStatistics(BaseBackboneComponent):
         self.indX = np.array(self.indX)
         self.indY = np.array(self.indY)
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
+        self.is_process = is_process
             
     def pathStatistics(self, img, img_info):
         img_info['analysis'] = []
@@ -46,7 +47,7 @@ class TrafficStatistics(BaseBackboneComponent):
                 cls_name = path['cls_name']
                 number_plate = path['number_plate']
                 if laneAndDir is None:
-                    print('路劲太短无法识别方向')
+                    # print('路劲太短无法识别方向')
                     dir = None
                     lane = None
                 else:
@@ -62,7 +63,7 @@ class TrafficStatistics(BaseBackboneComponent):
                     'obj_type': cls_name,
                     'number_plate': number_plate
                 }
-                print(passInfo)
+                # print(passInfo)
                 img_info['analysis'].append(passInfo)
                 self.pass_count_table[self.indY==cls_name, self.indX==dir] += 1
                 # print(self.pass_count_table)
@@ -87,11 +88,13 @@ class TrafficStatistics(BaseBackboneComponent):
         indY = np.append([' '], indY)
         indY = indY[:, np.newaxis]
         table = np.concatenate((indY,table), axis=1)
-        print(table)
+        # print(table)
         return table.tolist()
 
 
     def process(self, **kwargs):
+        if not self.is_process:
+            return kwargs
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
         for img, img_info in zip(imgs, imgs_info):
