@@ -104,7 +104,7 @@ venv/Scripts/activate
 
 ##### 4.安装支持RTMP的Nginx
 
-TODO:陈晓
+[Nginx安装配置和FFmpeg安装配置](https://blog.csdn.net/qq_41210304/article/details/106054737)
 
 ### Linux部署
 
