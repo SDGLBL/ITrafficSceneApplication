@@ -242,7 +242,7 @@ http {
     }
 }
 # 运行如下命令检查是否配置成功
-ffmpeg  -i [video file]-f flv rtmp://localhost:1935/live
+ffmpeg  -i [video file] -f flv rtmp://localhost:1935/live
 ```
 
 
@@ -266,86 +266,32 @@ python3 manage.py runserver 8000
 **Note: 下面的编译过程只适用于python3.7，如果你在编译另一个版本的python，请修改第一条语句**
 
 ```bash
-# 安装必要的编译dev
-sudo apt-get install build-essential
-sudo apt-get install libtool
-sudo apt-get install libpcre3 libpcre3-dev zlib1g-dev openssl libssl-dev
-# 下载nginx和rtmp推流模块
-wget http://nginx.org/download/nginx-1.15.5.tar.gz
-tar -zxvf nginx-1.13.10.tar.gz
-#下载RTMP
-git clone https://github.com/arut/nginx-rtmp-module.git
-cd nginx-1.15.5/
-# 编译
-./configure --prefix=/usr/local/nginx --add-module=../nginx-rtmp-module --with-http_ssl_module
-make -j<cpu core number>
-make install
-# 编辑/usr/local/nginx/conf/nginx.conf,在文件末尾添加如下内容
-rtmp {
-    server {
-        listen 1935;
-        chunk_size 4000;
-        application live {
-             live on;
-
-             # record first 1K of stream
-             record all;
-             record_path /tmp/av;
-             record_max_size 1K;
- 
-             # append current timestamp to each flv
-             record_unique on;
- 
-             # publish only from localhost
-             allow publish 127.0.0.1;
-             deny publish all;
- 
-             #allow play all;
-        }
-    }
-}
-# 对/usr/local/nginx/conf/nginx.conf中的http按照如下进行修改
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
- 
-    sendfile        off;
- 
-    server_names_hash_bucket_size 128;
- 
-    client_body_timeout   10;
-    client_header_timeout 10;
-    keepalive_timeout     30;
-    send_timeout          10;
-    keepalive_requests    10;
- 
-    server {
-        listen       80;
-        server_name  localhost;
- 
- 
-        location /stat {
-            rtmp_stat all;
-            rtmp_stat_stylesheet stat.xsl;
-        }
-        location /stat.xsl {
-            root nginx-rtmp-module/;
-        }
-        location /control {
-            rtmp_control all;
-        }
-# For Naxsi remove the single # line for learn mode, or the ## lines for full WAF mode
-        location / {
-            root   html;
-            index  index.html index.htm;
-        }
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   html;
-        }
-    }
-}
-# 运行如下命令检查是否配置成功
-ffmpeg  -i [video file]-f flv rtmp://localhost:1935/live
+$ export PYTHON_VERSION="python3.7"
+$ wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/ffmpeg/7:3.4.6-0ubuntu0.18.04.1/ffmpeg_3.4.6.orig.tar.xz
+$ tar -xf ffmpeg_3.4.6.orig.tar.xz
+$ cd ffmpeg-3.4.6
+$ sudo apt-get install ${PYTHON_VERSION}
+$ sudo apt-get install python3-dev
+$ sudo apt-get install python3-numpy
+$ sudo apt-get install yasm
+$ ./configure --enable-shared --prefix=/usr
+$ make
+$ sudo make install
+$ cd ..
+$ sudo apt-get install build-essential git
+$ sudo apt-get install cmake
+$ sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev
+$ sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libgtk2.0-dev
+$ git clone https://github.com/opencv/opencv.git
+$ git clone https://github.com/opencv/opencv_contrib
+$ cd opencv_contrib
+$ git checkout 3.4 && git pull origin 3.4
+$ cd ..
+$ cd opencv
+$ git checkout 3.4 && git pull origin 3.4
+$ mkdir build && cd build
+$ cmake -D CMAKE_BUILD_TYPE=Release -D WITH_FFMPEG=ON WITH_GTK=ON -D CMAKE_INSTALL_PREFIX=/usr/local PYTHON3_EXECUTABLE = /usr/bin/python3 PYTHON_INCLUDE_DIR = /usr/include/${PYTHON_VERSION} PYTHON_INCLUDE_DIR2 = /usr/include/x86_64-linux-gnu/${PYTHON_VERSION}m PYTHON_LIBRARY = /usr/lib/x86_64-linux-gnu/lib${PYTHON_VERSION}m.so PYTHON3_NUMPY_INCLUDE_DIRS = /usr/lib/python3/dist-packages/numpy/core/include/ -D OPENCV_ENABLE_NONFREE=ON -DOPENCV_EXTRA_MODULES_PATH=/home/${USER}/opencv_contrib/modules/ ..
+$ make -j<cpu core number>
+$ sudo make install
 ```
 
