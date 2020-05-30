@@ -1,6 +1,6 @@
 from cfg import Cfg
 import torch
-ModellingTaskCfg2 = {
+ModellingTaskCfg = {
     'head': [
         {
             'type': 'VideoFileHead',
@@ -11,7 +11,7 @@ ModellingTaskCfg2 = {
     ],
     'detector': [
         {
-            'type': 'Yolov3Detector',
+            'type': 'Yolov4Detector',
             'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
             'batch_size': Cfg.batch_size
         }
@@ -24,11 +24,13 @@ ModellingTaskCfg2 = {
     'backbones': [
         [
             {
-                'type': 'PathExtract'
+                'type': 'PathExtract'   # 路径分析模块，基础模块，不可或缺
             },
             {
-                'type': 'SaveImgInfo',
-                'savePath': './img_infogta5_small.json'
+                'type': 'Modelling',
+                'revise': False,
+                'modelPath': 'videoData/model/gta5_small.emd',
+                'dataNum': 30000
             }
         ]
     ]
