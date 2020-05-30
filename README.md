@@ -8,10 +8,10 @@
          * [要求](#要求)
          * [预训练权重](#预训练权重)
          * [Windows部署](#windows部署)
-               * [1.自行安装CUDA和CUDNN](#1自行安装cuda和cudnn)
-               * [2.在项目根目录执行如下安装命令](#2在项目根目录执行如下安装命令)
-               * [3.安装指定版本的opencv](#3安装指定版本的opencv)
-               * [4.安装支持RTMP的Nginx](#4安装支持rtmp的nginx)
+              * [1.自行安装CUDA和CUDNN](#1自行安装cuda和cudnn)
+              * [2.在项目根目录执行如下安装命令](#2在项目根目录执行如下安装命令)
+              * [3.安装指定版本的opencv](#3安装指定版本的opencv)
+              * [4.安装支持RTMP的Nginx](#4安装支持rtmp的nginx)
          * [Linux部署](#linux部署)
             * [基于Docker部署](#基于docker部署)
             * [自行编译环境部署](#自行编译环境部署)
@@ -241,7 +241,7 @@ http {
         }
     }
 }
-# 运行如下命令检查是否配置成功
+# 运行如下命令检查是否配置成功(ffmpeg安装参照附录的编译说明)
 ffmpeg  -i [video file] -f flv rtmp://localhost:1935/live
 ```
 
@@ -261,7 +261,7 @@ python3 manage.py runserver 8000
 
 ## 附录
 
-### Opencv编译说明
+### Opencv与ffmpeg编译说明
 
 **Note: 下面的编译过程只适用于python3.7，如果你在编译另一个版本的python，请修改第一条语句**
 

@@ -40,6 +40,7 @@ class TrafficStatistics(BaseBackboneComponent):
             
     def pathStatistics(self, img, img_info):
         img_info['analysis'] = []
+        legalTurn = True
         for path in img_info['end_path']:
             if isPass(path, self.model):
                 laneAndDir = pathsStatus(path, self.model)
@@ -53,6 +54,7 @@ class TrafficStatistics(BaseBackboneComponent):
                 else:
                     dir = self.dirStr[laneAndDir[1]]
                     lane = self.laneStr[laneAndDir[0]]
+                    legalTurn = self.model['reachable_mat'][laneAndDir[0], laneAndDir[1]]
                     print( 'id:{}为的{}，车牌为{},自第{}发出,{}'.format(id, cls_name, number_plate, lane, dir) )
                 passInfo = {
                     'info_type': 'pass',
@@ -65,6 +67,17 @@ class TrafficStatistics(BaseBackboneComponent):
                 }
                 # print(passInfo)
                 img_info['analysis'].append(passInfo)
+                if not legalTurn:
+                    foulInfo = {
+                        'info_type': 'illegal_turn',
+                        'id': id,
+                        'start_time': path['start_time'],
+                        'end_time': path['end_time'],
+                        'passage_type': dir,
+                        'obj_type': cls_name,
+                        'number_plate': number_plate,
+                    }
+                    img_info['analysis'].append(foulInfo)
                 self.pass_count_table[self.indY==cls_name, self.indX==dir] += 1
                 # print(self.pass_count_table)
         img_info['pass_count_table'] = self.getTabele(self.indX, self.indY, self.pass_count_table)
