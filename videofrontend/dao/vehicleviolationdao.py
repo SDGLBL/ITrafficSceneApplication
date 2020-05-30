@@ -33,13 +33,14 @@ class VehicleViolationDao(object):
         :return:
         """
         datas={'analysis':[]}
-        for info in img_info['analysis']:
-            if info['info_type'] != 'pass':
-                info.pop('start_time')
-                info.pop('passage_type')
-                info.pop('imgs')
-                info['criminal_img_path']=get_vehicle_violation_imag_path(info['criminal_img_name'])
-                datas['analysis'].append(info)
+        if "analysis" in img_info.keys():
+            for info in img_info['analysis']:
+                if info['info_type'] != 'pass':
+                    info.pop('start_time')
+                    info.pop('passage_type')
+                    info.pop('imgs')
+                    info['criminal_img_path']=get_vehicle_violation_imag_path(Cfg.img_save_dir,info['criminal_img_name'])
+                    datas['analysis'].append(info)
 
         if len(datas['analysis'])==0:
             datas['exist']=0
@@ -59,7 +60,7 @@ class VehicleViolationDao(object):
         if data:
             datas = json.loads(data)
         else:
-            datas={'isexist':'0'}
+            datas={'isExist':'0'}
 
         return datas
 
@@ -73,7 +74,8 @@ class VehicleViolationDao(object):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * from criminal where number_plate=%s",(number_plate))
         datas = cursor.fetchall()
-        info={}
+        info={"criminal_img_path":[]}
+
         if len(datas)==0:
             info['isExist']='0'
             return info
@@ -88,7 +90,8 @@ class VehicleViolationDao(object):
             info['end_time']=datetime.strftime(data[2],"%Y-%m-%d %H:%M:%S")
             info['obj_type']=data[3]
             info['number_plate']=data[4]
-            info['criminal_img_name']=get_vehicle_violation_imag_path(Cfg.img_save_dir,data[5].split("_")[1].split(os.sep)[1])
+            for path in data[5].split("_"):
+                info["criminal_img_path"].append(get_vehicle_violation_imag_path(Cfg.img_save_dir,path))
             info['isExist']='1'
             return info
 

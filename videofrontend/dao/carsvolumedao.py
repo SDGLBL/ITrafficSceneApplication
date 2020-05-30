@@ -5,7 +5,7 @@ import pymysql
 import redis
 
 from cfg import Cfg
-
+from videofrontend.utils.utils import get_vehicle_violation_imag_path
 
 
 class CarsVolumeDao(object):
@@ -112,7 +112,8 @@ class CarsVolumeDao(object):
         """
         cursor=self.connection.cursor()
         try:
-            cursor.execute("insert into tb_task_list(taskName) VALUES (%s)",(task_name))
+            snap_shot_path=get_vehicle_violation_imag_path(Cfg.snapshot_path,task_name)
+            cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s)",(task_name,snap_shot_path))
             self.connection.commit()
 
         except:
@@ -129,38 +130,66 @@ class CarsVolumeDao(object):
         cursor.execute("SELECT * FROM tb_task_list")
         datas=cursor.fetchall()
         for data in datas:
-            task={'date':datetime.strftime(data[1],"%Y-%m-%d %H:%M:%S"),
-                  'task_name':data[2]}
+            task={'id':data[0],
+                  'date':datetime.strftime(data[1],"%Y-%m-%d %H:%M:%S"),
+                  'task_name':data[2],
+                  'snapshot_path':data[3]}
             tasks_list['tasks'].append(task)
 
         return tasks_list
 
-    def get_history_traffic_volume_line_chart(self,task_name,start_time,end_time):
+    def get_history_traffic_volume_line_chart(self,task_name):
         """
-        根据车牌号，起始时间，结束时间，时间粒度。查询违规历史折线图信息
+        根据任务名查询违规历史折线图信息
         :param task_name: 任务名
-        :param start_time: 起始时间
-        :param end_time: 结束时间
-        :return: 时间间隔内的违规历史折线图信息
+
+        :return: 违规历史折线图信息
         """
+        line_chart_datas = {
+            "legend": {
+                "data": ["左行驶车流量", "右行驶车流量", "前行驶车流量", "总车流量"]
+            },
+            "xAxis": {
+                "data": []
+            },
+            "series": [
+                {
+                    "name": "左行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "右行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "前行驶车流量",
+                    "data": []
+                },
+                {
+                    "name": "总车流量",
+                    "data": []
+                }
+            ],
+            "isExist": 0
+        }
         cursor=self.connection.cursor()
         cursor.execute("select record_time,left_num,right_num,straight_num,total_num from tb_line_chart "
-                       "where task_name=%s and record_time between %s and %s" , (task_name,start_time,end_time))
+                       "where task_name=%s" , (task_name))
         rows = cursor.fetchall()
-        datas={'line_datas':[]}
+
         if len(rows)==0:
-            datas['isExist']=0
+            line_chart_datas['isExist']=0
         else:
             for row in rows:
-                data = {'pass_count': row[4],
-                        'left_pass_count': row[1],
-                        'right_pass_count': row[2],
-                        'straight_pass_count': row[3],
-                        'time_now': datetime.strftime(row[0],"%Y-%m-%d %H:%M:%S") }
-                datas['line_datas'].append(data)
-            datas['isExist']=1
+                line_chart_datas["xAxis"]["data"].append(datetime.strftime(row[0],"%Y-%m-%d %H:%M:%S"))
+                line_chart_datas["series"][0]["data"].append(row[1])
+                line_chart_datas["series"][1]["data"].append(row[2])
+                line_chart_datas["series"][2]["data"].append(row[3])
+                line_chart_datas["series"][3]["data"].append(row[4])
 
-        return datas
+            line_chart_datas['isExist']=1
+
+        return line_chart_datas
 
     def set_pass_count_table_statistics(self,img_info):
         """
@@ -292,3 +321,4 @@ if __name__=='__main__':
 
     datas=car.get_traffic_volume_line_chart_statistics("lot_15.mp4")
     print(datas)
+

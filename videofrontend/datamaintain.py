@@ -5,6 +5,8 @@ from videofrontend.dao.vehicleviolationdao import VehicleViolationDao
 class DataMaintenance(object):
     # 车流量Dao
     car_volume_dao = CarsVolumeDao()
+    # 提交任务成功
+    submit_task_success=False
     # 折线图历史数据
     line_chart_datas ={
             "legend":{
@@ -33,6 +35,8 @@ class DataMaintenance(object):
             ],
             "isExist":0
         }
+    #启动任务所需要的一系列数据
+    task_info={}
     vehicle_volume_dao=VehicleViolationDao()
     #场景编号，1，2，3，4
     scene_number= '-1'
@@ -73,4 +77,7 @@ class DataMaintenance(object):
             ],
             "isExist":0
         }
+        DataMaintenance.task_info = {}
+        DataMaintenance.submit_task_success = False
+
 

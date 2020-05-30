@@ -1,15 +1,5 @@
 import datetime
 import json
-import os
-import random
-import time
-from queue import Empty, Queue
-
-import cv2
-import redis
-from django.shortcuts import render
-from django.http import HttpResponse,HttpResponseRedirect
-from django.views import generic
 import multiprocessing as mp
 import platform
 from queue import Empty
@@ -49,6 +39,8 @@ def read_info_from_task(mqs):
                             'bus_pass_count': '23'}
                 DataMaintenance.car_volume_dao.set_traffic_volume_statistics(img_info)
                 DataMaintenance.vehicle_volume_dao.set_vehicle_violation_statistics(img_info)
+                DataMaintenance.car_volume_dao.set_pass_count_table_statistics(img_info)
+                #DataMaintenance.car_volume_dao.set_real_time_vehicle_statistics(img_info)
 
     except Empty:
         print('Task结束')
@@ -75,48 +67,31 @@ def index(request):
 def start(request):
     """
     给播放的接口用来执行Task
+    url:http://127.0.0.1:8000/videofrontend/starttask
     :param request:
     :return:
     """
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-
-    ChenXiaoTaskCfg['head'][0]['filename'] = './test.mp4'
-    task = TaskBuilder(ChenXiaoTaskCfg)
-    mytask = Process(target=task_start, args=(task,))
-    mytask.start()
-    return HttpResponse("成功执行Task..")
-
-@csrf_exempt
-def get_image_of_video_view(request):
-    """
-    返回制定帧的图像1,3,4需要
-    ulr:http://127.0.0.1:8000/videofrontend/imageofvideo
-    """
-    #TODO:处理返回帧
-    if request.method == 'GET':
-        #data=json.loads(request.body)
-        file_name='test.mp4'
-        #记录任务提交
-        DataMaintenance.car_volume_dao.set_task(file_name)
-        abs_path =get_vehicle_violation_imag_path(Cfg.video_save_dir,file_name)
-        num=1
-        DataMaintenance.scene_number=num
-        image_path=get_image_of_video(abs_path)
-
-    return HttpResponse(image_path)
-
-
+    if DataMaintenance.submit_task_success:
+        if DataMaintenance.task_info["scene_info"]["scene"]=="1":
+            task = TaskBuilder(CrossRoadsTaskCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+    else:
+        return JsonResponse({"isSuccess": 0})
 
 def get_traffic_volume_statistics(request):
     """
     实时查询车流量信息
+    状态：弃用
     url:http://127.0.0.1:8000/videofrontend/carsvolume
     :param request:
     :return:
 
     """
-    if request.method == "GET" and request.is_ajax():
+    if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_traffic_volume_statistics()
         return JsonResponse(datas)
     else:
@@ -148,7 +123,7 @@ def get_vehicle_violation_statistics(request):
     :return: 违规信息记录
     """
 
-    if request.method == "GET" and request.is_ajax():
+    if request.method == "GET":
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_statistics()
         return  JsonResponse(datas)
     else:
@@ -176,7 +151,7 @@ def get_vehicle_violation_by_number_plate(request):
     根据车牌号查询和任务名查询违规信息
     url:http://127.0.0.1:8000/videofrontend/violationinfo?number_plate='浙DD13G2'
     :param request:
-    :return:
+    :return: 违规车辆相关信息
     """
     if request.method == "GET":
         number_plate=request.GET.get("number_plate")
@@ -189,17 +164,17 @@ def get_vehicle_violation_by_number_plate(request):
 
 def get_history_traffic_volume_line_chart(request):
     """
-    根据任务名，起始时间，结束时间。查询违规历史折线图信息
-    url:http://127.0.0.1:8000/videofrontend/historylinechart?task_name=lot_15.mp4&start_time=2020-05-26 22:30:31&end_time=2020-05-26 22:30:44
+    根据任务名 查询违规历史折线图信息
+    状态：启用
+    url:http://127.0.0.1:8000/videofrontend/historylinechart?task_name=lot_15.mp4
     :param request:
-    :return: 时间间隔内的违规历史折线图信息
+    :return:违规历史折线图信息
+
     """
 
     if request.method == "GET":
         task_name=request.GET.get("task_name")
-        start_time=request.GET.get("start_time")
-        end_time=request.GET.get("end_time")
-        datas=DataMaintenance.car_volume_dao.get_history_traffic_volume_line_chart(task_name,start_time,end_time)
+        datas=DataMaintenance.car_volume_dao.get_history_traffic_volume_line_chart(task_name)
         return JsonResponse(datas)
     else:
         return render(request,"video/404.html",None)
@@ -215,6 +190,7 @@ def get_pass_count_table_statistics(request):
 
     if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_pass_count_table_statistics()
+
         return JsonResponse(datas)
     else:
         return render(request, "video/404.html", None)
@@ -223,6 +199,7 @@ def get_real_time_vehicle_statistics(request):
     """
     获取实时车辆信息(pass)
     url:http://127.0.0.1:8000/videofrontend/realtimevehicleinfo
+    状态：弃用
     :param request:
     :return: 实时车辆信息列表
     """
@@ -231,3 +208,56 @@ def get_real_time_vehicle_statistics(request):
         return JsonResponse(datas)
     else:
         return render(request, "video/404.html", None)
+
+@csrf_exempt
+def submit_scene_info(request):
+    """
+    前端向后端提交文件名和执行场景信息和开启的功能组件
+    url:http://127.0.0.1:8000/videofrontend/submitsceneinfo
+    :return: 根据场景进行判断，1 ，3，4就要返回待标注的图像(绝对路径),目前只做了1先写1
+
+    """
+    img_path=""
+    if request.method == "POST":
+        scene_info=json.loads(request.body)
+        if scene_info["scene"]=="1":
+            if os.path.exists(osp.join('videoData','video',scene_info["file_name"])) \
+                    and os.path.exists(osp.join('videoData','video',scene_info["emd_name"])):
+                DataMaintenance.car_volume_dao.set_task(scene_info["file_name"])
+                video_path=osp.join('videoData','video',scene_info["file_name"])
+                #返回待标注图像路径
+                img_path=get_image_of_video(Cfg.frame_image_save_dir,video_path)
+                DataMaintenance.task_info["scene_info"]=scene_info
+                invoke_duration=calculation_task_duration(scene_info["file_name"])
+                return JsonResponse({"img_path":img_path,"isExist":1,"invoke_duration":invoke_duration})
+            else:
+                raise FileNotFoundError('未找到{}或{}文件'.format(osp.join('videoData', 'video', scene_info["file_name"]),
+                                                            osp.join('videoData', 'video', scene_info["emd_name"])))
+        else:
+            return JsonResponse({"img_path":img_path,"isExist": 0})
+    else:
+        return render(request, "video/404.html", None)
+
+@csrf_exempt
+def submit_task(request):
+    """
+    提交任务
+    url:http://127.0.0.1:8000/videofrontend/submittask
+    :param request:
+    :return: 任务是否提交成功
+    """
+
+    if request.method == "POST":
+       img_label=json.loads(request.body)
+       # 将视频快照保存在snapshotimages文件夹
+       write_snapshot_image(DataMaintenance.task_info["scene_info"]["file_name"])
+
+       #图像高宽列表
+       height,width=get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
+       task_cfg_info=get_mask(img_label,height,width)
+       create_task_cfg(task_cfg_info,DataMaintenance.task_info["scene_info"])
+       DataMaintenance.submit_task_success=True
+       return JsonResponse({"isExist":1})
+    else:
+       return render(request, "video/404.html", None)
+

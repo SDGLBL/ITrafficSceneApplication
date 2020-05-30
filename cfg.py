@@ -1,4 +1,5 @@
 from easydict import EasyDict
+import os.path as osp
 Cfg = EasyDict()
 
 # 数据库信息
@@ -6,7 +7,8 @@ Cfg.host='localhost'
 Cfg.user='lijie'
 Cfg.password=''
 Cfg.database='itsa'
-
+Cfg.port=3306
+Cfg.charset='utf8'
 # Redis配置
 Cfg.redis_host='localhost'
 Cfg.redis_port = 6379 #redis运行的端口号
@@ -18,6 +20,7 @@ Cfg.batch_size=8 # head一次读取多少张图片，必须为2的倍数或者�
 Cfg.is_print_fps=True # 是否显示处理的fps速度
 Cfg.allow_stop_time=20 # 禁止停车区域允许停车的最长时间，单位为秒
 Cfg.img_save_dir='criminal'
-Cfg.video_save_dir=''
+Cfg.video_save_dir=osp.join("videoData","video")
 Cfg.emd_save_dir=''
-Cfg.frame_image_save_dir='videofrontend\\static\\images'
+Cfg.frame_image_save_dir=osp.join("videofrontend","static","frameimages")
+Cfg.snapshot_path=osp.join("videofrontend","static","snapshotimages")
