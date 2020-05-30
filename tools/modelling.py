@@ -6,7 +6,8 @@ from threading import Thread
 import mmcv
 import numpy as np
 import argparse
-
+import os
+import os.path as osp
 from task.build import TaskBuilder
 from task.configs.modellingTask import ModellingTaskCfg
 
@@ -32,9 +33,9 @@ if __name__ == '__main__':
         mp.set_start_method('spawn', force=True)
     # 建模任务
     args = parse_args()
-    print(args.vf)
-    print(args.out)
-    print(args.revise)
+    if not osp.exists(args.i):
+        raise AttributeError('输入文件不存在')
+    print('处理视频为{},保存环境模型到{},是否开启方向矫正：{}'.format(args.i,args.o,args.revise))
     ModellingTaskCfg['head'][0]['filename'] = args.i
     ModellingTaskCfg['backbones'][0][1]['modelPath'] = args.o
     ModellingTaskCfg['backbones'][0][1]['revise'] = args.revise
