@@ -12,8 +12,8 @@ from task.configs.modellingTask import ModellingTaskCfg
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-vf',type=str,default='videoData/video/lot_15.mp4',help='作为建模素材视频的地址')
-    parser.add_argument('-out',type=str,default='videoData/model/lot_15_2.emd',help='模型保存位置，请命名为xxx.emd格式')
+    parser.add_argument('-i',type=str,default='videoData/video/lot_15.mp4',help='作为建模素材视频的地址')
+    parser.add_argument('-o',type=str,default='videoData/model/lot_15_2.emd',help='模型保存位置，请命名为xxx.emd格式')
     parser.add_argument('--revise', action = 'store_true', help = '选择表示对模型实行方向矫正，对拍摄视角较正的视频不建议开启')
     parser.add_argument('-n',type=int,default=50000,help='提取的数据量，默认为50000')
     return parser.parse_args()
@@ -35,8 +35,8 @@ if __name__ == '__main__':
     print(args.vf)
     print(args.out)
     print(args.revise)
-    ModellingTaskCfg['head'][0]['filename'] = args.vf
-    ModellingTaskCfg['backbones'][0][1]['modelPath'] = args.out
+    ModellingTaskCfg['head'][0]['filename'] = args.i
+    ModellingTaskCfg['backbones'][0][1]['modelPath'] = args.o
     ModellingTaskCfg['backbones'][0][1]['revise'] = args.revise
     ModellingTaskCfg['backbones'][0][1]['dataNum'] = args.n
     task = TaskBuilder(ModellingTaskCfg)
