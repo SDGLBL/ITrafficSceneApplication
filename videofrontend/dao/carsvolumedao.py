@@ -1,10 +1,10 @@
 import json
 from datetime import datetime
 
-import pymysql
 import redis
-
 from cfg import Cfg
+from videofrontend.dao.mysqlpool import MysqlPool
+
 from videofrontend.utils.utils import get_vehicle_violation_imag_path
 
 
@@ -14,12 +14,7 @@ class CarsVolumeDao(object):
     """
 
     def __init__(self):
-        self.connection = pymysql.connect(host=Cfg.host,
-                                          port=Cfg.port,
-                                          user=Cfg.user,
-                                          password=Cfg.password,
-                                          db=Cfg.database,
-                                          charset=Cfg.charset)
+
         self.redis = redis.StrictRedis(host=Cfg.redis_host, port=Cfg.redis_port,
                                        decode_responses=Cfg.redis_decode_responses,db=Cfg.redis_database)
 
@@ -273,56 +268,3 @@ class CarsVolumeDao(object):
         self.redis.set('bus_pass_count', 0)
         self.redis.delete('pass_count_table')
         self.redis.delete('vehicle_info')
-
-
-if __name__=='__main__':
-    pass_count_table = [
-        [' ', '左拐', '右拐', '直行', '总计'],
-        ['巴士', 0, 0, 1, 1],
-        ['小汽车', 1, 0, 1, 2],
-        ['卡车', 1, 1, 0, 2],
-        ['总计', 2, 1, 2, 5]
-    ]
-
-    img_info = {
-        "analysis": [
-            {"info_type": 'pass',
-             "id": "14.0",
-             "start_time": "2020-05-10 15:04:17",
-             "end_time": "2020-05-20 15:04:17",
-             "passage_type": None,
-             "obj_type": "car",
-             "number_plate": "浙K8F019",
-             "criminal_img_path": "2020-05-18 14-37-47 23 1.jpg",
-             "imgs": "asd"
-             },
-            {
-                "info_type": "illegal_parking",
-                "id": "32.0",
-                "start_time": "2020-05-10 15:04:17",
-                "end_time": "2020-05-20 15:04:17",
-                "passage_type": None,
-                "obj_type": "trunk",
-                "number_plate": "浙K8F019",
-                "criminal_img_path": "2020-05-18 14-41-58 170 1.jpg",
-                "imgs": "asd"
-            },
-            {
-                "info_type": "illegal_parking",
-                "id": "62.0",
-                "start_time": "2020-05-10 15:04:17",
-                "end_time": "2020-05-21 15:04:17",
-                "passage_type": None,
-                "obj_type": "car",
-                "number_plate": "浙K8F029",
-                "criminal_img_path": "2020-05-18 14-41-58 170 1.jpg",
-                "imgs": "asd"
-            }
-        ]
-    }
-
-    car=CarsVolumeDao()
-
-    datas=car.get_traffic_volume_line_chart_statistics("lot_15.mp4")
-    print(datas)
-
