@@ -1,11 +1,5 @@
 import json
-import os
-import platform
-import os.path as osp
 from datetime import datetime
-
-import cv2 as cv
-import pymysql
 import redis
 
 from cfg import Cfg
@@ -97,46 +91,3 @@ class VehicleViolationDao(object):
         :return: Void
         """
         self.redis.delete('analysis')
-
-
-if __name__ == '__main__':
-    img_info={
-    "analysis": [
-        {"info_type":'pass',
-         "id": "14.0",
-         "start_time": "2020-05-10 15:04:17",
-         "end_time": "2020-05-20 15:04:17",
-         "passage_type":None,
-         "obj_type": "car",
-         "number_plate": "浙K8F019",
-         "criminal_img_name":"2020-05-18 14-37-47 23 1.jpg",
-         "imgs": "asd"
-         },
-        {
-            "info_type": "illegal_parking",
-            "id": "32.0",
-            "start_time": "2020-05-10 15:04:17",
-            "end_time": "2020-05-20 15:04:17",
-            "passage_type": None,
-            "obj_type": "trunk",
-            "number_plate": "浙K8F019",
-            "criminal_img_name": "2020-05-18 14-41-58 170 1.jpg",
-            "imgs": "asd"
-        },
-        {
-            "info_type": "illegal_parking",
-            "id": "62.0",
-            "start_time": "2020-05-10 15:04:17",
-            "end_time": "2020-05-21 15:04:17",
-            "passage_type": None,
-            "obj_type": "car",
-            "number_plate": "浙K8F029",
-            "criminal_img_name": "2020-05-18 14-41-58 170 1.jpg",
-            "imgs":"asd"
-        }
-    ]
-}
-
-
-
-
