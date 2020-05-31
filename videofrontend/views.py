@@ -28,24 +28,15 @@ def read_info_from_task(mqs):
         while True:
             for mq in mqs:
                 img_info = mq.get(timeout=5)
-                del img_info
-                i=i+1
-                img_info = {'pass_count': i,
-                            'left_pass_count': '25',
-                            'right_pass_count': '26',
-                            'straight_pass_count': '30',
-                            'car_pass_count': '5',
-                            'truck_pass_count': '8',
-                            'bus_pass_count': '23'}
-                DataMaintenance.car_volume_dao.set_traffic_volume_statistics(img_info)
                 DataMaintenance.vehicle_volume_dao.set_vehicle_violation_statistics(img_info)
                 DataMaintenance.car_volume_dao.set_pass_count_table_statistics(img_info)
-                #DataMaintenance.car_volume_dao.set_real_time_vehicle_statistics(img_info)
 
     except Empty:
         print('Task结束')
         DataMaintenance.init_data()
 
+
+@csrf_exempt
 def task_start(task):
     """
     执行一个Task
@@ -58,12 +49,16 @@ def task_start(task):
     readt.start()
     readt.join()
 
-
+@csrf_exempt
 def index(request):
+    if platform.system() == 'Linux':
+        mp.set_start_method('spawn', force=True)
+    task = TaskBuilder(ChenXiaoTaskCfg)
+    mytask = Process(target=task_start, args=(task,))
+    mytask.start()
+    return JsonResponse({"isSuccess": 0})
 
-    return render(request,'video/index.html',None)
-
-
+@csrf_exempt
 def start(request):
     """
     给播放的接口用来执行Task
@@ -75,13 +70,25 @@ def start(request):
         mp.set_start_method('spawn', force=True)
     if DataMaintenance.submit_task_success:
         if DataMaintenance.task_info["scene_info"]["scene"]=="1":
-            task = TaskBuilder(CrossRoadsTaskCfg)
-            mytask = Process(target=task_start, args=(task,))
-            mytask.start()
-            return JsonResponse({"isSuccess": 1})
+            if Cfg.task_selected=="crossRoadsTaskFake":
+                # 假配置初始化
+                create_crossRoadsTaskFake()
+                task = TaskBuilder(CrossRoadsTaskFakeCfg)
+                mytask = Process(target=task_start, args=(task,))
+                mytask.start()
+                return JsonResponse({"isSuccess": 1})
+            elif Cfg.task_selected=="crossRoadsTask":
+                task = TaskBuilder(CrossRoadsTaskCfg)
+                mytask = Process(target=task_start, args=(task,))
+                mytask.start()
+                return JsonResponse({"isSuccess": 1})
+            else:
+                raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
+                return JsonResponse({"isSuccess": 0})
     else:
         return JsonResponse({"isSuccess": 0})
 
+@csrf_exempt
 def get_traffic_volume_statistics(request):
     """
     实时查询车流量信息
@@ -97,6 +104,7 @@ def get_traffic_volume_statistics(request):
     else:
         return render(request,"video/404.html",None)
 
+@csrf_exempt
 def get_traffic_volume_line_chart_statistics(request):
     """
     获取当前任务折线图数据
@@ -107,14 +115,14 @@ def get_traffic_volume_line_chart_statistics(request):
 
     if request.method == "GET":
         task_name=request.GET.get("task_name")
-        data=DataMaintenance.car_volume_dao.get_traffic_volume_line_chart_statistics(task_name,
+        DataMaintenance.car_volume_dao.get_traffic_volume_line_chart_statistics(task_name,
                                                                                      DataMaintenance.line_chart_datas)
         #DataMaintenance.line_chart_datas.append(data)
         datas={"option":DataMaintenance.line_chart_datas}
         return JsonResponse(datas)
     else:
-        return render(request,"video/404.html",None)
-
+        return JsonResponse({"isExist":0})
+@csrf_exempt
 def get_vehicle_violation_statistics(request):
     """
     实时获取当前违规信息记录
@@ -127,9 +135,9 @@ def get_vehicle_violation_statistics(request):
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_statistics()
         return  JsonResponse(datas)
     else:
-        return render(request,"video/404.html",None)
+        return JsonResponse({"isExist":0})
 
-
+@csrf_exempt
 def get_task_list(request):
     """
     获取任务列表
@@ -143,9 +151,9 @@ def get_task_list(request):
         print(datas)
         return  JsonResponse(datas)
     else:
-        return  render(request,"video/404.html",None)
+        return  JsonResponse({"isExist":0})
 
-
+@csrf_exempt
 def get_vehicle_violation_by_number_plate(request):
     """
     根据车牌号查询和任务名查询违规信息
@@ -159,9 +167,9 @@ def get_vehicle_violation_by_number_plate(request):
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_by_number_plate(number_plate)
         return JsonResponse(datas)
     else:
-        return  render(request,"video/404.html",None)
+        return  JsonResponse({"isExist":0})
 
-
+@csrf_exempt
 def get_history_traffic_volume_line_chart(request):
     """
     根据任务名 查询违规历史折线图信息
@@ -177,9 +185,9 @@ def get_history_traffic_volume_line_chart(request):
         datas=DataMaintenance.car_volume_dao.get_history_traffic_volume_line_chart(task_name)
         return JsonResponse(datas)
     else:
-        return render(request,"video/404.html",None)
+        return JsonResponse({"isExist":0})
 
-
+@csrf_exempt
 def get_pass_count_table_statistics(request):
     """
     实时获取车流量信息表
@@ -193,8 +201,8 @@ def get_pass_count_table_statistics(request):
 
         return JsonResponse(datas)
     else:
-        return render(request, "video/404.html", None)
-
+        return JsonResponse({"isExist":0})
+@csrf_exempt
 def get_real_time_vehicle_statistics(request):
     """
     获取实时车辆信息(pass)
@@ -215,8 +223,8 @@ def submit_scene_info(request):
     前端向后端提交文件名和执行场景信息和开启的功能组件
     url:http://127.0.0.1:8000/videofrontend/submitsceneinfo
     :return: 根据场景进行判断，1 ，3，4就要返回待标注的图像(绝对路径),目前只做了1先写1
-
     """
+
     img_path=""
     if request.method == "POST":
         scene_info=json.loads(request.body)
@@ -236,7 +244,8 @@ def submit_scene_info(request):
         else:
             return JsonResponse({"img_path":img_path,"isExist": 0})
     else:
-        return render(request, "video/404.html", None)
+        return JsonResponse({"isExist:0"})
+
 
 @csrf_exempt
 def submit_task(request):
@@ -249,15 +258,18 @@ def submit_task(request):
 
     if request.method == "POST":
        img_label=json.loads(request.body)
+       print("前端标注返回: "+img_label)
+       datas={"label_info":img_label}
        # 将视频快照保存在snapshotimages文件夹
        write_snapshot_image(DataMaintenance.task_info["scene_info"]["file_name"])
 
        #图像高宽列表
        height,width=get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
-       task_cfg_info=get_mask(img_label,height,width)
+       task_cfg_info=get_mask(datas,height,width)
+       print("任务配置信息： "+task_cfg_info)
        create_task_cfg(task_cfg_info,DataMaintenance.task_info["scene_info"])
        DataMaintenance.submit_task_success=True
        return JsonResponse({"isExist":1})
     else:
-       return render(request, "video/404.html", None)
+       return JsonResponse({"isExist":0})
 

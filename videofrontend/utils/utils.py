@@ -67,37 +67,44 @@ def get_mask(img_label,height,width):
     :return: 蒙版mask
     """
     #违规占用车道赋值信息记录表
-
+    z_to_y={"小汽车":"car",
+            "卡车":"truck",
+            "巴士":"bus"}
     task_mask_info = {"isExist": 0,"forbid_info":{}}
-    if img_label["scene"]== "1":
+    if img_label["label_info"]["scene"]== "1":
         # 违章停车监控组件0或1即可
-        if "LaneMonitoringComponent" in img_label["label_info"].keys():
+        print(img_label)
+        if "ParkingMonitoringComponent" in img_label["label_info"].keys():
             mask = np.ones((height, width), dtype="uint8")
             task_mask_info["isExist"] = 1
-            lane_list=img_label["label_info"]["LaneMonitoringComponent"]
+            lane_list=img_label["label_info"]["ParkingMonitoringComponent"]
             for inx,val in enumerate(lane_list):
                 pts = np.array(val,np.int32)
                 pts = pts.reshape((-1, 1, 2))
                 cv.polylines(mask, [pts], True, 0)
                 cv.fillPoly(mask, [pts], 0)
-            task_mask_info["LaneMonitoringComponent"]=mask
-        if "ParkingMonitoringComponent" in img_label["label_info"].keys():
+            task_mask_info["ParkingMonitoringComponent"]=mask
+        if "LaneMonitoringComponent" in img_label["label_info"].keys():
             mask1 = np.ones((height, width), dtype="uint8")
             task_mask_info["isExist"]=1
-            park_list = img_label["label_info"]["ParkingMonitoringComponent"]
+            park_list = img_label["label_info"]["LaneMonitoringComponent"]
             for inx,val in enumerate(park_list):
-                task_mask_info["forbid_info"][inx+2]=val["forbid"]
+                data=[]
+                for object_type in val["forbid"]:
+                    data.append(z_to_y[object_type])
+                task_mask_info["forbid_info"][inx+2]=data
                 pts = np.array(val["points"], np.int32)
                 pts = pts.reshape((-1, 1, 2))
                 cv.polylines(mask1, [pts], True, inx+2)
                 cv.fillPoly(mask1, [pts], inx+2)
-            task_mask_info["ParkingMonitoringComponent"] = mask1
-    elif img_label["scene"]== "2":
-        print()
-    elif img_label["scene"]== "3":
-        print()
+            task_mask_info["LaneMonitoringComponent"] = mask1
+            print(task_mask_info)
+    elif img_label["label_info"]["scene"]== "2":
+        print("2")
+    elif img_label["label_info"]["scene"]== "3":
+        print("3")
     else:
-        print()
+        print("其他")
     return task_mask_info
 
 def create_task_cfg(task_mask_info,scene_info):
@@ -191,6 +198,51 @@ def create_crossroads_task(task_mask_info,scene_info):
                                 raise AttributeError('不存在{}蒙版'.format("LaneMonitoringComponent"))
 
 
+def create_crossRoadsTaskFake():
+    parking_monitoring_area = np.ones((1080, 1920), dtype=int)
+    parking_monitoring_area[400:800, 750:1250] = 0
+    lane_monitoring_area = np.ones((1080, 1920), dtype=int)
+    lane_monitoring_area[400:800, 750:1250] = 2
+    # 如下是一个路口演示demo
+    # 因为使用FakeCfg模拟目标探测的效果所以需要在head导入视频路径和已经探测好的json文件
+    for name, component_cfg in CrossRoadsTaskFakeCfg.items():
+        if name == 'head':
+            component_cfg[0]['filename'] = './lot_15.mp4'
+            component_cfg[0]['json_filename'] = './lot_15.json'
+        elif name == 'tracker':
+            continue
+        elif name == 'backbones':
+            for backbone in component_cfg:
+                for backbone_component_cfg in backbone:
+                    cfg_type = backbone_component_cfg['type']
+                    if cfg_type == 'PathExtract':
+                        backbone_component_cfg['eModelPath'] = './lot_15.emd'
+                    elif cfg_type == 'TrafficStatistics':
+                        backbone_component_cfg['eModelPath'] = './lot_15.emd'
+                        backbone_component_cfg['is_process'] = True  # 车流统计模块需要选择是否开启
+                    elif cfg_type == 'ParkingMonitoringComponent':
+                        backbone_component_cfg['monitoring_area'] = parking_monitoring_area
+                        backbone_component_cfg['is_process'] = True
+                    elif cfg_type == 'LaneMonitoringComponent':
+                        backbone_component_cfg['monitoring_area'] = lane_monitoring_area
+                        backbone_component_cfg['no_allow_car'] = {2: ['car']}
+                        backbone_component_cfg['is_process'] = True
+
+def reset_crossRoadsTask():
+    """
+    重置CrossRoadsTask
+    :return:
+    """
+    for backbone in CrossRoadsTaskCfg["backbones"]:
+        for backbone_component_cfg in backbone:
+            if "is_process" in backbone_component_cfg.keys():
+                 backbone_component_cfg["is_process"]=False
+            if "eModelPath" in backbone_component_cfg.keys():
+                backbone_component_cfg["eModelPath"]=None
+            if "monitoring_area" in backbone_component_cfg.keys():
+                backbone_component_cfg["monitoring_area"]=None
+            if "no_allow_car" in backbone_component_cfg.keys():
+                backbone_component_cfg["no_allow_car"]={}
 
 if __name__ == '__main__':
 

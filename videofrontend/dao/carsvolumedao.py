@@ -69,40 +69,38 @@ class CarsVolumeDao(object):
         isExist=[]
 
         total = 0
-        cursor = self.connection.cursor()
-        cursor.execute("select passage_type, count(*) as volume from traffic where  video_src=%s GROUP BY passage_type", (task_name))
-        rows=cursor.fetchall()
-        if len(rows)==0:
-            line_chart_datas['isExist']=0
-        else:
-            for row in rows:
-                total += int(row[1])
+        with MysqlPool() as db:
+            db.cursor.execute("select passage_type, count(*)  as volume from traffic where  video_src=%s GROUP BY passage_type", (task_name))
+            rows=db.cursor.fetchall()
+            if len(rows)==0:
+                line_chart_datas['isExist']=0
+            else:
+                for row in rows:
+                    total += int(row["volume"])
+                    for series in line_chart_datas["series"]:
+                        if series["name"]==y_to_z[row["passage_type"]]:
+                            series["data"].append(row["volume"])
+                            isExist.append(series["name"])
+                            break
+                line_chart_datas['isExist']=1
                 for series in line_chart_datas["series"]:
-                    if series["name"]==y_to_z[row[0]]:
-                        series["data"].append(row[1])
+                    if series["name"] == "总车流量":
+                        series["data"].append(total)
                         isExist.append(series["name"])
-                        break
-            line_chart_datas['isExist']=1
-            for series in line_chart_datas["series"]:
-                if series["name"] == "总车流量":
-                    series["data"].append(total)
-                    isExist.append(series["name"])
-                if series["name"] not in isExist:
-                    series["data"].append(0)
-            line_chart_datas["xAxis"]["data"].append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    if series["name"] not in isExist:
+                        series["data"].append(0)
+                line_chart_datas["xAxis"]["data"].append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-        if line_chart_datas['isExist']==1:
-            try:
-                cursor.execute("insert into tb_line_chart(left_num, right_num, straight_num, total_num, task_name) "
-                               "VALUES (%s,%s,%s,%s,%s)",(line_chart_datas["series"][0]["data"][-1],line_chart_datas["series"][1]["data"][-1],line_chart_datas["series"][2]["data"][-1],
-                                                          line_chart_datas["series"][3]["data"][-1],task_name))
-                self.connection.commit()
+            if line_chart_datas['isExist']==1:
+                try:
+                    db.cursor.execute("insert into tb_line_chart(left_num, right_num, straight_num, total_num, task_name) "
+                                   "VALUES (%s,%s,%s,%s,%s)",(line_chart_datas["series"][0]["data"][-1],line_chart_datas["series"][1]["data"][-1],line_chart_datas["series"][2]["data"][-1],
+                                                              line_chart_datas["series"][3]["data"][-1],task_name))
+                    db.conn.commit()
 
-            except:
-                self.connection.rollback()
+                except:
+                    db.conn.rollback()
 
-
-        return line_chart_datas
 
     def set_task(self,task_name):
         """
@@ -110,31 +108,37 @@ class CarsVolumeDao(object):
         :param task_name: 任务名
         :return:
         """
-        cursor=self.connection.cursor()
         try:
             snap_shot_path=get_vehicle_violation_imag_path(Cfg.snapshot_path,task_name)
-            cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s)",(task_name,snap_shot_path))
-            self.connection.commit()
+            print(snap_shot_path)
+            with MysqlPool() as db:
+                db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",(task_name,snap_shot_path))
+                db.conn.commit()
 
         except:
-            self.connection.rollback()
+            db.conn.rollback()
 
     def get_task_list(self):
         """
         获取所有历史任务
         :return: 历史任务字典
         """
-        tasks_list={'tasks':[]}
+        tasks_list={'tasks':[],
+                    "isExist":0}
 
-        cursor=self.connection.cursor()
-        cursor.execute("SELECT * FROM tb_task_list")
-        datas=cursor.fetchall()
-        for data in datas:
-            task={'id':data[0],
-                  'date':datetime.strftime(data[1],"%Y-%m-%d %H:%M:%S"),
-                  'task_name':data[2],
-                  'snapshot_path':data[3]}
-            tasks_list['tasks'].append(task)
+
+
+        with MysqlPool() as db:
+            db.cursor.execute("SELECT * FROM tb_task_list")
+            datas=db.cursor.fetchall()
+
+            for data in datas:
+                task={'id':data["id"],
+                      'date':datetime.strftime(data["commitDate"],"%Y-%m-%d %H:%M:%S"),
+                      'task_name':data["taskName"],
+                      'snapshot_path':data["snapShotPath"]}
+                tasks_list['tasks'].append(task)
+                tasks_list["isExist"]=1
 
         return tasks_list
 
@@ -172,22 +176,22 @@ class CarsVolumeDao(object):
             ],
             "isExist": 0
         }
-        cursor=self.connection.cursor()
-        cursor.execute("select record_time,left_num,right_num,straight_num,total_num from tb_line_chart "
-                       "where task_name=%s" , (task_name))
-        rows = cursor.fetchall()
+        with MysqlPool() as db:
+            db.cursor.execute("select record_time,left_num,right_num,straight_num,total_num from tb_line_chart "
+                           "where task_name=%s" , (task_name))
+            rows = db.cursor.fetchall()
 
-        if len(rows)==0:
-            line_chart_datas['isExist']=0
-        else:
-            for row in rows:
-                line_chart_datas["xAxis"]["data"].append(datetime.strftime(row[0],"%Y-%m-%d %H:%M:%S"))
-                line_chart_datas["series"][0]["data"].append(row[1])
-                line_chart_datas["series"][1]["data"].append(row[2])
-                line_chart_datas["series"][2]["data"].append(row[3])
-                line_chart_datas["series"][3]["data"].append(row[4])
+            if len(rows)==0:
+                line_chart_datas['isExist']=0
+            else:
+                for row in rows:
+                    line_chart_datas["xAxis"]["data"].append(datetime.strftime(row["record_time"],"%Y-%m-%d %H:%M:%S"))
+                    line_chart_datas["series"][0]["data"].append(row["left_num"])
+                    line_chart_datas["series"][1]["data"].append(row["right_num"])
+                    line_chart_datas["series"][2]["data"].append(row["straight_num"])
+                    line_chart_datas["series"][3]["data"].append(row["total_num"])
 
-            line_chart_datas['isExist']=1
+                line_chart_datas['isExist']=1
 
         return line_chart_datas
 

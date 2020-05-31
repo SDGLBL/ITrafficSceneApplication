@@ -1,5 +1,6 @@
 from videofrontend.dao.carsvolumedao import CarsVolumeDao
 from videofrontend.dao.vehicleviolationdao import VehicleViolationDao
+from videofrontend.utils.utils import reset_crossRoadsTask
 
 
 class DataMaintenance(object):
@@ -79,5 +80,7 @@ class DataMaintenance(object):
         }
         DataMaintenance.task_info = {}
         DataMaintenance.submit_task_success = False
+        #重置交通路透场景
+        reset_crossRoadsTask()
 
 

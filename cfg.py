@@ -24,3 +24,5 @@ Cfg.video_save_dir=osp.join("videoData","video")
 Cfg.emd_save_dir=''
 Cfg.frame_image_save_dir=osp.join("videofrontend","static","frameimages")
 Cfg.snapshot_path=osp.join("videofrontend","static","snapshotimages")
+#选择 task的configs
+Cfg.task_selected="crossRoadsTaskFake"
