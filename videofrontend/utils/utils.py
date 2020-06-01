@@ -132,11 +132,11 @@ def write_snapshot_image(file_name):
     :param file_name:
     :return:
     """
-    image_path=get_image_of_video(Cfg.snapshot_path,file_name)
+    image_path=get_image_of_video(Cfg.snapshot_path,get_vehicle_violation_imag_path(Cfg.video_save_dir,file_name))
     return image_path
 
 def get_image_of_height_width(file_name):
-    image_path=get_image_of_video(Cfg.snapshot_path,file_name)
+    image_path=get_image_of_video(Cfg.snapshot_path,get_vehicle_violation_imag_path(Cfg.video_save_dir,file_name))
     image=cv.imread(image_path)
     height=image.shape[0]
     width=image.shape[1]
