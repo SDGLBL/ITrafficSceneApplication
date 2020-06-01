@@ -8,7 +8,7 @@ from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
 
 from task.build import TaskBuilder
-from task.configs.chenxiaotask import ChenXiaoTaskCfg
+# from task.configs.chenxiaotask import ChenXiaoTaskCfg
 from django.shortcuts import render,get_object_or_404
 from django.urls import reverse
 from django.http import Http404, HttpResponse,JsonResponse
@@ -149,7 +149,7 @@ def get_task_list(request):
 
     if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_task_list()
-        print(datas)
+        # print(datas)
         return  JsonResponse(datas)
     else:
         return  JsonResponse({"isExist":0})
@@ -260,7 +260,7 @@ def submit_task(request):
     if request.method == "POST":
        img_label=json.loads(request.body)
        print("标注信息返回")
-       print(img_label)
+       # print(img_label)
        datas={"label_info":img_label}
        # 将视频快照保存在snapshotimages文件夹
        write_snapshot_image(get_vehicle_violation_imag_path(Cfg.video_save_dir,DataMaintenance.task_info["scene_info"]["file_name"]))
@@ -269,7 +269,7 @@ def submit_task(request):
        height,width=get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
        task_cfg_info=get_mask(datas,height,width)
        print("任务配置信息")
-       print(task_cfg_info)
+       # print(task_cfg_info)
        create_task_cfg(task_cfg_info,DataMaintenance.task_info["scene_info"])
        DataMaintenance.submit_task_success=True
        return JsonResponse({"isExist":1})
