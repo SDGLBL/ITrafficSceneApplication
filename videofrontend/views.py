@@ -68,23 +68,24 @@ def start(request):
     """
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-    if DataMaintenance.submit_task_success:
-        if DataMaintenance.task_info["scene_info"]["scene"]=="1":
-            if Cfg.task_selected=="crossRoadsTaskFake":
-                # 假配置初始化
-                create_crossRoadsTaskFake()
-                task = TaskBuilder(CrossRoadsTaskFakeCfg)
-                mytask = Process(target=task_start, args=(task,))
-                mytask.start()
-                return JsonResponse({"isSuccess": 1})
-            elif Cfg.task_selected=="crossRoadsTask":
-                task = TaskBuilder(CrossRoadsTaskCfg)
-                mytask = Process(target=task_start, args=(task,))
-                mytask.start()
-                return JsonResponse({"isSuccess": 1})
-            else:
-                raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
-                return JsonResponse({"isSuccess": 0})
+
+    #if DataMaintenance.submit_task_success:
+    if DataMaintenance.task_info["scene_info"]["scene"] == "1":
+        if Cfg.task_selected == "crossRoadsTaskFake":
+            # 假配置初始化
+            create_crossRoadsTaskFake()
+            task = TaskBuilder(CrossRoadsTaskFakeCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        elif Cfg.task_selected == "crossRoadsTask":
+            task = TaskBuilder(CrossRoadsTaskCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        else:
+            raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
+            return JsonResponse({"isSuccess": 0})
     else:
         return JsonResponse({"isSuccess": 0})
 
