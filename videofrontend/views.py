@@ -68,23 +68,24 @@ def start(request):
     """
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-    if DataMaintenance.submit_task_success:
-        if DataMaintenance.task_info["scene_info"]["scene"]=="1":
-            if Cfg.task_selected=="crossRoadsTaskFake":
-                # 假配置初始化
-                create_crossRoadsTaskFake()
-                task = TaskBuilder(CrossRoadsTaskFakeCfg)
-                mytask = Process(target=task_start, args=(task,))
-                mytask.start()
-                return JsonResponse({"isSuccess": 1})
-            elif Cfg.task_selected=="crossRoadsTask":
-                task = TaskBuilder(CrossRoadsTaskCfg)
-                mytask = Process(target=task_start, args=(task,))
-                mytask.start()
-                return JsonResponse({"isSuccess": 1})
-            else:
-                raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
-                return JsonResponse({"isSuccess": 0})
+
+    #if DataMaintenance.submit_task_success:
+    if DataMaintenance.task_info["scene_info"]["scene"] == "1":
+        if Cfg.task_selected == "crossRoadsTaskFake":
+            # 假配置初始化
+            create_crossRoadsTaskFake()
+            task = TaskBuilder(CrossRoadsTaskFakeCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        elif Cfg.task_selected == "crossRoadsTask":
+            task = TaskBuilder(CrossRoadsTaskCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        else:
+            raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
+            return JsonResponse({"isSuccess": 0})
     else:
         return JsonResponse({"isSuccess": 0})
 
@@ -258,15 +259,17 @@ def submit_task(request):
 
     if request.method == "POST":
        img_label=json.loads(request.body)
-       print("前端标注返回: "+img_label)
+       print("标注信息返回")
+       print(img_label)
        datas={"label_info":img_label}
        # 将视频快照保存在snapshotimages文件夹
-       write_snapshot_image(DataMaintenance.task_info["scene_info"]["file_name"])
+       write_snapshot_image(get_vehicle_violation_imag_path(Cfg.video_save_dir,DataMaintenance.task_info["scene_info"]["file_name"]))
 
        #图像高宽列表
        height,width=get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
        task_cfg_info=get_mask(datas,height,width)
-       print("任务配置信息： "+task_cfg_info)
+       print("任务配置信息")
+       print(task_cfg_info)
        create_task_cfg(task_cfg_info,DataMaintenance.task_info["scene_info"])
        DataMaintenance.submit_task_success=True
        return JsonResponse({"isExist":1})
