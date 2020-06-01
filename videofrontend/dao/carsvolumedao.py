@@ -104,12 +104,13 @@ class CarsVolumeDao(object):
         :return:
         """
         try:
-            snap_shot_path=get_vehicle_violation_imag_path(Cfg.snapshot_path,task_name)
-            print(snap_shot_path)
-            with MysqlPool() as db:
-                db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",(task_name,snap_shot_path))
-                db.conn.commit()
+            video_path=get_vehicle_violation_imag_path(Cfg.video_save_dir,task_name)
 
+            with MysqlPool() as db:
+                db.cursor.execute("select * from tb_task_list where taskName=%s ",(task_name))
+                if len(db.cursor.fetchall())==0:
+                    db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",(task_name,video_path))
+                    db.conn.commit()
         except:
             db.conn.rollback()
 
