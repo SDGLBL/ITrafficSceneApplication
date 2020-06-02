@@ -21,7 +21,6 @@ class RtmpWriteComponent(BaseBackboneComponent):
                         '-s', "{}x{}".format(resolution[0], resolution[1]),
                         '-r', str(fps),
                         '-i', '-',
-                        '-c:v', 'libx264',
                         '-pix_fmt', 'yuv420p',
                         '-preset', 'ultrafast',
                         '-f', 'flv',

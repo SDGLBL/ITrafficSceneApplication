@@ -8,7 +8,7 @@ from threading import Thread
 from django.views.decorators.csrf import csrf_exempt
 
 from task.build import TaskBuilder
-from task.configs.chenxiaotask import ChenXiaoTaskCfg
+# from task.configs.chenxiaotask import ChenXiaoTaskCfg
 from django.shortcuts import render,get_object_or_404
 from django.urls import reverse
 from django.http import Http404, HttpResponse,JsonResponse
@@ -68,6 +68,7 @@ def start(request):
     """
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
+<<<<<<< HEAD
     print("你好")
     print(CrossRoadsTaskCfg)
     if DataMaintenance.submit_task_success:
@@ -87,6 +88,26 @@ def start(request):
             else:
                 raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
                 return JsonResponse({"isSuccess": 0})
+=======
+
+    #if DataMaintenance.submit_task_success:
+    if DataMaintenance.task_info["scene_info"]["scene"] == "1":
+        if Cfg.task_selected == "crossRoadsTaskFake":
+            # 假配置初始化
+            create_crossRoadsTaskFake()
+            task = TaskBuilder(CrossRoadsTaskFakeCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        elif Cfg.task_selected == "crossRoadsTask":
+            task = TaskBuilder(CrossRoadsTaskCfg)
+            mytask = Process(target=task_start, args=(task,))
+            mytask.start()
+            return JsonResponse({"isSuccess": 1})
+        else:
+            raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
+            return JsonResponse({"isSuccess": 0})
+>>>>>>> 30b20a444876a3b65e721fa9123c8ae2ed3baf54
     else:
         return JsonResponse({"isSuccess": 0})
 
@@ -152,7 +173,7 @@ def get_task_list(request):
 
     if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_task_list()
-        print(datas)
+        # print(datas)
         return  JsonResponse(datas)
     else:
         return  JsonResponse({"isExist":0})
@@ -264,6 +285,7 @@ def submit_task(request):
     """
 
     if request.method == "POST":
+<<<<<<< HEAD
         img_label = json.loads(request.body)
 
         datas = {"label_info": img_label}
@@ -280,6 +302,23 @@ def submit_task(request):
         print("启动成功")
         print("1")
         return JsonResponse({"isExist": 1})
+=======
+       img_label=json.loads(request.body)
+       print("标注信息返回")
+       # print(img_label)
+       datas={"label_info":img_label}
+       # 将视频快照保存在snapshotimages文件夹
+       write_snapshot_image(get_vehicle_violation_imag_path(Cfg.video_save_dir,DataMaintenance.task_info["scene_info"]["file_name"]))
+
+       #图像高宽列表
+       height,width=get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
+       task_cfg_info=get_mask(datas,height,width)
+       print("任务配置信息")
+       # print(task_cfg_info)
+       create_task_cfg(task_cfg_info,DataMaintenance.task_info["scene_info"])
+       DataMaintenance.submit_task_success=True
+       return JsonResponse({"isExist":1})
+>>>>>>> 30b20a444876a3b65e721fa9123c8ae2ed3baf54
     else:
         print("启动失败")
         print("0")
