@@ -29,13 +29,8 @@ class VehicleViolationDao(object):
                     info.pop('start_time')
                     info.pop('passage_type')
                     info.pop('imgs')
-<<<<<<< HEAD
                     if "criminal_img_name" in info.keys():
                         info['criminal_img_name']=get_vehicle_violation_imag_path(Cfg.img_save_dir,info['criminal_img_name'])
-=======
-                    if 'criminal_img_name' in info.keys():
-                        info['criminal_img_path']=get_vehicle_violation_imag_path(Cfg.img_save_dir,info['criminal_img_name'])
->>>>>>> 30b20a444876a3b65e721fa9123c8ae2ed3baf54
                     datas['analysis'].append(info)
 
         if len(datas['analysis'])==0:
