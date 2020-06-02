@@ -11,7 +11,7 @@ class TrafficStatistics(BaseBackboneComponent):
         self.dirK = self.model['dir_classifier']
         self.dirStr = {}
         if self.model['reachable_mat'].shape[1] == 3:
-            self.indX = ['左拐','右拐','直行']
+            self.indX = ['左拐','直行','右拐']
             nc = np.array(self.dirK.cluster_centers_)
             nc = nc[:,0]
             dirC = np.argsort(nc)
@@ -41,6 +41,7 @@ class TrafficStatistics(BaseBackboneComponent):
     def pathStatistics(self, img, img_info):
         img_info['analysis'] = []
         legalTurn = True
+        change = False
         for path in img_info['end_path']:
             if isPass(path, self.model):
                 laneAndDir = pathsStatus(path, self.model)
@@ -79,8 +80,9 @@ class TrafficStatistics(BaseBackboneComponent):
                     }
                     img_info['analysis'].append(foulInfo)
                 self.pass_count_table[self.indY==cls_name, self.indX==dir] += 1
+                change = True
                 # print(self.pass_count_table)
-        img_info['pass_count_table'] = self.getTabele(self.indX, self.indY, self.pass_count_table)
+        img_info['pass_count_table'] = [self.getTabele(self.indX, self.indY, self.pass_count_table), change]
                 
 
         
