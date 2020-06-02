@@ -105,22 +105,11 @@ class CarsVolumeDao(object):
         :return:
         """
         try:
-<<<<<<< HEAD
             video_path = get_vehicle_violation_imag_path(Cfg.video_save_dir, task_name)
-
             with MysqlPool() as db:
                 db.cursor.execute("select * from tb_task_list where taskName=%s ", (task_name))
                 if len(db.cursor.fetchall()) == 0:
-                    db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",
-                                      (task_name, video_path))
-=======
-            video_path=get_vehicle_violation_imag_path(Cfg.video_save_dir,task_name)
-
-            with MysqlPool() as db:
-                db.cursor.execute("select * from tb_task_list where taskName=%s ",(task_name))
-                if len(db.cursor.fetchall())==0:
-                    db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",(task_name,video_path))
->>>>>>> 30b20a444876a3b65e721fa9123c8ae2ed3baf54
+                    db.cursor.execute("insert into tb_task_list(taskName,snapShotPath) VALUES (%s,%s) ",(task_name, video_path))
                     db.conn.commit()
         except:
             db.conn.rollback()
@@ -224,37 +213,6 @@ class CarsVolumeDao(object):
                 if scene=="1":
                     if inx!=0 and inx!=len(img_info["pass_count_table"])-1:
                         object_type_list={}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        y
                         for inx1,data in enumerate(list):
                             if inx1!=(len(list)-1):
                                 if data in y_to_z.keys():
