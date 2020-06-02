@@ -61,6 +61,12 @@ CrossRoadsTaskCfg = {
             {
                 'type': 'DrawBoundingBoxComponent'  # 画框框
             },
+{
+                'type': 'RtmpWriteComponent',
+                'resolution': (1920, 1080),
+                'fps': 30,
+                'rtmpUrl': 'rtmp://localhost:1935/live/home'
+            }
         ]
     ]
 }

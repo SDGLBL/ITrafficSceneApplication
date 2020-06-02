@@ -5,6 +5,7 @@ import redis
 from cfg import Cfg
 from videofrontend.dao.mysqlpool import MysqlPool
 
+
 from videofrontend.utils.utils import get_vehicle_violation_imag_path
 
 
@@ -192,16 +193,41 @@ class CarsVolumeDao(object):
 
         return line_chart_datas
 
-    def set_pass_count_table_statistics(self,img_info):
+    def set_pass_count_table_statistics(self,img_info,scene):
         """
         存入车流量表数据
         :param pass_count_table: 车流量表数据
         :return: void
         """
         datas={}
+        table=[]
+        dict={0:"name",
+              1:"left",
+              2:"right",
+              3:"ahead"}
+        y_to_z={
+            "car":"小汽车",
+            "bus":"巴士",
+            "truck":"卡车"
+        }
         if "pass_count_table" in img_info.keys():
-            datas['pass_count_table']=img_info['pass_count_table']
-            datas['isExist']=1
+            for inx,list in enumerate(img_info['pass_count_table']):
+                if scene=="1":
+                    if inx!=0 and inx!=len(img_info["pass_count_table"])-1:
+                        object_type_list={}
+                        for inx1,data in enumerate(list):
+                            if inx1!=(len(list)-1):
+                                if data in y_to_z.keys():
+                                    data=y_to_z[data]
+                                if data.isdigit():
+                                    object_type_list[dict[inx1]]=int(data)
+                                else:
+                                    object_type_list[dict[inx1]] = data
+                        table.append(object_type_list)
+                else:
+                    raise AttributeError('场景号不为{}'.format(scene))
+            datas["pass_count_table"]=table
+            datas['isExist'] = 1
         else:
             datas['isExist']=0
         self.redis.set('pass_count_table',json.dumps(datas))
@@ -214,10 +240,9 @@ class CarsVolumeDao(object):
         """
         datas=json.loads(self.redis.get('pass_count_table'))
         if datas:
-            return datas
+            return datas["pass_count_table"]
         else:
-            datas={}
-            datas['isExist']=0
+            datas= {'isExist': 0}
             return datas
 
     def set_real_time_vehicle_statistics(self,img_info):

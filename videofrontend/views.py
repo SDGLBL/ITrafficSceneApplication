@@ -28,8 +28,10 @@ def read_info_from_task(mqs):
         while True:
             for mq in mqs:
                 img_info = mq.get(timeout=5)
+                #实时违规车辆记录
                 DataMaintenance.vehicle_volume_dao.set_vehicle_violation_statistics(img_info)
-                DataMaintenance.car_volume_dao.set_pass_count_table_statistics(img_info)
+                #实时车流量表记录
+                DataMaintenance.car_volume_dao.set_pass_count_table_statistics(img_info,"1")
 
     except Empty:
         print('Task结束')
@@ -43,6 +45,8 @@ def task_start(task):
     :param task: 不同场景要做的任务
     :return:
     """
+    #初始化
+    DataMaintenance.init_data()
     mqs = task.build()
     task.start()
     readt = Thread(target=read_info_from_task, args=(mqs,))
@@ -51,12 +55,8 @@ def task_start(task):
 
 @csrf_exempt
 def index(request):
-    if platform.system() == 'Linux':
-        mp.set_start_method('spawn', force=True)
-    task = TaskBuilder(ChenXiaoTaskCfg)
-    mytask = Process(target=task_start, args=(task,))
-    mytask.start()
-    return JsonResponse({"isSuccess": 0})
+
+    return render(request, 'index.html')
 
 @csrf_exempt
 def start(request):
@@ -68,24 +68,25 @@ def start(request):
     """
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-
-    #if DataMaintenance.submit_task_success:
-    if DataMaintenance.task_info["scene_info"]["scene"] == "1":
-        if Cfg.task_selected == "crossRoadsTaskFake":
-            # 假配置初始化
-            create_crossRoadsTaskFake()
-            task = TaskBuilder(CrossRoadsTaskFakeCfg)
-            mytask = Process(target=task_start, args=(task,))
-            mytask.start()
-            return JsonResponse({"isSuccess": 1})
-        elif Cfg.task_selected == "crossRoadsTask":
-            task = TaskBuilder(CrossRoadsTaskCfg)
-            mytask = Process(target=task_start, args=(task,))
-            mytask.start()
-            return JsonResponse({"isSuccess": 1})
-        else:
-            raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
-            return JsonResponse({"isSuccess": 0})
+    print("你好")
+    print(CrossRoadsTaskCfg)
+    if DataMaintenance.submit_task_success:
+        if DataMaintenance.task_info["scene_info"]["scene"] == "1":
+            if Cfg.task_selected == "crossRoadsTaskFake":
+                # 假配置初始化
+                create_crossRoadsTaskFake()
+                task = TaskBuilder(CrossRoadsTaskFakeCfg)
+                mytask = Process(target=task_start, args=(task,))
+                mytask.start()
+                return JsonResponse({"isSuccess": 1})
+            elif Cfg.task_selected == "crossRoadsTask":
+                task = TaskBuilder(CrossRoadsTaskCfg)
+                mytask = Process(target=task_start, args=(task,))
+                mytask.start()
+                return JsonResponse({"isSuccess": 1})
+            else:
+                raise Exception('请检查{}配置是否正确'.format(Cfg.task_selected))
+                return JsonResponse({"isSuccess": 0})
     else:
         return JsonResponse({"isSuccess": 0})
 
@@ -134,6 +135,8 @@ def get_vehicle_violation_statistics(request):
 
     if request.method == "GET":
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_statistics()
+        print("违规车辆记录")
+        print(datas)
         return  JsonResponse(datas)
     else:
         return JsonResponse({"isExist":0})
@@ -199,8 +202,9 @@ def get_pass_count_table_statistics(request):
 
     if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_pass_count_table_statistics()
-
-        return JsonResponse(datas)
+        print("车流量表")
+        print(datas)
+        return JsonResponse({"pass":datas})
     else:
         return JsonResponse({"isExist":0})
 @csrf_exempt
@@ -229,7 +233,9 @@ def submit_scene_info(request):
     img_path=""
     if request.method == "POST":
         scene_info=json.loads(request.body)
+        print(scene_info)
         if scene_info["scene"]=="1":
+
             if os.path.exists(osp.join('videoData','video',scene_info["file_name"])) \
                     and os.path.exists(osp.join('videoData','video',scene_info["emd_name"])):
                 DataMaintenance.car_volume_dao.set_task(scene_info["file_name"])
@@ -259,8 +265,7 @@ def submit_task(request):
 
     if request.method == "POST":
         img_label = json.loads(request.body)
-        print("标注信息返回")
-        print(img_label)
+
         datas = {"label_info": img_label}
         # 将视频快照保存在snapshotimages文件夹
         write_snapshot_image(
@@ -269,11 +274,14 @@ def submit_task(request):
         # 图像高宽列表
         height, width = get_image_of_height_width(DataMaintenance.task_info["scene_info"]["file_name"])
         task_cfg_info = get_mask(datas, height, width)
-        print("任务配置信息")
-        print(task_cfg_info)
+
         create_task_cfg(task_cfg_info, DataMaintenance.task_info["scene_info"])
         DataMaintenance.submit_task_success = True
+        print("启动成功")
+        print("1")
         return JsonResponse({"isExist": 1})
     else:
+        print("启动失败")
+        print("0")
         return JsonResponse({"isExist": 0})
 
