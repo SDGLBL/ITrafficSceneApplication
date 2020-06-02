@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from numba import jit
 import os.path
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +12,6 @@ import argparse
 from filterpy.kalman import KalmanFilter
 
 # 计算IOU
-@jit
 def iou(bb_test,bb_gt):
   """
   Computes IUO between two bboxes in the form [x1,y1,x2,y2]
