@@ -224,6 +224,37 @@ class CarsVolumeDao(object):
                 if scene=="1":
                     if inx!=0 and inx!=len(img_info["pass_count_table"])-1:
                         object_type_list={}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        y
                         for inx1,data in enumerate(list):
                             if inx1!=(len(list)-1):
                                 if data in y_to_z.keys():
