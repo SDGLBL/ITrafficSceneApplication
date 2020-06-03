@@ -10,32 +10,56 @@ class DataMaintenance(object):
     submit_task_success=False
     # 折线图历史数据
     line_chart_datas ={
-            "legend":{
-                "data":["左行驶车流量","右行驶车流量","前行驶车流量","总车流量"]
+        "Legend": {
+            "data": [
+                "左行驶车流量",
+                "右行驶车流量",
+                "前行驶车流量",
+                "总车流量"
+            ]
+        },
+        "xAxis": {
+            "data": [],
+            "type": "category",
+            "boundaryGap": False
+        },
+        "series": [
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "左行驶车流量",
+                "type": "line"
             },
-            "xAxis":{
-                "data":[]
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "右行驶车流量",
+                "type": "line"
             },
-            "series":[
-                {
-                  "name":"左行驶车流量",
-                  "data":[]
-                },
-                {
-                    "name": "右行驶车流量",
-                    "data": []
-                },
-                {
-                    "name": "前行驶车流量",
-                    "data": []
-                },
-                {
-                    "name": "总车流量",
-                    "data": []
-                }
-            ],
-            "isExist":0
-        }
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "前行驶车流量",
+                "type": "line"
+            },
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "总车流量",
+                "type": "line"
+            }
+        ],
+        "isExist": 1
+    }
+
     #启动任务所需要的一系列数据
     task_info={}
     vehicle_volume_dao=VehicleViolationDao()
@@ -52,31 +76,54 @@ class DataMaintenance(object):
         DataMaintenance.vehicle_volume_dao.rset_vehicle_violation_statistics()
         DataMaintenance.scene_number='-1'
         DataMaintenance.line_chart_datas ={
-            "legend":{
-                "data":["左行驶车流量","右行驶车流量","前行驶车流量","总车流量"]
+            "Legend": {
+            "data": [
+                "左行驶车流量",
+                "右行驶车流量",
+                "前行驶车流量",
+                "总车流量"
+            ]
+        },
+        "xAxis": {
+            "data": [],
+            "type": "category",
+            "boundaryGap": False
+        },
+        "series": [
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "左行驶车流量",
+                "type": "line"
             },
-            "xAxis":{
-                "data":[]
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "右行驶车流量",
+                "type": "line"
             },
-            "series":[
-                {
-                  "name":"左行驶车流量",
-                  "data":[]
-                },
-                {
-                    "name": "右行驶车流量",
-                    "data": []
-                },
-                {
-                    "name": "前行驶车流量",
-                    "data": []
-                },
-                {
-                    "name": "总车流量",
-                    "data": []
-                }
-            ],
-            "isExist":0
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "前行驶车流量",
+                "type": "line"
+            },
+            {
+                "stack": "总量",
+                "data": [
+
+                ],
+                "name": "总车流量",
+                "type": "line"
+            }
+        ],
+        "isExist": 1
         }
         DataMaintenance.task_info = {}
         DataMaintenance.submit_task_success = False

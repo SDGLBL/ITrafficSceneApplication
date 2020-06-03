@@ -208,7 +208,7 @@ def create_crossRoadsTaskFake():
     for name, component_cfg in CrossRoadsTaskFakeCfg.items():
         if name == 'head':
             component_cfg[0]['filename'] = 'videoData/video/lot_15.mp4'
-            component_cfg[0]['json_filename'] = 'videoData/video/lot_15.json'
+            component_cfg[0]['json_filename'] = 'lot_15.json'
         elif name == 'tracker':
             continue
         elif name == 'backbones':
