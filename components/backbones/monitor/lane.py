@@ -46,6 +46,8 @@ class LaneMonitoringComponent(BaseBackboneComponent):
 
             # 循环添加当前帧数里面停止在目标到跟踪dict
             for obj in img_info['objects']:
+                if obj['cls_pred'] not in ['car','truck','bus']:
+                    continue
                 # 如果已经被记录为违章停车则不再记录
                 obj_id = obj['id']
                 if obj_id in self.no_record_id:
