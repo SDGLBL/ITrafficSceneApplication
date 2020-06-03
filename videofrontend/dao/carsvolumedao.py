@@ -132,7 +132,9 @@ class CarsVolumeDao(object):
                 task={'id':data["id"],
                       'date':datetime.strftime(data["commitDate"],"%Y-%m-%d %H:%M:%S"),
                       'task_name':data["taskName"],
-                      'snapshot_path':data["snapShotPath"]}
+                      'snapshot_path':"http://121.199.31.199/static/cs/lot_15.jpg"}
+                #Chrome不允许返回本地资源
+                #data["snapShotPath"]
                 tasks_list['tasks'].append(task)
                 tasks_list["isExist"]=1
 

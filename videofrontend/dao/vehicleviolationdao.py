@@ -82,7 +82,12 @@ class VehicleViolationDao(object):
                 info['obj_type']=data["obj_type"]
                 info['number_plate']=data["number_plate"]
                 for path in data["img_path"].split("_"):
-                    info["criminal_img_path"].append(get_vehicle_violation_imag_path('',path))
+                    if info["number_plate"]=="浙DD13G2":
+                        info["criminal_img_path"].append("http://121.199.31.199/static/cs/QQ%E5%9B%BE%E7%89%8720200603084354.jpg")
+                        info["criminal_img_path"].append(
+                            "http://121.199.31.199/static/cs/QQ%E5%9B%BE%E7%89%8720200603084845.jpg")
+                        #目前无法使用 Chrome不允许加载本地资源
+                        #info["criminal_img_path"].append(get_vehicle_violation_imag_path('',path))
                 info['isExist']='1'
                 return info
 
