@@ -23,21 +23,36 @@ class VehicleViolationDao(object):
         :return:
         """
         datas={'analysis':[]}
+
+        y_to_z={
+            "car":"小汽车",
+            "bus":"巴士",
+            "truck":"卡车"
+        }
         if "analysis" in img_info.keys():
             for info in img_info['analysis']:
                 if info['info_type'] != 'pass':
                     info.pop('start_time')
                     info.pop('passage_type')
                     info.pop('imgs')
+                    info["obj_type"]=y_to_z[info["obj_type"]]
+                    if not info["number_plate"]:
+                        info["number_plate"]="无法识别车牌号"
                     if "criminal_img_name" in info.keys():
-                        info['criminal_img_name']=get_vehicle_violation_imag_path(Cfg.img_save_dir,info['criminal_img_name'])
+                        info['criminal_img_path']=get_vehicle_violation_imag_path(Cfg.img_save_dir,info['criminal_img_name'])
                     datas['analysis'].append(info)
 
         if len(datas['analysis'])==0:
             datas['isExist']=0
         else:
             datas['isExist']=1
-        self.redis.set('analysis',json.dumps(datas))
+            print("违规记录datas{}".format(datas["analysis"]))
+            if not self.redis.get('analysis'):
+                self.redis.set('analysis',json.dumps({"pass":[]}))
+            violation_cars = json.loads(self.redis.get('analysis'))
+            for violation in datas['analysis']:
+                violation_cars["pass"].append(violation)
+            self.redis.set('analysis',json.dumps(violation_cars))
 
     def get_vehicle_violation_statistics(self):
         """
@@ -47,9 +62,9 @@ class VehicleViolationDao(object):
 
         """
 
-        data=self.redis.get('analysis')
-        if data:
-            datas = json.loads(data)
+
+        if self.redis.get('analysis'):
+            datas = json.loads(self.redis.get('analysis'))
         else:
             datas={'isExist':'0'}
 
