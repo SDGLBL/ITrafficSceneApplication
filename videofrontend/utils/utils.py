@@ -73,7 +73,7 @@ def get_mask(img_label,height,width):
     task_mask_info = {"isExist": 0,"forbid_info":{}}
     if img_label["label_info"]["scene"]== "1":
         # 违章停车监控组件0或1即可
-        print(img_label)
+        # print(img_label)
         if "ParkingMonitoringComponent" in img_label["label_info"].keys():
             mask = np.ones((height, width), dtype="uint8")
             task_mask_info["isExist"] = 1
@@ -98,7 +98,7 @@ def get_mask(img_label,height,width):
                 cv.polylines(mask1, [pts], True, inx+2)
                 cv.fillPoly(mask1, [pts], inx+2)
             task_mask_info["LaneMonitoringComponent"] = mask1
-            print(task_mask_info)
+            # print(task_mask_info)
     elif img_label["label_info"]["scene"]== "2":
         print("2")
     elif img_label["label_info"]["scene"]== "3":
@@ -208,7 +208,7 @@ def create_crossRoadsTaskFake():
     for name, component_cfg in CrossRoadsTaskFakeCfg.items():
         if name == 'head':
             component_cfg[0]['filename'] = 'videoData/video/lot_15.mp4'
-            component_cfg[0]['json_filename'] = 'lot_15.json'
+            component_cfg[0]['json_filename'] = 'videoData/video/lot_15.json'
         elif name == 'tracker':
             continue
         elif name == 'backbones':
