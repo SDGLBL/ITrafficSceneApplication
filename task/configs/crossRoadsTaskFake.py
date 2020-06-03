@@ -52,8 +52,9 @@ CrossRoadsTaskFakeCfg = {
             #     'db': Cfg.database,
             #     'img_save_path':Cfg.img_save_dir
             # },
+
             {
-                'type': 'DrawBoundingBoxComponent'  # 画框框
+              'type': 'DrawBoundingBoxComponent'  # 画框框
             },
             {
                 'type': 'RtmpWriteComponent',
@@ -61,6 +62,7 @@ CrossRoadsTaskFakeCfg = {
                 'fps': 30,
                 'rtmpUrl': 'rtmp://localhost:1935/live/home'
             }
+
         ]
     ]
 }

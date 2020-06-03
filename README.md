@@ -253,7 +253,7 @@ ffmpeg  -i [video file] -f flv rtmp://localhost:1935/live
 
 ```python
 # 运行如下命令即可开启网页后端服务器
-/usr/local/nginx/sbin/nginx
+sudo /usr/local/nginx/sbin/nginx
 PYTHONUNBUFFERED=1
 DJANGO_SETTINGS_MODULE=ITrafficSceneApplication.settings
 python3 manage.py runserver 8000

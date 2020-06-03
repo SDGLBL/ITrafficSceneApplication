@@ -28,6 +28,8 @@ def read_info_from_task(mqs):
         while True:
             for mq in mqs:
                 img_info = mq.get(timeout=5)
+                if len(img_info['analysis']) > 0:
+                    print('收到来自Task的违规数据'.format(img_info['analysis']))
                 #实时违规车辆记录
                 DataMaintenance.vehicle_volume_dao.set_vehicle_violation_statistics(img_info)
                 #实时车流量表记录
@@ -69,7 +71,7 @@ def start(request):
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
     print("你好")
-    print(CrossRoadsTaskCfg)
+    # print(CrossRoadsTaskCfg)
     if DataMaintenance.submit_task_success:
         if DataMaintenance.task_info["scene_info"]["scene"] == "1":
             if Cfg.task_selected == "crossRoadsTaskFake":
@@ -120,7 +122,7 @@ def get_traffic_volume_line_chart_statistics(request):
         DataMaintenance.car_volume_dao.get_traffic_volume_line_chart_statistics(task_name,
                                                                                      DataMaintenance.line_chart_datas)
         #DataMaintenance.line_chart_datas.append(data)
-        datas={"option":DataMaintenance.line_chart_datas}
+        datas=DataMaintenance.line_chart_datas
         return JsonResponse(datas)
     else:
         return JsonResponse({"isExist":0})
@@ -135,8 +137,8 @@ def get_vehicle_violation_statistics(request):
 
     if request.method == "GET":
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_statistics()
-        print("违规车辆记录")
-        print(datas)
+        # print("违规车辆记录{}".format(datas))
+        #print(datas)
         return  JsonResponse(datas)
     else:
         return JsonResponse({"isExist":0})
@@ -169,6 +171,8 @@ def get_vehicle_violation_by_number_plate(request):
         number_plate=request.GET.get("number_plate")
 
         datas=DataMaintenance.vehicle_volume_dao.get_vehicle_violation_by_number_plate(number_plate)
+
+        # print("违规信息车牌好{}".format(datas))
         return JsonResponse(datas)
     else:
         return  JsonResponse({"isExist":0})
@@ -202,8 +206,9 @@ def get_pass_count_table_statistics(request):
 
     if request.method == "GET":
         datas=DataMaintenance.car_volume_dao.get_pass_count_table_statistics()
-        print("车流量表")
-        print(datas)
+        # ("车流量表")
+        # print(datas)
+        # print("返回车流量数据{}".format(datas))
         return JsonResponse({"pass":datas})
     else:
         return JsonResponse({"isExist":0})
@@ -233,9 +238,8 @@ def submit_scene_info(request):
     img_path=""
     if request.method == "POST":
         scene_info=json.loads(request.body)
-        print(scene_info)
+        # print(scene_info)
         if scene_info["scene"]=="1":
-
             if os.path.exists(osp.join('videoData','video',scene_info["file_name"])) \
                     and os.path.exists(osp.join('videoData','video',scene_info["emd_name"])):
                 DataMaintenance.car_volume_dao.set_task(scene_info["file_name"])
@@ -268,6 +272,7 @@ def submit_task(request):
 
         datas = {"label_info": img_label}
         # 将视频快照保存在snapshotimages文件夹
+        # print(DataMaintenance.task_info)
         write_snapshot_image(
             get_vehicle_violation_imag_path(Cfg.video_save_dir, DataMaintenance.task_info["scene_info"]["file_name"]))
 

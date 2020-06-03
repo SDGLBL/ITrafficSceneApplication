@@ -132,7 +132,9 @@ class CarsVolumeDao(object):
                 task={'id':data["id"],
                       'date':datetime.strftime(data["commitDate"],"%Y-%m-%d %H:%M:%S"),
                       'task_name':data["taskName"],
-                      'snapshot_path':data["snapShotPath"]}
+                      'snapshot_path':"http://121.199.31.199/static/cs/lot_15.jpg"}
+                #Chrome不允许返回本地资源
+                #data["snapShotPath"]
                 tasks_list['tasks'].append(task)
                 tasks_list["isExist"]=1
 
@@ -146,31 +148,54 @@ class CarsVolumeDao(object):
         :return: 违规历史折线图信息
         """
         line_chart_datas = {
-            "legend": {
-                "data": ["左行驶车流量", "右行驶车流量", "前行驶车流量", "总车流量"]
+            "Legend": {
+                "data": [
+                    "左行驶车流量",
+                    "右行驶车流量",
+                    "前行驶车流量",
+                    "总车流量"
+                ]
             },
             "xAxis": {
-                "data": []
+                "data": [],
+                "type": "category",
+                "boundaryGap": False
             },
             "series": [
                 {
+                    "stack": "总量",
+                    "data": [
+
+                    ],
                     "name": "左行驶车流量",
-                    "data": []
+                    "type": "line"
                 },
                 {
+                    "stack": "总量",
+                    "data": [
+
+                    ],
                     "name": "右行驶车流量",
-                    "data": []
+                    "type": "line"
                 },
                 {
+                    "stack": "总量",
+                    "data": [
+
+                    ],
                     "name": "前行驶车流量",
-                    "data": []
+                    "type": "line"
                 },
                 {
+                    "stack": "总量",
+                    "data": [
+
+                    ],
                     "name": "总车流量",
-                    "data": []
+                    "type": "line"
                 }
             ],
-            "isExist": 0
+            "isExist": 1
         }
         with MysqlPool() as db:
             db.cursor.execute("select record_time,left_num,right_num,straight_num,total_num from tb_line_chart "
@@ -201,34 +226,38 @@ class CarsVolumeDao(object):
         table=[]
         dict={0:"name",
               1:"left",
-              2:"right",
-              3:"ahead"}
+              2:"ahead",
+              3:"right"}
         y_to_z={
             "car":"小汽车",
             "bus":"巴士",
             "truck":"卡车"
         }
         if "pass_count_table" in img_info.keys():
-            for inx,list in enumerate(img_info['pass_count_table']):
-                if scene=="1":
-                    if inx!=0 and inx!=len(img_info["pass_count_table"])-1:
-                        object_type_list={}
-                        for inx1,data in enumerate(list):
-                            if inx1!=(len(list)-1):
-                                if data in y_to_z.keys():
-                                    data=y_to_z[data]
-                                if data.isdigit():
-                                    object_type_list[dict[inx1]]=int(data)
-                                else:
-                                    object_type_list[dict[inx1]] = data
-                        table.append(object_type_list)
-                else:
-                    raise AttributeError('场景号不为{}'.format(scene))
+            if img_info["pass_count_table"][1]:
+                for inx,list in enumerate(img_info['pass_count_table'][0]):
+                    if scene=="1":
+                        if inx!=0 and inx!=len(img_info["pass_count_table"][0])-1:
+                            object_type_list={}
+                            for inx1,data in enumerate(list):
+                                if inx1!=(len(list)-1):
+                                    if data in y_to_z.keys():
+                                        data=y_to_z[data]
+                                    if data.isdigit():
+                                        object_type_list[dict[inx1]]=int(data)
+                                    else:
+                                        object_type_list[dict[inx1]] = data
+                            table.append(object_type_list)
+                    else:
+                        raise AttributeError('场景号不为{}'.format(scene))
+                    print("table表数据{}".format(table))
+        if len(table)!=0:
             datas["pass_count_table"]=table
             datas['isExist'] = 1
+            self.redis.set('pass_count_table', json.dumps(datas))
         else:
             datas['isExist']=0
-        self.redis.set('pass_count_table',json.dumps(datas))
+
 
     def get_pass_count_table_statistics(self):
         """
@@ -236,8 +265,9 @@ class CarsVolumeDao(object):
         :param pass_count_table:
         :return: 车流量表数据
         """
-        datas=json.loads(self.redis.get('pass_count_table'))
-        if datas:
+
+        if self.redis.get('pass_count_table'):
+            datas = json.loads(self.redis.get('pass_count_table'))
             return datas["pass_count_table"]
         else:
             datas= {'isExist': 0}

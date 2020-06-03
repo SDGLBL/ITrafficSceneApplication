@@ -45,7 +45,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 if info_type not in self.process_type:
                     raise AttributeError('该组件不支持处理类型为{}的车辆通行数据'.format(info_type))
                 # 如果为可以进行处理的数据则开始进行处理
-                object_id = int(info['id'])  # 目标id
+                object_id = info['id']  # 目标id
                 start_time = info['start_time']  # 被开始跟踪时间点
                 end_time = info['end_time']  # 结束跟踪时间点
                 passage_type = info['passage_type']  # 通行类型  直行 左转 右行
