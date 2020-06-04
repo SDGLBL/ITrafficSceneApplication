@@ -32,7 +32,7 @@ def __build_backbone_component(backbone_component_cfg):
 # 定义head 进程的运行函数
 def __head_process(head_cfg, sendqs, timeout):
     head = __build_head_component(head_cfg)
-    logger.info('create ' + str(head_cfg) + ' and which len is {}'.format(len(head)))
+    logger.info('create ' + str(head_cfg['type']) + ' and which len is {}'.format(len(head)))
     try:
         for kwargs in head:
             for sendq in sendqs:
@@ -52,7 +52,7 @@ def __head_process(head_cfg, sendqs, timeout):
 # 定义detector 进程的运行函数
 def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout):
     detector = __build_detector_component(detector_cfg)
-    logger.info('create ' + str(detector_cfg))
+    logger.info('create ' + str(detector_cfg['type']))
     try:
         while True:
             kwargs = recivq.get(timeout=timeout)
@@ -78,7 +78,7 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout):
 
 def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
     tracker = __build_tracker_component(tracker_cfg)
-    logger.info('create ' + str(tracker_cfg))
+    logger.info('create ' + str(tracker_cfg['type']))
     try:
         while True:
             kwargs = recivq.get(timeout=timeout)
@@ -107,7 +107,7 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
 def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout):
     # 实例化一个backbone里面所有的组件
     backbone_components = [__build_backbone_component(bbcfg) for bbcfg in backbone_cfg]
-    logger.info('create backbone {0} '.format(backbone_cfg))
+    logger.info('create backbone')
     try:
         while True:
             kwargs = recivq.get(timeout=timeout)

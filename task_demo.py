@@ -39,7 +39,7 @@ if __name__ == '__main__':
         elif name == 'backbones':
             for backbone in component_cfg:
                 for backbone_component_cfg in backbone:
-                    print(backbone_component_cfg)
+                    # print(backbone_component_cfg)
                     cfg_type = backbone_component_cfg['type']
                     if cfg_type == 'PathExtract':
                         backbone_component_cfg['eModelPath'] = 'videoData/video/lot_15.emd'

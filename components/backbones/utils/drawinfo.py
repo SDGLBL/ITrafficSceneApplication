@@ -49,7 +49,7 @@ class DrawInfoComponent(BaseBackboneComponent):
                 if analysis['info_type'] == 'pass':
                     info_str = '{}>A {} passed and {}'.format(self.infoID, analysis['obj_type'], self.transformInfo[analysis['passage_type']])
                     self.infoID += 1
-                    print(info_str)
+                    # print(info_str)
                     self.info['broadcast'].append(info_str)
                     self.change = True
 
@@ -84,7 +84,7 @@ class DrawInfoComponent(BaseBackboneComponent):
         listLen = 0
         broadcast = self.info['broadcast']
         for i in range(len(broadcast)-1, -1, -1):
-            print(self.info['broadcast'][i])
+            # print(self.info['broadcast'][i])
             cv2.putText(plate,
                         self.info['broadcast'][i],
                         (start[0], start[1] + step[1] * listLen),
