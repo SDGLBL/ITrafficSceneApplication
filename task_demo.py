@@ -5,7 +5,8 @@ from threading import Thread
 
 import mmcv
 import numpy as np
-
+from os.path import join
+from cfg import DataConfig
 from task.build import TaskBuilder
 from task.configs.crossRoadsTaskFake import CrossRoadsTaskFakeCfg
 
@@ -32,8 +33,8 @@ if __name__ == '__main__':
     # 因为使用FakeCfg模拟目标探测的效果所以需要在head导入视频路径和已经探测好的json文件
     for name,component_cfg in CrossRoadsTaskFakeCfg.items():
         if name == 'head':
-            component_cfg[0]['filename'] = 'videoData/video/lot_15.mp4'
-            component_cfg[0]['json_filename'] = 'videoData/video/lot_15.json'
+            component_cfg[0]['filename'] = join(DataConfig.VIDEO_DIR,'lot_15.mp4')
+            component_cfg[0]['json_filename'] = join(DataConfig.JSON_DIR,'lot_15.json')
         elif name == 'tracker':
             continue
         elif name == 'backbones':
@@ -42,9 +43,9 @@ if __name__ == '__main__':
                     # print(backbone_component_cfg)
                     cfg_type = backbone_component_cfg['type']
                     if cfg_type == 'PathExtract':
-                        backbone_component_cfg['eModelPath'] = 'videoData/video/lot_15.emd'
+                        backbone_component_cfg['eModelPath'] = join(DataConfig.EMODEL_DIR,'lot_15.emd')
                     elif cfg_type == 'TrafficStatistics':
-                        backbone_component_cfg['eModelPath'] = 'videoData/video/lot_15.emd'
+                        backbone_component_cfg['eModelPath'] = join(DataConfig.EMODEL_DIR,'lot_15.emd')
                         backbone_component_cfg['is_process'] = True # 车流统计模块需要选择是否开启
                     elif cfg_type == 'ParkingMonitoringComponent':
                         backbone_component_cfg['monitoring_area'] = parking_monitoring_area

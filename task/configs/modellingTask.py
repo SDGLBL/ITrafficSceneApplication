@@ -1,11 +1,11 @@
-from cfg import Cfg
+from cfg import TaskConfig
 import torch
 ModellingTaskCfg = {
     'head': [
         {
             'type': 'VideoFileHead',
             'filename': './gta5_small.mp4',
-            'step': Cfg.batch_size,
+            'step': TaskConfig.BATCH_SIZE,
             'cache_capacity': 100
         }
     ],
@@ -13,7 +13,7 @@ ModellingTaskCfg = {
         {
             'type': 'Yolov4Detector',
             'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-            'batch_size': Cfg.batch_size
+            'batch_size': TaskConfig.BATCH_SIZE
         }
     ],
     'tracker': [
@@ -29,7 +29,7 @@ ModellingTaskCfg = {
             {
                 'type': 'Modelling',
                 'revise': False,
-                'modelPath': 'videoData/model/gta5_small.emd',
+                'modelPath': None,
                 'dataNum': 30000
             }
         ]

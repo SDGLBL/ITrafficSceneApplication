@@ -1,11 +1,11 @@
-from cfg import Cfg
+from cfg import TaskConfig
 CrossRoadsTaskFakeCfg = {
     'head': [
         {
             'type': 'EquivalentHead',
             'filename': 'videoData/video/gta5_small.mp4',
             'json_filename': 'videoData/json/gta5_small.json',
-            'step': Cfg.batch_size,
+            'step': TaskConfig.BATCH_SIZE,
             'cache_capacity': 100,
             'haveImg': True
         }
@@ -20,7 +20,7 @@ CrossRoadsTaskFakeCfg = {
             # fps计数组件
             {
                 'type': 'FpsCollectorComponent',
-                'isPrint': Cfg.is_print_fps
+                'isPrint': TaskConfig.IS_PRINT_FPS
             },
             {
                 'type': 'PathExtract',   # 路径分析模块，基础模块，不可或缺
@@ -34,7 +34,7 @@ CrossRoadsTaskFakeCfg = {
             {
                 'type': 'ParkingMonitoringComponent', # 违章停车监控组件
                 'monitoring_area': None, # 监控区域，必须赋值
-                'allow_stop_time': Cfg.allow_stop_time,
+                'allow_stop_time': TaskConfig.ALLOW_STOP_TIME,
                 'is_process':False # 是否开启该组件
             },
             {
@@ -60,7 +60,7 @@ CrossRoadsTaskFakeCfg = {
                 'type': 'RtmpWriteComponent',
                 'resolution': (1920, 1080),
                 'fps': 30,
-                'rtmpUrl': 'rtmp://localhost:1935/live/home'
+                'rtmpUrl': TaskConfig.RTMP_URL
             }
 
         ]
