@@ -2,8 +2,7 @@ import numpy as np
 
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
-from utils.dao import fomate_time2time, time2fomate_time
-from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img
+from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img,format_time2time,time2format_time,get_current_time
 
 
 @BACKBONE_COMPONENT.register_module
@@ -58,8 +57,8 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                 x_c, y_c = bbox2center(obj['bbox'])
                 # 如果该目标的中心位于检测区域
                 current_position_type = self.monitoring_area[int(y_c), int(x_c)]
-                start_time = fomate_time2time(img_info['time'])
-                end_time = fomate_time2time(img_info['time'])
+                start_time = format_time2time(img_info['time'])
+                end_time = format_time2time(img_info['time'])
                 if current_position_type in self.no_allow_car.keys():
                     # 如果目标的类别不允许出现在这个区域内则进行记录
                     number_plate = identify_number_plate(img, obj['bbox'])
@@ -70,8 +69,8 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                         img_info['analysis'].append({
                                 'info_type': 'illegal_occupation',
                                 'id': obj_id,
-                                'start_time': time2fomate_time(start_time),
-                                'end_time': time2fomate_time(end_time),
+                                'start_time': time2format_time(start_time),
+                                'end_time': time2format_time(end_time),
                                 'passage_type': 'None',  # 因为是违法占用车道，所以没有通行类型
                                 'obj_type': obj['cls_pred'],
                                 'number_plate': identify_number_plate(img,obj['bbox']),

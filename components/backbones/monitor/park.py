@@ -2,8 +2,7 @@ import numpy as np
 
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
-from utils.dao import fomate_time2time, time2fomate_time
-from utils.utils import bbox2center, identify_number_plate, point_distance
+from utils.utils import bbox2center, identify_number_plate, point_distance,time2format_time,format_time2time
 
 
 @BACKBONE_COMPONENT.register_module
@@ -37,11 +36,11 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
             # 每次只取一张进行处理
             img, img_info = imgs[0], imgs_info[0]
             # 如果达到一定的时间间隔检查一遍维护的列表
-            if self.curent_step % (self.check_step * 10):
-                for index, obj in self.objs:
+            if self.curent_step % (self.check_step * 10) == 0:
+                for obj_id, obj in self.objs.items():
                     # 如果一个目标失去跟踪20s即将他删除
-                    if fomate_time2time(img_info['time']) - obj['end_time'] > 20:
-                        del self.objs[index]
+                    if format_time2time(img_info['time']) - obj['end_time'] > 20:
+                        del self.objs[obj_id]
                         index = self.no_record_id.index(obj['id'])
                         del self.no_record_id[index]
 
@@ -66,7 +65,7 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         # print('id 为 {} 的目标进入禁止停车位置,车牌号为 {}'.format(obj['id'], number_plate))
                         self.objs[obj_id] = {
                             'point': (x_c, y_c),
-                            'start_time': fomate_time2time(img_info['time']),
+                            'start_time': format_time2time(img_info['time']),
                             'end_time': None,
                             'imgs': [img],
                             'number_plate': number_plate
@@ -74,7 +73,7 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                     # 如果目标早已被监测，刷新其状态
                     else:
                         start_time = self.objs[obj_id]['start_time']
-                        end_time = fomate_time2time(img_info['time'])
+                        end_time = format_time2time(img_info['time'])
                         point = bbox2center(obj['bbox'])
                         self.objs[obj_id]['end_time'] = end_time
                         # print('{}目标早已被监测，刷新其状态'.format(obj_id))
@@ -95,8 +94,8 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                             img_info['analysis'].append({
                                 'info_type': 'illegal_parking',
                                 'id': obj_id,
-                                'start_time': time2fomate_time(start_time),
-                                'end_time': time2fomate_time(end_time),
+                                'start_time': time2format_time(start_time),
+                                'end_time': time2format_time(end_time),
                                 'passage_type': 'None',  # 因为是违法停车，所以没有通行类型
                                 'obj_type': obj['cls_pred'],
                                 'number_plate': self.objs[obj_id]['number_plate'],
@@ -107,7 +106,7 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         # 如果没有移动且停车时间还未达到违规范围，刷新其end_time
                         elif point_distance(point, self.objs[obj_id]['point']) < 20:
                             # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))
-                            self.objs[obj_id]['end_time'] = fomate_time2time(img_info['time'])
+                            self.objs[obj_id]['end_time'] = format_time2time(img_info['time'])
                             self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
                             # 如果上次车牌号没检测出来继续检测识别
                             if self.objs[obj_id]['number_plate'] is None:
@@ -115,13 +114,13 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         # 如果移动了，我们认为改目标不算违章停车那就更新它的start_time
                         elif point_distance(point, self.objs[obj_id]['point']) > 100:
                             # print('{}移动了我们认为改目标不算违章停车那就更新它的start_time'.format(obj_id))
-                            self.objs[obj_id]['start_time'] = fomate_time2time(img_info['time'])
+                            self.objs[obj_id]['start_time'] = format_time2time(img_info['time'])
                             # 刷新违规截图
                             self.objs[obj_id]['imgs'][0] = img
                             self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
                         else:
                             # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))
-                            self.objs[obj_id]['end_time'] = fomate_time2time(img_info['time'])
+                            self.objs[obj_id]['end_time'] = format_time2time(img_info['time'])
                             self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
 
         else:

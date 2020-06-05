@@ -4,7 +4,7 @@ from functools import reduce
 
 import cv2
 
-from utils.dao import get_connection, excute_sql
+from utils.mysqldao import get_connection, excute_sql
 from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 

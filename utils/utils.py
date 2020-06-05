@@ -1,6 +1,7 @@
 import math
 import random
-
+import datetime
+import time
 import cv2
 import numpy as np
 from hyperlpr import HyperLPR_plate_recognition
@@ -185,3 +186,39 @@ def identify_number_plate(raw_img: np.ndarray, bbox):
             return result[0][0]
         else:
             return None
+
+
+def get_current_time():
+    """获取格式化时间
+    Example: Year-month-day hour:minute:second
+
+    Returns:
+        str: 格式化的时间
+    """    
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def format_time2time(format_time: str):
+    """将格式化时间转换为时间戳
+
+    Args:
+        format_time (str): 格式化的时间 格式为 Year-month-day hour:minute:second
+
+    Returns:
+        time: 时间戳
+    """    
+    ts = time.strptime(format_time, "%Y-%m-%d %H:%M:%S")
+    return time.mktime(ts)
+
+
+def time2format_time(nomal_time: str):
+    """将时间戳转换为格式化时间
+
+    Args:
+        nomal_time (str): 字符串化的时间戳
+
+    Returns:
+        str: 格式化时间
+    """    
+    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(nomal_time))
+    return format_time
