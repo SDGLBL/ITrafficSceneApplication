@@ -66,7 +66,7 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         self.objs[obj_id] = {
                             'point': (x_c, y_c),
                             'start_time': format_time2time(img_info['time']),
-                            'end_time': None,
+                            'end_time': format_time2time(img_info['time']),
                             'imgs': [img],
                             'number_plate': number_plate
                         }

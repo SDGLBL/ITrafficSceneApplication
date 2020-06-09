@@ -112,11 +112,11 @@ class speedMap:
         index = np.argmax(map)
         y = index//map.shape[1]
         x = index - y*map.shape[1]
-        print([x,y])
+        # print([x,y])
         cv2.circle(stopMask, (x,y), 5, 125,thickness=-1)
 
         # 为最大值增加一个偏移量：
-        print(self.avgBbox)
+        # print(self.avgBbox)
 
         x = int(x + self.avgBbox * math.cos(self.mainAxis)*adjust)
         y = int(y + self.avgBbox * math.sin(self.mainAxis)*adjust)

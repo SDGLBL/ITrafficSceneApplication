@@ -53,8 +53,7 @@ def draw_label(
 
 
 def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
-    """
-    获取随机颜色，数量为传入的类别数量
+    """获取随机颜色，数量为传入的类别数量
     Args:
         classes:
 
@@ -70,8 +69,7 @@ def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/da
 
 
 def bbox2center(bbox):
-    """
-    将bbox转换为中心坐标点
+    """将bbox转换为中心坐标点
     Arguments:
         bbox {list(int64)} -- [x1,y1,x2,y2]
 
@@ -84,8 +82,7 @@ def bbox2center(bbox):
 
 
 def bbox_distance(bbox1, bbox2):
-    """
-    计算两个bbox之间的距离
+    """计算两个bbox之间的距离
 
     Arguments:
         bbox1 {list(int64)} -- [x1,y1,x2,y2]
@@ -100,8 +97,7 @@ def bbox_distance(bbox1, bbox2):
 
 
 def point_distance(point1, point2):
-    """
-    计算两点的距离
+    """计算两点的距离
     Args:
         point1: 第一个点
         point2: 第二个点

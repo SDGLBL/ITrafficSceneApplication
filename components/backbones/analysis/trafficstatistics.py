@@ -18,7 +18,7 @@ class TrafficStatistics(BaseBackboneComponent):
             self.dirStr[dirC[0]] = self.indX[0]
             self.dirStr[dirC[1]] = self.indX[1]
             self.dirStr[dirC[2]] = self.indX[2]
-            print(self.dirStr)
+            # print(self.dirStr)
         elif self.model['reachable_mat'].shape[1] == 2:
             self.indX = ['左拐','右拐']
             dirC = np.argsort(self.dirK.cluster_centers_)

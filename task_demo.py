@@ -5,6 +5,7 @@ from threading import Thread
 
 import mmcv
 import numpy as np
+import time
 from os.path import join
 from cfg import DataConfig
 from task.build import TaskBuilder
@@ -20,6 +21,7 @@ def read_info_from_task(mqs):
                     print(img_info['analysis'])
     except Empty:
         print('主进程结束')
+        return
 
 if __name__ == '__main__':
     # Linux平台启动
@@ -55,7 +57,7 @@ if __name__ == '__main__':
                         backbone_component_cfg['no_allow_car'] = {2:['car']}
                         backbone_component_cfg['is_process'] = True
     task = TaskBuilder(CrossRoadsTaskFakeCfg)
-    mqs = task.build()
+    mqs = task.build(timeout=10)
     task.start()
     readt = Thread(target=read_info_from_task, args=(mqs,))
     readt.start()

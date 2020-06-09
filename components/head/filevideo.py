@@ -1,6 +1,6 @@
 import mmcv
 
-from utils.dao import get_current_time
+from utils.utils import get_current_time
 from .base import BaseVideoPipeline
 from .registry import HEAD
 

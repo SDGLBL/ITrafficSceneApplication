@@ -3,8 +3,7 @@ from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 from .tools import get_centre, projection, vLen
 import math
-from utils.dao import get_current_time
-from utils.utils import identify_number_plate
+from utils.utils import identify_number_plate,get_current_time
 
 @BACKBONE_COMPONENT.register_module
 class stateAnalysis(BaseBackboneComponent):

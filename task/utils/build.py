@@ -30,11 +30,15 @@ def __build_backbone_component(backbone_component_cfg):
 
 
 # 定义head 进程的运行函数
-def __head_process(head_cfg, sendqs, timeout):
+def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
     head = __build_head_component(head_cfg)
     logger.info('create ' + str(head_cfg['type']) + ' and which len is {}'.format(len(head)))
     try:
         for kwargs in head:
+            if not run_semaphore.value:
+                logger.info('通过信号量停止了head')
+                break
+            pause_event.wait()
             for sendq in sendqs:
                 sendq.put(kwargs, timeout=timeout)
     except KeyboardInterrupt:
@@ -45,16 +49,21 @@ def __head_process(head_cfg, sendqs, timeout):
         logger.exception(e)
     finally:
         for sendq in sendqs:
-            sendq.close()
+            sendq.cancel_join_thread()
         logger.info('release the head source')
+    return
 
 
 # 定义detector 进程的运行函数
-def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout):
+def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout, run_semaphore, pause_event):
     detector = __build_detector_component(detector_cfg)
     logger.info('create ' + str(detector_cfg['type']))
     try:
         while True:
+            if not run_semaphore.value:
+                logger.info('通过信号量停止了detector')
+                break
+            pause_event.wait()
             kwargs = recivq.get(timeout=timeout)
             kwargs = detector(**kwargs)
             # 因为后续可能是backbones也可能是tracker所以使用list来发送
@@ -72,15 +81,20 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout):
         del detector  # 清除探测器对象
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
         for sendq in sendqs:
-            sendq.close()
+            sendq.cancel_join_thread()
         logger.info('release the detector source')
+    return
 
 
-def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
+def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore, pause_event):
     tracker = __build_tracker_component(tracker_cfg)
     logger.info('create ' + str(tracker_cfg['type']))
     try:
         while True:
+            if not run_semaphore.value:
+                logger.info('通过信号量停止了tracker')
+                break
+            pause_event.wait()
             kwargs = recivq.get(timeout=timeout)
             imgs, imgs_info = kwargs['imgs'], kwargs['imgs_info']
             for index, (img, img_info) in enumerate(zip(imgs, imgs_info)):
@@ -100,16 +114,21 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout):
         del tracker  # 清除探测器对象
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
         for sendq in sendqs:
-            sendq.close()
+            sendq.cancel_join_thread()
         logger.info('release the tracker source')
+    return
 
 
-def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout):
+def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout, run_semaphore, pause_event):
     # 实例化一个backbone里面所有的组件
     backbone_components = [__build_backbone_component(bbcfg) for bbcfg in backbone_cfg]
     logger.info('create backbone')
     try:
         while True:
+            if not run_semaphore.value:
+                logger.info('通过信号量停止了backbone')
+                break
+            pause_event.wait()
             kwargs = recivq.get(timeout=timeout)
             # 首先由该管道内的第一个组件处理数据
             kwargs = backbone_components[0](**kwargs)
@@ -129,18 +148,20 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout)
         logger.warning('通向主进程的队列已满，请检查主进程是否正常取出数据')
     except Exception as e:
         logger.exception(e)
+    finally:
+        sendq.cancel_join_thread()
     return
 
 
-def build_process(cfg_type, cfg, recivqs, sendqs, timeout):
+def build_process(cfg_type, cfg, recivqs, sendqs, timeout,run_semaphore,pause_event):
     if cfg_type == 'head':
-        return [Process(target=__head_process, args=(cfg[0], sendqs, timeout,))]
+        return [Process(target=__head_process, args=(cfg[0], sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'detector':
-        return [Process(target=__detector_process, args=(cfg[0], recivqs[0], sendqs, timeout,))]
+        return [Process(target=__detector_process, args=(cfg[0], recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'tracker':
-        return [Process(target=__tracker_process, args=(cfg[0], recivqs[0], sendqs, timeout,))]
+        return [Process(target=__tracker_process, args=(cfg[0], recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'backbones':
-        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout,))
+        return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout, run_semaphore, pause_event,))
                 for backbone_cfg, recivq, sendq in zip(cfg, recivqs, sendqs)]
     else:
         raise AttributeError('暂时不支持类型为{}的组件'.format(cfg_type))

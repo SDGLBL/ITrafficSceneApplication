@@ -53,15 +53,15 @@ CrossRoadsTaskFakeCfg = {
             #     'img_save_path':Cfg.img_save_dir
             # },
 
-            {
-              'type': 'DrawBoundingBoxComponent'  # 画框框
-            },
-            {
-                'type': 'RtmpWriteComponent',
-                'resolution': (1920, 1080),
-                'fps': 30,
-                'rtmpUrl': TaskConfig.RTMP_URL
-            }
+            # {
+            #   'type': 'DrawBoundingBoxComponent'  # 画框框
+            # },
+            # {
+            #     'type': 'RtmpWriteComponent',
+            #     'resolution': (1920, 1080),
+            #     'fps': 30,
+            #     'rtmpUrl': TaskConfig.RTMP_URL
+            # }
 
         ]
     ]

@@ -1,4 +1,6 @@
+
 class BaseBuild(object):
+
     def __init__(self):
         """基础建造者类
         
@@ -18,5 +20,15 @@ class BaseBuild(object):
         """开始运行方法
         此方法必须使用多进程和进程队列,分别将build创建的函数使用多进程启动,编写过程请一定注意
         差错捕捉与处理,并在关键运行处添加Loger
+        """        
+        pass
+
+    def kill(self):
+        """停止该Task
+        """        
+        pass
+
+    def suspend(self):
+        """暂停该Task
         """        
         pass
