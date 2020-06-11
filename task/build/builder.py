@@ -2,8 +2,7 @@ import time
 
 from ..base import BaseBuild
 from task.utils import build_process
-from torch.multiprocessing import Process, Queue
-from torch.multiprocessing import Manager
+from multiprocessing import Process, Queue, Manager 
 class TaskBuilder(BaseBuild):
     def __init__(self, cfg):        
         super().__init__()
@@ -41,14 +40,20 @@ class TaskBuilder(BaseBuild):
         for i in range(len(compile_list)):
             task_component = compile_list[i][1]
             # 检查Task组件cfg
-            if not isinstance(task_component, list) or len(task_component) == 0:
-                raise AttributeError('TaskComponentCfg必须为list且非空')
+            if not isinstance(task_component, (dict,list)):
+                raise RuntimeError('TaskComponentCfg必须为list或者dict')
+            if isinstance(task_component,list):
+                if len(task_component) == 0:
+                    raise RuntimeError('backbones不能为空')
             if i + 1 < len(compile_list):
-                qnum = len(compile_list[i + 1][1])
+                qnum = 1 if not isinstance(compile_list[i + 1][1],list) else len(compile_list[i + 1][1])
                 sendqs = [Queue(maxsize=maxsize) for _ in range(qnum)]
                 sendqs_list.append(sendqs)
         backbone_num = len(compile_list[-1][1])
         backbone2main = [Queue(maxsize=50) for _ in range(backbone_num)]
+        # 通过如下操作使得发送与接受quenue错位
+        # sendqs_list = [head2detector,detector2tracker,tracker2backbone,backbone2main]
+        # recivqs_list = [None,head2detector,detector2tracker,tracker2backbone,backbone2main]
         sendqs_list.append(backbone2main)
         recivqs_list.append(None)
         for sendqs in sendqs_list:
@@ -62,7 +67,12 @@ class TaskBuilder(BaseBuild):
             self.task_args.append((tc_type, tc_cfg, recivq, sendqs, timeout))
         return backbone2main
 
-    def start(self, join=False):
+    def start(self):
+        """启动该Task,如果该Task已经被挂起则使用该函数将会唤醒该Task,但如果task已经被kill调用此方法将会抛出错误
+
+        Raises:
+            RuntimeError: 无法继续已经被杀死的Task
+        """        
         # 如果task还未构建和启动
         if not self.is_start:
             self.is_start = True
@@ -74,7 +84,7 @@ class TaskBuilder(BaseBuild):
             time.sleep(2)
         # 如果task已经成功启动过但被杀死了
         elif self.is_start and not self.run_se.value:
-            raise AttributeError('无法继续已经被杀死的Task')
+            raise RuntimeError('无法继续已经被杀死的Task')
         # 如果task已经被启动过但只是被挂起了
         else:
             self.pause_event.set()
@@ -93,3 +103,14 @@ class TaskBuilder(BaseBuild):
         if not self.is_start:
             raise AttributeError('Task还未启动过，无法挂起')
         self.pause_event.clear()
+
+    def is_alive(self):
+        """判断该task是否死亡,请注意由于task是通过启动多个进程运行组件
+        而进程的结束必须要在访问到运行信号量的前提下才能正确退出，所以
+        如果在调用kill方法后立刻调用is_alive虽然会返回False，但实际进程
+        不一定已经被停止。
+        """        
+        if self.is_start and self.run_se.value == False:
+            return True
+        else:
+            return False

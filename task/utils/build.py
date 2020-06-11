@@ -41,6 +41,7 @@ def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
             pause_event.wait()
             for sendq in sendqs:
                 sendq.put(kwargs, timeout=timeout)
+                # print('head sendq len is {}'.format(sendq.qsize()))
     except KeyboardInterrupt:
         logger.info('user stop the head process')
     except Full:
@@ -101,6 +102,7 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore
                 img_info = tracker(img, img_info)
                 imgs_info[index] = img_info
             for sendq in sendqs:
+                # print('tracker sendq len is {}'.format(sendq.qsize()))
                 sendq.put({'imgs': imgs, 'imgs_info': imgs_info}, timeout=timeout)
     except KeyboardInterrupt:
         logger.info('user stop the detector process')
@@ -137,6 +139,7 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
                 for backbone_component in backbone_components[1:]:
                     kwargs = backbone_component(**kwargs)
                 # 处理到最后的数据直接清楚
+            # print('backbone sendq len is {}'.format(sendq.qsize())) 
             for img_info in kwargs['imgs_info']:
                 sendq.put(img_info, timeout=timeout)
     except KeyboardInterrupt:
@@ -155,11 +158,11 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
 
 def build_process(cfg_type, cfg, recivqs, sendqs, timeout,run_semaphore,pause_event):
     if cfg_type == 'head':
-        return [Process(target=__head_process, args=(cfg[0], sendqs, timeout, run_semaphore, pause_event,))]
+        return [Process(target=__head_process, args=(cfg, sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'detector':
-        return [Process(target=__detector_process, args=(cfg[0], recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
+        return [Process(target=__detector_process, args=(cfg, recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'tracker':
-        return [Process(target=__tracker_process, args=(cfg[0], recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
+        return [Process(target=__tracker_process, args=(cfg, recivqs[0], sendqs, timeout, run_semaphore, pause_event,))]
     elif cfg_type == 'backbones':
         return [Process(target=__backbone_process, args=(backbone_cfg, recivq, sendq, timeout, run_semaphore, pause_event,))
                 for backbone_cfg, recivq, sendq in zip(cfg, recivqs, sendqs)]

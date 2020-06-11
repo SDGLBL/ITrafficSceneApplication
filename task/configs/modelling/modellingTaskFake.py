@@ -1,14 +1,15 @@
-ModellingTaskFakeCfg = {
-    'head': [
+TaskCfg = {
+    'task_name':'环境建模Fake',
+    'head': 
         {
             'type': 'EquivalentHead',
-            'filename': 'videoData/video/gta5_small.mp4',
-            'json_filename': 'videoData/json/gta5_small.json',
+            'filename': None,
+            'json_filename': None,
             'step': 8,
             'cache_capacity': 100,
             'haveImg': False
         }
-    ],
+    ,
     'backbones': [
         [
             {
@@ -17,7 +18,7 @@ ModellingTaskFakeCfg = {
             {
                 'type': 'Modelling',
                 'mapSize':(1080,1920),
-                'modelPath': 'videoData/model/gta5_small.emd'
+                'modelPath': None 
             }
         ]
     ]

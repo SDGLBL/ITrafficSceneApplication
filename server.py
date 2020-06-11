@@ -125,7 +125,18 @@ def submit_task():
         'task_type':request.form['task_type'],
     }
     # TODO: 此处需要完成提交Task之后处理信息的过程
-    
+
+@app.route('/api/task/suspend/<string:task_name>')
+def suspend_task(task_name: str):
+    pass
+
+@app.route('/api/task/kill/<string:task_name>')
+def kill_task(task_name: str):
+    pass
+
+@app.route('/api/task/start/<string:task_name>')
+def start_task(task_name: str):
+    pass
 
 if __name__ == "__main__":
     taskManger = TaskManager()

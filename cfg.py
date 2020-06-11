@@ -9,6 +9,9 @@ class TaskConfig:
     RTMP_URL = 'rtmp://localhost:1935/live/home' # 默认视频流地址
     CRIMINAL_DIR = 'static/data/criminal' # 违规拍照保存目录
     MAX_TASK_NUM = 10 # Task队列长度
+    SCENE_CFG_DIR = 'task.configs.scene.' # 交通场景task config目录，用于动态导入taskcfg字典
+    MODELLING_CFG_DIR = 'task.configs.modelling.' # 交通场景建模task config目录，用于动态导入taskcfg字典
+    SIMPLE_CFG_DIR = 'task.configs.simple.' # 简单演示task config目录，用于动态导入taskcfg字典
 
 
 

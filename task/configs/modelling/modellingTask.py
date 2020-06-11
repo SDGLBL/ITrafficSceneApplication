@@ -1,26 +1,27 @@
 from cfg import TaskConfig
 import torch
-ModellingTaskCfg = {
-    'head': [
+TaskCfg = {
+    'task_name':'环境建模',
+    'head': 
         {
             'type': 'VideoFileHead',
-            'filename': './gta5_small.mp4',
+            'filename': None,
             'step': TaskConfig.BATCH_SIZE,
             'cache_capacity': 100
         }
-    ],
-    'detector': [
+    ,
+    'detector': 
         {
             'type': 'Yolov4Detector',
             'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
             'batch_size': TaskConfig.BATCH_SIZE
         }
-    ],
-    'tracker': [
+    ,
+    'tracker': 
         {
             'type': 'SORT_Track'
         }
-    ],
+    ,
     'backbones': [
         [
             {
@@ -29,7 +30,7 @@ ModellingTaskCfg = {
             {
                 'type': 'Modelling',
                 'revise': False,
-                'modelPath': None,
+                'modelPath': None, # 保存路径
                 'dataNum': 30000
             }
         ]

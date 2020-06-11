@@ -54,7 +54,7 @@ class DrawInfoComponent(BaseBackboneComponent):
                     self.change = True
 
             if 'pass_count_table' in img_info.keys():
-                if info['pass_count_table'][1]:
+                if img_info['pass_count_table'][1]:
                     self.info['pass_count_table'] = img_info['pass_count_table'][0]
                     self.change = True
             self.plate = self.makePlate()
