@@ -39,10 +39,7 @@ if __name__ == "__main__":
             }
         ]
     }
-    tm.submit(task_name='lot_15.mp4', **{
-        'task_type': 'crossRoadsTaskFake',
-        'task_component_cfgs': cfg
-    })
+    tm.submit(task_name='lot_15.mp4', task_type='crossRoadsTaskFake', task_cfgs=cfg)
     # time.sleep(5)
     # tm.suspend('lot_15.mp4')
     # print('lot_15.mp4挂起')

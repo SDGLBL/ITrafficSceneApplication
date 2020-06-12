@@ -39,7 +39,4 @@ if __name__ == '__main__':
             }
         ]
     }
-    tm.submit(task_name='lot_15.mp4', **{
-        'task_type': 'simpleTaskFake',
-        'task_component_cfgs': cfg
-    })
+    tm.submit(task_name='lot_15.mp4', task_type='simpleTaskFake', task_cfgs=cfg)
