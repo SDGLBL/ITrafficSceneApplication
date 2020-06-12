@@ -1,12 +1,11 @@
 import importlib
 import os
-from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
 from os.path import join
 from queue import Empty
 
 import numpy as np
-
+from threading import Thread
 from cfg import TaskConfig, DataConfig
 from task.task import Task
 from utils.logger import get_logger
@@ -38,7 +37,6 @@ class TaskManager(object):
         self.config_dir = config_dir
         self.tasks = {}
         self.logger = get_logger('logs/task.log')
-        self.read_pool = ThreadPoolExecutor(10)
 
     def submit(self, task_name: str, task_type: str, task_cfgs: dict):
         """提交一个Task
@@ -142,8 +140,10 @@ class TaskManager(object):
         task = Task(task_config)
         mqs = task.build()
         task.start()
+        # 启动读取数据线程
+        Thread(target=read_info_from_task, args=(mqs,)).start()
         self.tasks[task_name] = task
-        self.read_pool.submit(read_info_from_task, (mqs))
+
         return
 
     def is_exist(self, task_name: str):

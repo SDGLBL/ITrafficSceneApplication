@@ -37,12 +37,13 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
             img, img_info = imgs[0], imgs_info[0]
             # 如果达到一定的时间间隔检查一遍维护的列表
             if self.curent_step % (self.check_step * 10) == 0:
-                for obj_id, obj in self.objs.items():
+                for obj_id, obj in list(self.objs.items()):
                     # 如果一个目标失去跟踪20s即将他删除
                     if format_time2time(img_info['time']) - obj['end_time'] > 20:
                         del self.objs[obj_id]
-                        index = self.no_record_id.index(obj['id'])
-                        del self.no_record_id[index]
+                        if obj_id in self.no_record_id:
+                            index = self.no_record_id.index(obj_id)
+                            del self.no_record_id[index]
 
             if img.shape[:2] != self.monitoring_area.shape[:2]:
                 raise AttributeError('违规停车监测组件的监测区域遮罩矩阵大小必须与图像大小匹配')
@@ -76,13 +77,9 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         end_time = format_time2time(img_info['time'])
                         point = bbox2center(obj['bbox'])
                         self.objs[obj_id]['end_time'] = end_time
-                        # print('{}目标早已被监测，刷新其状态'.format(obj_id))
-                        # print('当前时间为{}'.format(img_info['index'] // 30))
                         # 如果超过允许停车的时间限度且没有移动
-                        # print('{}目标停止时间为{}'.format(obj_id,end_time - start_time))
                         if end_time - start_time >= self.allow_stop_time and point_distance(point, self.objs[obj_id][
                             'point']) < 20:
-                            # print('{} 超过允许停止时间限度，且没有移动，进行记录'.format(obj_id))
                             # 记录最后一张证据图
                             # 如果是完全不能停车的地方只需要记录一张违规截图
                             if self.allow_stop_time != 0:
