@@ -17,6 +17,7 @@ class Task(BaseBuild):
         self.pause_event.set()
         # 标记task是否被启动过
         self.is_start = False
+        self.backbone2main = None
 
     def build(self, timeout=10, maxsize=30):
         detector_cfg = None
@@ -66,7 +67,7 @@ class Task(BaseBuild):
             tc_type = tc[0]
             tc_cfg = tc[1]
             self.task_args.append((tc_type, tc_cfg, recivq, sendqs, timeout))
-        return backbone2main
+        self.backbone2main = backbone2main
 
     def start(self):
         """启动该Task,如果该Task已经被挂起则使用该函数将会唤醒该Task,但如果task已经被kill调用此方法将会抛出错误
@@ -86,6 +87,9 @@ class Task(BaseBuild):
         # 如果task已经成功启动过但被杀死了
         elif self.is_start and not self.run_se.value:
             raise RuntimeError('无法继续已经被杀死的Task')
+        # 如果task已经被成功启动而且还在运行
+        elif self.is_start and self.run_se.value and self.pause_event.is_set():
+            raise RuntimeWarning('Task已经被启动请不要重复启动')
         # 如果task已经被启动过但只是被挂起了
         else:
             self.pause_event.set()
@@ -94,23 +98,39 @@ class Task(BaseBuild):
         """杀死该Task,调用此方法后将无法再start该task
         """
         if not self.is_start:
-            raise AttributeError('Task还未启动过，无法杀死')
+            raise RuntimeError('Task还未启动过，无法杀死')
+        if not self.run_se.value:
+            raise RuntimeWarning('Task已经被杀死，请勿重复杀死该task')
         self.run_se.value = False
 
     def suspend(self):
         """挂起该Task，该task将会处于阻塞状态，直到再次调用start
         """
         if not self.is_start:
-            raise AttributeError('Task还未启动过，无法挂起')
+            raise RuntimeError('Task还未启动过，无法挂起')
         self.pause_event.clear()
 
     def is_alive(self):
-        """判断该task是否死亡,请注意由于task是通过启动多个进程运行组件
+        """判断该task是否存活,请注意由于task是通过启动多个进程运行组件
         而进程的结束必须要在访问到运行信号量的前提下才能正确退出，所以
         如果在调用kill方法后立刻调用is_alive虽然会返回False，但实际进程
-        不一定已经被停止。
+        不一定已经被停止或者挂起。
         """
-        if self.is_start and self.run_se.value is False:
+        if self.is_start and self.run_se.value is True:
             return True
         else:
             return False
+
+    def is_running(self):
+        """判断该task是否在运行
+        """
+        if self.is_start and self.pause_event.is_set():
+            return True
+        else:
+            return False
+
+    def get_readqs(self):
+        """获取信息读取队列
+        :return:
+        """
+        return self.backbone2main

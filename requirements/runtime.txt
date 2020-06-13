@@ -44,3 +44,4 @@ xmltodict==0.12.0
 mmcv==0.5.4
 pymysql==0.9.3
 redis==3.5.2
+llist==0.6 

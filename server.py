@@ -4,13 +4,14 @@ from os.path import exists, join
 
 import cv2
 import mmcv
-from flask import Flask, jsonify, url_for, request
-
+import json
 from cfg import DataConfig
-from task.manage.manager import TaskManager
 from utils.logger import get_logger
+from flask import Flask, jsonify, url_for, request
+from task import TaskManager,ImgInfoPool,get_cfgDataHandler
 
-Loger = get_logger('logs/server.log')
+
+
 app = Flask(__name__)
 
 
@@ -65,16 +66,16 @@ def get_task_list():
         {
             'task_name': task['task_name'],  # task名
             'task_snapshot_url': task['task_snapshot_url'],  # task处理的视频的截图
-            # 'task_progress': task['task_progress'] # taks进度
+            'task_progress': task['task_progress'] # taks进度
         }
-        for task in taskManger.tasks
+        for task in task_manger.tasks
     ]
     return jsonify(task_list)
 
 
 @app.route('/api/video/video_info/<string:video_name>')
 def get_video_info(video_name: str):
-    """获取指定视频的视频信息
+    """获取指定视频的视频处理信息
 
     Args:
         video_name (str): 视频名字。比如：lot_15.mp4
@@ -113,39 +114,85 @@ def delete_video(video_name: str):
     try:
         os.remove(join(DataConfig.VIDEO_DIR, video_name))
     except FileNotFoundError:
-        Loger.info('删除视频api被调用，指定被删除视频名字为{}，但其已经不存在了'.format(video_name))
-        return jsonify({'info': '视频不存在'})
-    return jsonify({'info': '视频已经被移除'})
+        server_loger.info('删除视频api被调用，指定被删除视频名字为{}，但其已经不存在了'.format(video_name))
+        return jsonify({'info': '视频不存在', 'is_success':True})
+    return jsonify({'info': '视频已经被移除', 'is_success':True})
 
 
-@app.route('/api/task/submit', methods=['POST', 'GET'])
+@app.route('/api/task/submit', methods=['POST'])
 def submit_task():
-    task_name = request.form['task_name']
-    # 首先先检查是否已经存在了这个task
-    if taskManger.is_exist(task_name):
-        # 如果task已经存在，则不进行处理
-        return jsonify({'info': '该任务已经存在，请勿重复提交'})
-    task_config = {
-        'task_type': request.form['task_type'],
-    }
-    # TODO: 此处需要完成提交Task之后处理信息的过程
+    """提交task
+    :return:
+    """
+    # 先进行数据类型转换
+    if request.method != 'POST':
+        return jsonify({'info':'提交taskApi只接受POST'})
+    task_cfg_data = request.get_data()
+    task_cfg_data = json.loads(task_cfg_data)
+    # 提取出task的name
+    task_name = task_cfg_data['task_name']
+    del task_cfg_data['task_name']
+    try:
+        # 处理传递来的数据
+        task_cfg = cfg_data_handler.handle(task_cfg_data)
+        # 提交任务到task manager
+        task_manger.submit(task_name,task_cfg)
+        jsonify({'info': '提交{}成功'.format(task_name), 'is_success':True})
+    except RuntimeWarning as rw:
+        server_loger.warning(rw)
+        jsonify({'info': '提交{}失败'.format(task_name), 'is_success':False})
 
 
 @app.route('/api/task/suspend/<string:task_name>')
 def suspend_task(task_name: str):
-    pass
-
+    try:
+        task_manger.suspend(task_name)
+        jsonify({'info': '挂起{}成功'.format(task_name), 'is_success':True})
+    except RuntimeError as e:
+        server_loger.error(e)
+        jsonify({'info':'挂起{}失败'.format(task_name), 'is_success':False})
 
 @app.route('/api/task/kill/<string:task_name>')
 def kill_task(task_name: str):
-    pass
+    try:
+        task_manger.kill(task_name)
+        jsonify({'info': '杀死{}成功'.format(task_name), 'is_success':True})
+    except RuntimeError as e:
+        server_loger.error(e)
+        jsonify({'info': '杀死{}失败'.format(task_name), 'is_success':False})
+    except RuntimeWarning as e:
+        server_loger.error(e)
+        jsonify({'info': '杀死{}失败,请不要杀死已经被杀死的task'.format(task_name), 'is_success':False})
 
 
 @app.route('/api/task/start/<string:task_name>')
 def start_task(task_name: str):
-    pass
+    try:
+        task_manger.resume(task_name)
+        jsonify({'info': '启动{}成功'.format(task_name), 'is_success':True})
+    except RuntimeError as e:
+        server_loger.error(e)
+        jsonify({'info': '启动{}失败'.format(task_name), 'is_success':False})
+    except RuntimeWarning as e:
+        server_loger.exception(e)
+        jsonify({'info': '启动{}失败,请不要重复启动已经启动了的task'.format(task_name), 'is_success':False})
+
+@app.route('/api/task/info/<string:task_name>')
+def get_info_from_pool(task_name: str):
+    try:
+        info = img_info_pool.get(task_name)
+        if info['info_type'] == 'illegal_parking':
+            # 保存违规图像
+            # for img in info['imgs']:
+            pass
+    except RuntimeError as e:
+        # server_loger.error(e)
+        jsonify({'info': '获取失败，{}task还为存储信息'.format(task_name), 'is_success':False})
 
 
 if __name__ == "__main__":
-    taskManger = TaskManager()
+    server_loger = get_logger('logs/server.log')
+    cfg_data_handler = get_cfgDataHandler()
+    img_info_pool = ImgInfoPool(max_size=30)
+    task_manger = TaskManager(img_info_pool)
     app.run(port=3001, debug=True)

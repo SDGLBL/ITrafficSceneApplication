@@ -47,7 +47,7 @@ TaskCfg = {
             {
                 'type': 'LaneMonitoringComponent', # 违法占用车道组件
                 'monitoring_area':None,  # 监控区域，必须赋值
-                'no_allow_car':{}, # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
+                'no_allow_car':None, # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
                 'is_process':False    # 是否开启该组件
             },
             # # 数据库写入组件

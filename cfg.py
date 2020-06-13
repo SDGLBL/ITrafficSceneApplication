@@ -19,4 +19,5 @@ class DataConfig:
     EMODEL_DIR = join(DATA_DIR, 'emodel')  # 环境模型保存目录
     JSON_DIR = join(DATA_DIR, 'json')  # FakeTask需要的json保存的目录
     SNAPSHOT_DIR = join(DATA_DIR, 'snapshot')  # 视频快照存储目录
+    CRIMINAL_DIR = join(DATA_DIR,'criminal') # 违规图像存储目录
     VIDEO_TYPE = ['mp4', 'avi']  # 可以处理的视频格式

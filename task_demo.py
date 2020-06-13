@@ -4,14 +4,30 @@ import numpy as np
 
 from cfg import DataConfig
 from task import TaskManager
+from task.manage.infopool import ImgInfoPool
+from threading import Thread
+import time
+def read_info_from_pool(task_name,pool:ImgInfoPool):
+    while True:
+        try:
+            x = pool.get(task_name)
+            if x is not None:
+                print('从信息池中读取到的信息为')
+                print(x)
+            time.sleep(10)
+        except:
+            pass
+
 
 if __name__ == "__main__":
-    tm = TaskManager()
+    pool = ImgInfoPool(60)
+    tm = TaskManager(pool)
     parking_monitoring_area = np.ones((1080, 1920), dtype=int)
     parking_monitoring_area[400:800, 750:1250] = 0
     lane_monitoring_area = np.ones((1080, 1920), dtype=int)
     lane_monitoring_area[400:800, 750:1250] = 2
     cfg = {
+        'task_type':'crossRoadsTaskFake',
         'head': {
             'filename': join(DataConfig.VIDEO_DIR, 'lot_15.mp4'),
             'json_filename': join(DataConfig.JSON_DIR, 'lot_15.json')
@@ -39,12 +55,19 @@ if __name__ == "__main__":
             }
         ]
     }
-    tm.submit(task_name='lot_15.mp4', task_type='crossRoadsTaskFake', task_cfgs=cfg)
-    # time.sleep(5)
-    # tm.suspend('lot_15.mp4')
-    # print('lot_15.mp4挂起')
-    # time.sleep(5)
-    # tm.resume('lot_15.mp4')
-    # print('恢复运行')
-    # time.sleep(5)
-    # tm.kill('lot_15.mp4')
+    from task import get_cfgDataHandler
+    handler = get_cfgDataHandler()
+    cfg = handler.handle(cfg)
+    tm.submit(task_name='lot_15.mp4', task_cfg=cfg)
+    tm.resume('lot_15.mp4')
+    t = Thread(target=read_info_from_pool,args=('lot_15.mp4',pool,))
+    t.start()
+    time.sleep(10)
+    print('挂起')
+    tm.suspend('lot_15.mp4')
+    time.sleep(10)
+    print('唤醒')
+    tm.resume('lot_15.mp4')
+    time.sleep(10)
+    print('杀死')
+    tm.kill('lot_15.mp4')
