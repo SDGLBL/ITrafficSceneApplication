@@ -1,6 +1,7 @@
 import sqlite3
+import os
 from .logger import get_logger
-
+from cfg import DataConfig
 logger = get_logger(filename='logs/database.log')
 
 
@@ -9,6 +10,8 @@ def get_connection(
         ):
     """获取数据库连接
     """
+    print(os.path.abspath(__file__))
+
     connection = sqlite3.connect(data_base)
     return connection
 
@@ -32,16 +35,34 @@ def excute_sql(connection:sqlite3.Connection,sql_str:str,args=(),is_return=False
     if not isinstance(args,tuple):
         raise AttributeError('args必须为元组')
     try:
-        with connection.cursor() as cursor:
-            if len(args) != 0:
-                cursor.execute(sql_str, args)
-            else:
-                cursor.execute(sql_str)
+        cursor = connection.cursor()
+        if len(args) != 0:
+            cursor.execute(sql_str, args)
+        else:
+            cursor.execute(sql_str) 
         if is_return:
             result = cursor.fetchone()
             return result
         else:
             connection.commit()
+            cursor.close()
     except Exception as e:
         logger.exception(e)
     return None
+
+def create_database(clear_exist = False):
+    """创建项目存储数据需要使用的数据库
+
+    Args:
+        clear_exist (bool, optional): 是否先清除已经存在的db数据库. Defaults to False.
+    """    
+    if os.path.exists(DataConfig.DATABASE_PATH) and clear_exist:
+        os.remove(DataConfig.DATABASE_PATH)
+    # 清理违规图像
+    for name in os.listdir(DataConfig.CRIMINAL_DIR):
+        os.remove(os.path.join(DataConfig.CRIMINAL_DIR,name))
+    create_traffic_str = "CREATE TABLE traffic (start_time_id TEXT NOT NULL,start_time INTEGER NOT NULL,end_time INTEGER NOT NULL,passage_type TEXT DEFAULT straight,obj_type TEXT DEFAULT car,number_plate TEXT,other_info TEXT,CONSTRAINT traffic_PK PRIMARY KEY (start_time_id));"
+    create_criminal_str = "CREATE TABLE criminal (start_time_id TEXT NOT NULL,number_plate TEXT,img_path TEXT,criminal_type TEXT NOT NULL,CONSTRAINT criminal_PK PRIMARY KEY (start_time_id),CONSTRAINT criminal_FK FOREIGN KEY (start_time_id) REFERENCES traffic(start_time_id));"
+    conn = get_connection(DataConfig.DATABASE_PATH)
+    excute_sql(conn,create_traffic_str)
+    excute_sql(conn,create_criminal_str)

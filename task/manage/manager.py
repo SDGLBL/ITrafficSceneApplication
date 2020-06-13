@@ -3,7 +3,7 @@ import os
 from os.path import exists
 from os.path import join
 from queue import Empty
-
+import time
 import numpy as np
 from threading import Thread
 from cfg import TaskConfig, DataConfig
@@ -38,7 +38,7 @@ class TaskManager(object):
         # ...]
         self.config_dir = config_dir
         self.tasks = {}
-        #
+        # TODO: 添加task实时信息刷新字典，方便前端api获取tak执行情况
         self.logger = get_logger('logs/task.log')
         self.info_pool = info_pool
 
@@ -97,7 +97,12 @@ class TaskManager(object):
             Boolen:存在返回True否则返回False
         """
         if task_name in self.tasks.keys():
-            self.tasks[task_name].kill()
+            try:
+                self.tasks[task_name].kill()
+            except:
+                pass
+            # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
+            time.sleep(2)
             # 回收task
             del self.tasks[task_name]
             self.info_pool.remove(task_name)
@@ -121,6 +126,5 @@ class TaskManager(object):
             task = self.tasks[task_name]
             task.start()
             Thread(target=read_info_from_task,args=(task.get_readqs(), task_name, self.info_pool, )).start()
-            return True
         else:
-            return False
+            raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))

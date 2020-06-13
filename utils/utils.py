@@ -173,12 +173,12 @@ def identify_number_plate(raw_img: np.ndarray, bbox):
         # 如果截取的车辆画面比例悬殊直接不识别
         if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
             return None
-        # 如果截取到的车辆占整幅画面的占比低于5%则直接选择不识别
-        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.05:
+        # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
+        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
             return None
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         result = HyperLPR_plate_recognition(img)
-        if len(result) > 0 and result[0][1] > 0.95:
+        if len(result) > 0 and result[0][1] > 0.8:
             return result[0][0]
         else:
             return None

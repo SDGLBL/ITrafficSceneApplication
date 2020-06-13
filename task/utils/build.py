@@ -46,8 +46,8 @@ def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
         logger.info('user stop the head process')
     except Full:
         logger.info('通向探测器的队列已满')
-    except Exception as e:
-        logger.exception(e)
+    # except Exception as e:
+    #     logger.exception(e)
     finally:
         for sendq in sendqs:
             sendq.cancel_join_thread()
@@ -76,8 +76,8 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout, run_semapho
         logger.info('head不再发送数据detector自动释放')
     except Full:
         logger.exception('通向某一条主干或者跟踪器的队列已满')
-    except Exception as e:
-        logger.exception(e)
+    # except Exception as e:
+    #     logger.exception(e)
     finally:
         del detector  # 清除探测器对象
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
@@ -110,8 +110,8 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore
         logger.info('detector不再发送数据tracker自动释放')
     except Full:
         logger.exception('通向某一条主干的队列已满')
-    except Exception as e:
-        logger.exception(e)
+    # except Exception as e:
+    #     logger.exception(e)
     finally:
         del tracker  # 清除探测器对象
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
@@ -149,8 +149,8 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
     except Full as e:
         logger.exception(e)
         logger.warning('通向主进程的队列已满，请检查主进程是否正常取出数据')
-    except Exception as e:
-        logger.exception(e)
+    # except Exception as e:
+    #     # logger.exception(e)
     finally:
         sendq.cancel_join_thread()
     return

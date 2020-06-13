@@ -5,10 +5,12 @@ from os.path import exists, join
 import cv2
 import mmcv
 import json
+import numpy as np
 from cfg import DataConfig
 from utils.logger import get_logger
 from flask import Flask, jsonify, url_for, request
 from task import TaskManager,ImgInfoPool,get_cfgDataHandler
+from utils.sqlitedao import excute_sql,get_connection
 
 
 
@@ -48,6 +50,7 @@ def get_video_list():
         'video_snapshot_url': url_for('static', filename=video_snapshot_path)
     }
         for video_name, video_snapshot_path in zip(video_names, video_snapshot_paths)]
+    server_loger.info('前端获取了视频列表{}'.format(video_infos))
     return jsonify(video_infos)
 
 
@@ -62,15 +65,18 @@ def get_task_list():
             'task_progress': taks进度
         }
     """
+    # TODO：此处应该配合manager的信息实时刷新，现在还未实现
     task_list = [
-        {
-            'task_name': task['task_name'],  # task名
-            'task_snapshot_url': task['task_snapshot_url'],  # task处理的视频的截图
-            'task_progress': task['task_progress'] # taks进度
-        }
-        for task in task_manger.tasks
+        task_name
+        # {
+        #     'task_name': task['task_name'],  # task名
+        #     'task_snapshot_url': task['task_snapshot_url'],  # task处理的视频的截图
+        #     'task_progress': task['task_progress'] # taks进度
+        # }
+        for task_name in task_manger.tasks.keys()
     ]
-    return jsonify(task_list)
+    server_loger.info('前端获取了task_list:{}'.format(task_list))
+    return jsonify({'task_list':task_list})
 
 
 @app.route('/api/video/video_info/<string:video_name>')
@@ -96,6 +102,7 @@ def get_video_info(video_name: str):
         video_info['is_exist_json'] = 'exist'
     else:
         video_info['is_exist_json'] = 'no exist'
+    server_loger.info('前端获取视频{}的信息{}'.format(video_name,video_info))
     return jsonify(video_info)
 
 
@@ -116,66 +123,102 @@ def delete_video(video_name: str):
     except FileNotFoundError:
         server_loger.info('删除视频api被调用，指定被删除视频名字为{}，但其已经不存在了'.format(video_name))
         return jsonify({'info': '视频不存在', 'is_success':True})
+    server_loger.info('删除了视频{}'.format(video_name))
     return jsonify({'info': '视频已经被移除', 'is_success':True})
 
 
-@app.route('/api/task/submit', methods=['POST'])
-def submit_task():
+@app.route('/api/task/submit/<string:task_name>', methods=['POST'])
+def submit_task(task_name: str):
     """提交task
     :return:
     """
     # 先进行数据类型转换
     if request.method != 'POST':
         return jsonify({'info':'提交taskApi只接受POST'})
-    task_cfg_data = request.get_data()
-    task_cfg_data = json.loads(task_cfg_data)
-    # 提取出task的name
-    task_name = task_cfg_data['task_name']
-    del task_cfg_data['task_name']
+    # task_cfg_data = request.get_data()
+    # task_cfg_data = json.loads(task_cfg_data)
     try:
         # 处理传递来的数据
-        task_cfg = cfg_data_handler.handle(task_cfg_data)
+        parking_monitoring_area = np.ones((1080, 1920), dtype=int)
+        parking_monitoring_area[400:800, 750:1250] = 0
+        lane_monitoring_area = np.ones((1080, 1920), dtype=int)
+        lane_monitoring_area[400:800, 750:1250] = 2
+        cfg = {
+            'task_type':'crossRoadsTaskFake',
+            'head': {
+                'filename': join(DataConfig.VIDEO_DIR, 'lot_15.mp4'),
+                'json_filename': join(DataConfig.JSON_DIR, 'lot_15.json')
+            },
+            'backbones': [
+                {
+                    'type': 'PathExtract',
+                    'eModelPath': join(DataConfig.EMODEL_DIR, 'lot_15.emd')
+                },
+                {
+                    'type': 'TrafficStatistics',
+                    'eModelPath': join(DataConfig.EMODEL_DIR, 'lot_15.emd'),
+                    'is_process': True
+                },
+                {
+                    'type': 'ParkingMonitoringComponent',  # 违章停车监控组件
+                    'monitoring_area': parking_monitoring_area,  # 监控区域，必须赋值
+                    'is_process': True  # 是否开启该组件
+                },
+                {
+                    'type': 'LaneMonitoringComponent',  # 违法占用车道组件
+                    'monitoring_area': lane_monitoring_area,  # 监控区域，必须赋值
+                    'no_allow_car': {2: ['car']},  # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
+                    'is_process': True  # 是否开启该组件
+                }
+            ]
+        }
+        task_cfg = cfg_data_handler.handle(cfg)
         # 提交任务到task manager
         task_manger.submit(task_name,task_cfg)
-        jsonify({'info': '提交{}成功'.format(task_name), 'is_success':True})
-    except RuntimeWarning as rw:
-        server_loger.warning(rw)
-        jsonify({'info': '提交{}失败'.format(task_name), 'is_success':False})
+        server_loger.info('前端提交了task_name:{}任务'.format(task_name))
+        return jsonify({'info': '提交{}成功'.format(task_name), 'is_success':True})
+    except RuntimeWarning as e:
+        server_loger.warning(e)
+        return jsonify({'info': '提交{}失败,原因:{}'.format(task_name,e), 'is_success':False})
 
 
 @app.route('/api/task/suspend/<string:task_name>')
 def suspend_task(task_name: str):
     try:
         task_manger.suspend(task_name)
-        jsonify({'info': '挂起{}成功'.format(task_name), 'is_success':True})
+        server_loger.info('task:{}被挂起'.format(task_name))
+        return jsonify({'info': '挂起{}成功'.format(task_name), 'is_success':True})
     except RuntimeError as e:
         server_loger.error(e)
-        jsonify({'info':'挂起{}失败'.format(task_name), 'is_success':False})
+        return jsonify({'info':'挂起{}失败,原因:{}'.format(task_name,e), 'is_success':False})
+
 
 @app.route('/api/task/kill/<string:task_name>')
 def kill_task(task_name: str):
     try:
         task_manger.kill(task_name)
-        jsonify({'info': '杀死{}成功'.format(task_name), 'is_success':True})
+        server_loger.info('task:{}被杀死'.format(task_name))
+        return jsonify({'info': '杀死{}成功'.format(task_name), 'is_success':True})
     except RuntimeError as e:
         server_loger.error(e)
-        jsonify({'info': '杀死{}失败'.format(task_name), 'is_success':False})
+        return jsonify({'info': '杀死{}失败,原因:{}'.format(task_name,e), 'is_success':False})
     except RuntimeWarning as e:
         server_loger.error(e)
-        jsonify({'info': '杀死{}失败,请不要杀死已经被杀死的task'.format(task_name), 'is_success':False})
+        return jsonify({'info': '杀死{}失败,原因:{}'.format(task_name,e), 'is_success':False})
 
 
 @app.route('/api/task/start/<string:task_name>')
 def start_task(task_name: str):
     try:
         task_manger.resume(task_name)
-        jsonify({'info': '启动{}成功'.format(task_name), 'is_success':True})
+        server_loger.info('task:{}启动'.format(task_name))
+        return jsonify({'info': '启动{}成功'.format(task_name), 'is_success':True})
     except RuntimeError as e:
         server_loger.error(e)
-        jsonify({'info': '启动{}失败'.format(task_name), 'is_success':False})
+        return jsonify({'info': '启动{}失败,原因:{}'.format(task_name,e), 'is_success':False})
     except RuntimeWarning as e:
         server_loger.exception(e)
-        jsonify({'info': '启动{}失败,请不要重复启动已经启动了的task'.format(task_name), 'is_success':False})
+        return jsonify({'info': '启动{}失败,原因:{}'.format(task_name,e), 'is_success':False})
 
 @app.route('/api/task/info/<string:task_name>')
 def get_info_from_pool(task_name: str):
@@ -187,7 +230,41 @@ def get_info_from_pool(task_name: str):
             pass
     except RuntimeError as e:
         # server_loger.error(e)
-        jsonify({'info': '获取失败，{}task还为存储信息'.format(task_name), 'is_success':False})
+        return jsonify({'info': '获取失败，{}task还未存储信息'.format(task_name), 'is_success':False})
+
+# ---------------------------------------
+# 数据库查询api
+# ---------------------------------------
+
+@app.route('/api/search/illegal/<string:number_plate>')
+def illegal_search(number_plate:str):
+    conn = get_connection(DataConfig.DATABASE_PATH)
+    result = excute_sql(
+      conn,
+      'SELECT start_time_id,img_path,criminal_type from criminal where number_plate like ?',
+      (number_plate,),
+      True
+    )
+    if result is None:
+        server_loger.info('收到对车牌号{}的违规查询'.format(number_plate))
+        return jsonify({'info':'为查询到结果','is_success':False})
+    else:
+        start_time_id,img_path,criminal_type = result
+        # 解析时间
+        start_time_ymd = start_time_id.split(' ')[0]
+        start_time_hms = start_time_id.split(' ')[1]
+        # 解析图像
+        # 首先把static先去除掉
+        img_path = [reduce(lambda a, b: a + os.sep + b, path.split(os.sep)[1:]) for path in img_path.split('_')]
+        img_path = [url_for('static',filename=path) for path in img_path]
+        # 解析违规类型
+        illegal_type = criminal_type
+        return jsonify({
+            'start_time_ymd':start_time_ymd,
+            'start_time_hms':start_time_hms,
+            'img_path':img_path,
+            'illegal_type':illegal_type
+        })
 
 
 if __name__ == "__main__":

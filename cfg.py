@@ -15,6 +15,7 @@ class TaskConfig:
 
 class DataConfig:
     DATA_DIR = 'static/data'  # Task静态数据目录
+    DATABASE_PATH = 'static/database/data.db'
     VIDEO_DIR = join(DATA_DIR, 'video')  # 视频保存目录
     EMODEL_DIR = join(DATA_DIR, 'emodel')  # 环境模型保存目录
     JSON_DIR = join(DATA_DIR, 'json')  # FakeTask需要的json保存的目录

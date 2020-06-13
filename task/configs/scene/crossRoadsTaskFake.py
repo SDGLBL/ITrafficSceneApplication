@@ -44,16 +44,10 @@ TaskCfg = {
                 'no_allow_car':None, # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
                 'is_process':False # 是否开启该组件
             },
-            # # 数据库写入组件
-            # {
-            #     'type': 'InformationCollectorComponent',
-            #     'host': Cfg.host,
-            #     'user': Cfg.user,
-            #     'password': Cfg.password,
-            #     'db': Cfg.database,
-            #     'img_save_path':Cfg.img_save_dir
-            # },
-
+            # 数据库写入组件
+            {
+                'type': 'InformationCollectorComponent',
+            }
             # {
             #   'type': 'DrawBoundingBoxComponent'  # 画框框
             # },

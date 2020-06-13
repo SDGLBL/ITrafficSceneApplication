@@ -19,7 +19,7 @@ class Task(BaseBuild):
         self.is_start = False
         self.backbone2main = None
 
-    def build(self, timeout=10, maxsize=30):
+    def build(self, timeout=10, maxsize=10):
         detector_cfg = None
         if 'detector' in self.cfg.keys():
             detector_cfg = self.cfg['detector']
@@ -52,7 +52,7 @@ class Task(BaseBuild):
                 sendqs = [Queue(maxsize=maxsize) for _ in range(qnum)]
                 sendqs_list.append(sendqs)
         backbone_num = len(compile_list[-1][1])
-        backbone2main = [Queue(maxsize=50) for _ in range(backbone_num)]
+        backbone2main = [Queue(maxsize=maxsize) for _ in range(backbone_num)]
         # 通过如下操作使得发送与接受quenue错位
         # sendqs_list = [head2detector,detector2tracker,tracker2backbone,backbone2main]
         # recivqs_list = [None,head2detector,detector2tracker,tracker2backbone,backbone2main]

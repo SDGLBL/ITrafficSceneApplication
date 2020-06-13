@@ -4,6 +4,7 @@ import numpy as np
 from os.path import exists,join
 from cfg import TaskConfig
 import importlib
+from copy import deepcopy
 
 class BaseTaskCfgDataHandler(object):
     def __init__(self):
@@ -86,7 +87,7 @@ class TaskCfgDataHandler(BaseTaskCfgDataHandler):
         task_config_py_path = (self.config_dir + task_type).replace('.', os.sep) + '.py'
         if not exists(task_config_py_path):
             raise RuntimeError('无法导入{}，因为该文件不存在'.format(task_config_py_path))
-        task_config = importlib.import_module(self.config_dir + task_type).TaskCfg
+        task_config = deepcopy(importlib.import_module(self.config_dir + task_type).TaskCfg)
         # ----------------------------------
         # 开始注入Task运行必须参数
         # ----------------------------------
