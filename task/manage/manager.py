@@ -52,9 +52,9 @@ class TaskManager(object):
         """
         # 如果超过了最多的提交数量限制
         if len(self.tasks) >= TaskConfig.MAX_TASK_NUM:
-            raise RuntimeWarning("超过了最多的提交数量限制".format(task_name))
+            raise RuntimeError("超过了最多的提交数量限制".format(task_name))
         if self.is_exist(task_name):
-            raise RuntimeWarning("请勿重复提交task_name为{}的Task任务".format(task_name))
+            raise RuntimeError("请勿重复提交task_name为{}的Task任务".format(task_name))
         task = Task(task_cfg)
         task.build()
         self.tasks[task_name] = task
@@ -99,13 +99,13 @@ class TaskManager(object):
         if task_name in self.tasks.keys():
             try:
                 self.tasks[task_name].kill()
-            except:
-                pass
-            # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
-            time.sleep(2)
-            # 回收task
-            del self.tasks[task_name]
-            self.info_pool.remove(task_name)
+                # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
+                time.sleep(2)
+                # 回收task
+                del self.tasks[task_name]
+                self.info_pool.remove(task_name)
+            except RuntimeError as e:
+                raise e
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
 

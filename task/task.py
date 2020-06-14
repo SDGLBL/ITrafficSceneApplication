@@ -100,7 +100,9 @@ class Task(BaseBuild):
         if not self.is_start:
             raise RuntimeError('Task还未启动过，无法杀死')
         if not self.run_se.value:
-            raise RuntimeWarning('Task已经被杀死，请勿重复杀死该task')
+            raise RuntimeError('Task已经被杀死，请勿重复杀死该task')
+        if not self.pause_event.is_set():
+            raise RuntimeError('Task已经被挂起,无法杀死')
         self.run_se.value = False
 
     def suspend(self):
