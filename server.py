@@ -48,12 +48,10 @@ def get_video_list():
         # 如果快照不存在,则自动创建快照
         if not exists(video_snapshot_path):
             cv2.imwrite(video_snapshot_path, mmcv.VideoReader(video_path)[0])
-        # 因为video_snapshot_path已经包含了static,因此需要手动去除掉static
-        video_snapshot_path = reduce(lambda a, b: join(a,b), video_snapshot_path.split(os.sep)[1:])
         video_snapshot_paths.append(video_snapshot_path)
     video_infos = [{
         'video_name': video_name,
-        'video_snapshot_url': url_for('static', filename=video_snapshot_path)
+        'video_snapshot_url': video_snapshot_path
     }
         for video_name, video_snapshot_path in zip(video_names, video_snapshot_paths)]
     server_loger.info('前端获取了视频列表{}'.format(video_infos))
