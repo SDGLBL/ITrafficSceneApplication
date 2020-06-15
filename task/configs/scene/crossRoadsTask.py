@@ -1,6 +1,10 @@
+from copy import deepcopy
 import torch
 from cfg import TaskConfig
-
+import json
+from cfg import DataConfig
+import os
+import os.path as osp
 TaskCfg = {
     'task_name': '路口场景',
     'head':
@@ -72,3 +76,20 @@ TaskCfg = {
         ]
     ]
 }
+
+def inject_data(request_data):
+    data = json.loads(request_data)
+    if 'filename' not in data.keys():
+        raise  RuntimeError('注入数据必须指定filename参数，以确定处理的数据。')
+    filename = data['filename']
+    filepath = osp.join(DataConfig.VIDEO_DIR,filename)
+    if not osp.exists(filepath):
+        raise RuntimeError('文件夹{}中不存在名字为{}的视频或者视频源头'.format(DataConfig.VIDEO_DIR,filename))
+    taskCfg = deepcopy(TaskCfg)
+    taskCfg['head']['filename'] = filepath
+    emodelname = filename.split('.')[0]+'.emd'
+    emodelpath = osp.join(DataConfig.EMODEL_DIR,emodelname)
+    if not osp.exists(emodelpath):
+        raise RuntimeError('文件夹{}中不存在名字为{}的环境模型,请先执行建模Task')
+    taskCfg['PathExtract']['eModelPath'] = emodelpath
+    return taskCfg
