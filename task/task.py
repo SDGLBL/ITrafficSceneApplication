@@ -19,7 +19,6 @@ class Task(BaseBuild):
         self.is_start = False
         self.backbone2main = None
         # self.process = []
-        self.pool = Pool(processes=4)
 
     def build(self, timeout=10, maxsize=10):
         detector_cfg = None
@@ -83,7 +82,6 @@ class Task(BaseBuild):
             # 默认Task是正常运行的
             for args in self.task_args:
                 processes = build_process(*args, run_semaphore=self.run_se, pause_event=self.pause_event)
-                self.pool.apply()
                 for p in processes:
                     # self.process.append(p)
                     p.start()

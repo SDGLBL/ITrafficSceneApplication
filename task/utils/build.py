@@ -176,10 +176,8 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
         sendq.cancel_join_thread()
         recivq.close()
         sendq.close()
-    print(os.getpid())
-    # import signal
-    # os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
-    # os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
+    import signal
+    os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
     print('return backbone')
     return
 
