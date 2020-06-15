@@ -1,5 +1,6 @@
+import platform
 from os.path import join
-
+import multiprocessing as mp
 import numpy as np
 
 from cfg import DataConfig
@@ -20,6 +21,9 @@ def read_info_from_pool(task_name,pool:ImgInfoPool):
 
 
 if __name__ == "__main__":
+    # Linux平台启动
+    if platform.system() == 'Linux':
+        mp.set_start_method('spawn', force=True)
     pool = ImgInfoPool(60)
     tm = TaskManager(pool)
     parking_monitoring_area = np.ones((1080, 1920), dtype=int)

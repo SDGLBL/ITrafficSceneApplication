@@ -2,7 +2,7 @@ from queue import Empty, Full
 
 import torch
 from torch.multiprocessing import Process, Queue
-
+import  os
 from components.backbones.registry import BACKBONE_COMPONENT
 from components.detector.registry import DETECTOR
 from components.head.registry import HEAD
@@ -10,7 +10,7 @@ from components.tracker.registry import TRACKER
 from utils.logger import get_logger
 from utils.registry import build_from_cfg
 
-logger = get_logger()
+
 
 
 def __build_head_component(head_component_cfg):
@@ -32,6 +32,7 @@ def __build_backbone_component(backbone_component_cfg):
 # 定义head 进程的运行函数
 def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
     head = __build_head_component(head_cfg)
+    logger = get_logger()
     logger.info('create ' + str(head_cfg['type']) + ' and which len is {}'.format(len(head)))
     try:
         for kwargs in head:
@@ -49,15 +50,19 @@ def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
     # except Exception as e:
     #     logger.exception(e)
     finally:
+        logger.info('release the head source')
+        del logger
         for sendq in sendqs:
             sendq.cancel_join_thread()
-        logger.info('release the head source')
+            sendq.close()
+    print('return head')
     return
 
 
 # 定义detector 进程的运行函数
 def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout, run_semaphore, pause_event):
     detector = __build_detector_component(detector_cfg)
+    logger = get_logger()
     logger.info('create ' + str(detector_cfg['type']))
     try:
         while True:
@@ -79,16 +84,23 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout, run_semapho
     # except Exception as e:
     #     logger.exception(e)
     finally:
+        logger.info('release the detector source')
         del detector  # 清除探测器对象
+        del logger
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
+        recivq.cancel_join_thread()
         for sendq in sendqs:
             sendq.cancel_join_thread()
-        logger.info('release the detector source')
+            sendq.close()
+        recivq.close()
+
+    print('return detector')
     return
 
 
 def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore, pause_event):
     tracker = __build_tracker_component(tracker_cfg)
+    logger = get_logger()
     logger.info('create ' + str(tracker_cfg['type']))
     try:
         while True:
@@ -113,17 +125,24 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore
     # except Exception as e:
     #     logger.exception(e)
     finally:
+        logger.info('release the tracker source')
         del tracker  # 清除探测器对象
+        del logger
         torch.cuda.empty_cache()  # 清空GPU缓存，防止出现进程STOP占用显存
+        recivq.cancel_join_thread()
         for sendq in sendqs:
             sendq.cancel_join_thread()
-        logger.info('release the tracker source')
+            sendq.close()
+        recivq.close()
+
+    print('return tracker')
     return
 
 
 def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout, run_semaphore, pause_event):
     # 实例化一个backbone里面所有的组件
     backbone_components = [__build_backbone_component(bbcfg) for bbcfg in backbone_cfg]
+    logger = get_logger()
     logger.info('create backbone')
     try:
         while True:
@@ -138,8 +157,7 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
                 # 如果该管道有多个component的话依次将数据交给之后的component处理
                 for backbone_component in backbone_components[1:]:
                     kwargs = backbone_component(**kwargs)
-                # 处理到最后的数据直接清楚
-            # print('backbone sendq len is {}'.format(sendq.qsize())) 
+            # print('backbone sendq len is {}'.format(sendq.qsize()))
             for img_info in kwargs['imgs_info']:
                 sendq.put(img_info, timeout=timeout)
     except KeyboardInterrupt:
@@ -149,10 +167,20 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
     except Full as e:
         logger.exception(e)
         logger.warning('通向主进程的队列已满，请检查主进程是否正常取出数据')
-    # except Exception as e:
-    #     # logger.exception(e)
+    except Exception as e:
+        logger.exception(e)
     finally:
+        logger.info('release backbone source')
+        del logger
+        recivq.cancel_join_thread()
         sendq.cancel_join_thread()
+        recivq.close()
+        sendq.close()
+    print(os.getpid())
+    # import signal
+    # os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
+    # os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
+    print('return backbone')
     return
 
 

@@ -12,7 +12,7 @@ from .infopool import ImgInfoPool
 from utils.logger import get_logger
 
 
-def read_info_from_task(mqs,task_name: str,info_pool: ImgInfoPool):
+def read_info_from_task(mqs, task_name: str, info_pool: ImgInfoPool):
     print('{} Task的读取信息线程启动'.format(task_name))
     try:
         while True:
@@ -20,14 +20,16 @@ def read_info_from_task(mqs,task_name: str,info_pool: ImgInfoPool):
                 img_info = mq.get(timeout=5)
                 if len(img_info['analysis']) > 0:
                     for analysis_info in img_info['analysis']:
-                        info_pool.add(task_name=task_name,img_info=analysis_info)
+                        info_pool.add(task_name=task_name, img_info=analysis_info)
     except Empty:
         print('{} Task的读取信息线程停止'.format(task_name))
+        for mq in mqs:
+            mq.cancel_join_thread()
         return
 
 
 class TaskManager(object):
-    def __init__(self,info_pool:ImgInfoPool, config_dir=TaskConfig.SCENE_CFG_DIR):
+    def __init__(self, info_pool: ImgInfoPool, config_dir=TaskConfig.SCENE_CFG_DIR):
         super().__init__()
         # self.tasks:[
         #   { 
@@ -42,7 +44,7 @@ class TaskManager(object):
         self.logger = get_logger('logs/task.log')
         self.info_pool = info_pool
 
-    def submit(self, task_name: str,  task_cfg: dict):
+    def submit(self, task_name: str, task_cfg: dict):
         """提交一个Task
         Args:
             task_name: task的名字，需要保证不重复，其会作为task的唯一标识符，建议传入视频或摄像头名称
@@ -100,12 +102,13 @@ class TaskManager(object):
             try:
                 self.tasks[task_name].kill()
                 # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
-                time.sleep(2)
+                time.sleep(1)
+            except RuntimeError as e:
+                raise e
+            finally:
                 # 回收task
                 del self.tasks[task_name]
                 self.info_pool.remove(task_name)
-            except RuntimeError as e:
-                raise e
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
 
@@ -125,6 +128,6 @@ class TaskManager(object):
                     raise RuntimeError('已经有Task在运行状态中，无法启动该Task')
             task = self.tasks[task_name]
             task.start()
-            Thread(target=read_info_from_task,args=(task.get_readqs(), task_name, self.info_pool, )).start()
+            Thread(target=read_info_from_task, args=(task.get_readqs(), task_name, self.info_pool,)).start()
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))

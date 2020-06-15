@@ -1,5 +1,5 @@
 import time
-from multiprocessing import Queue, Manager
+from multiprocessing import Queue, Manager, Pool
 
 from task.base import BaseBuild
 from task.utils import build_process
@@ -18,6 +18,8 @@ class Task(BaseBuild):
         # 标记task是否被启动过
         self.is_start = False
         self.backbone2main = None
+        # self.process = []
+        self.pool = Pool(processes=4)
 
     def build(self, timeout=10, maxsize=10):
         detector_cfg = None
@@ -81,7 +83,9 @@ class Task(BaseBuild):
             # 默认Task是正常运行的
             for args in self.task_args:
                 processes = build_process(*args, run_semaphore=self.run_se, pause_event=self.pause_event)
+                self.pool.apply()
                 for p in processes:
+                    # self.process.append(p)
                     p.start()
             time.sleep(2)
         # 如果task已经成功启动过但被杀死了
@@ -104,6 +108,9 @@ class Task(BaseBuild):
         if not self.pause_event.is_set():
             raise RuntimeError('Task已经被挂起,无法杀死')
         self.run_se.value = False
+        time.sleep(1)
+        # for p in self.process:
+        #     p.close()
 
     def suspend(self):
         """挂起该Task，该task将会处于阻塞状态，直到再次调用start

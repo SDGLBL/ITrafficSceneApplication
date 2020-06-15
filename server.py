@@ -189,52 +189,20 @@ def delete_video(video_name: str):
     return jsonify({'info': '视频已经被移除', 'is_success': True})
 
 
-@app.route('/api/task/submit/<string:task_name>', methods=['POST'])
-def submit_task(task_name: str):
+@app.route('/api/task/submit', methods=['POST'])
+def submit_task():
     """提交task
     :return:
     """
     # 先进行数据类型转换
     if request.method != 'POST':
         return jsonify({'info': '提交taskApi只接受POST'})
-    # task_cfg_data = request.get_data()
-    # task_cfg_data = json.loads(task_cfg_data)
     try:
-        # 处理传递来的数据
-        parking_monitoring_area = np.ones((1080, 1920), dtype=int)
-        parking_monitoring_area[400:800, 750:1250] = 0
-        lane_monitoring_area = np.ones((1080, 1920), dtype=int)
-        lane_monitoring_area[400:800, 750:1250] = 2
-        cfg = {
-            'task_type': 'crossRoadsTaskFake',
-            'head': {
-                'filename': join(DataConfig.VIDEO_DIR, 'lot_15.mp4'),
-                'json_filename': join(DataConfig.JSON_DIR, 'lot_15.json')
-            },
-            'backbones': [
-                {
-                    'type': 'PathExtract',
-                    'eModelPath': join(DataConfig.EMODEL_DIR, 'lot_15.emd')
-                },
-                {
-                    'type': 'TrafficStatistics',
-                    'eModelPath': join(DataConfig.EMODEL_DIR, 'lot_15.emd'),
-                    'is_process': True
-                },
-                {
-                    'type': 'ParkingMonitoringComponent',  # 违章停车监控组件
-                    'monitoring_area': parking_monitoring_area,  # 监控区域，必须赋值
-                    'is_process': True  # 是否开启该组件
-                },
-                {
-                    'type': 'LaneMonitoringComponent',  # 违法占用车道组件
-                    'monitoring_area': lane_monitoring_area,  # 监控区域，必须赋值
-                    'no_allow_car': {2: ['car']},  # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
-                    'is_process': True  # 是否开启该组件
-                }
-            ]
-        }
-        task_cfg = cfg_data_handler.handle(cfg)
+        task_name = request.form["task_name"]
+        get_cfg = importlib.import_module(TaskConfig.SCENE_CFG_DIR + 'crossRoadsTaskFake').get_injected_cfg
+        cfg_data = request.form["cfg_data"]
+        cfg_data = json.loads(cfg_data)
+        task_cfg = get_cfg(cfg_data)
         # 提交任务到task manager
         task_manger.submit(task_name, task_cfg)
         server_loger.info('前端提交了task_name:{}任务'.format(task_name))
