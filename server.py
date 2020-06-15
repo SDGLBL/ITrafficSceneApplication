@@ -199,7 +199,8 @@ def submit_task():
         return jsonify({'info': '提交taskApi只接受POST'})
     try:
         task_name = request.form["task_name"]
-        get_cfg = importlib.import_module(TaskConfig.SCENE_CFG_DIR + 'crossRoadsTaskFake').get_injected_cfg
+        task_type = request.form["task_type"]
+        get_cfg = importlib.import_module(TaskConfig.SCENE_CFG_DIR + task_type).get_injected_cfg
         cfg_data = request.form["cfg_data"]
         cfg_data = json.loads(cfg_data)
         task_cfg = get_cfg(cfg_data)
