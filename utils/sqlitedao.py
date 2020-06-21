@@ -10,8 +10,6 @@ def get_connection(
         ):
     """获取数据库连接
     """
-    print(os.path.abspath(__file__))
-
     connection = sqlite3.connect(data_base)
     return connection
 
@@ -50,12 +48,12 @@ def excute_sql(connection:sqlite3.Connection,sql_str:str,args=(),is_return=False
         logger.exception(e)
     return None
 
-def create_database(clear_exist = False):
+def create_database(clear_exist = True):
     """创建项目存储数据需要使用的数据库
 
     Args:
         clear_exist (bool, optional): 是否先清除已经存在的db数据库. Defaults to False.
-    """    
+    """
     if os.path.exists(DataConfig.DATABASE_PATH) and clear_exist:
         os.remove(DataConfig.DATABASE_PATH)
     # 清理违规图像

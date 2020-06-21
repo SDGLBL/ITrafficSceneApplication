@@ -277,9 +277,7 @@ def illegal_search(number_plate: str):
         start_time_ymd = start_time_id.split(' ')[0]
         start_time_hms = start_time_id.split(' ')[1]
         # 解析图像
-        # 首先把static先去除掉
-        img_path = [reduce(lambda a, b: a + os.sep + b, path.split(os.sep)[1:]) for path in img_path.split('_')]
-        img_path = [url_for('static', filename=path) for path in img_path]
+        img_path = [path for path in img_path.split('_')]
         # 解析违规类型
         illegal_type = criminal_type
         return jsonify({
@@ -292,7 +290,6 @@ def illegal_search(number_plate: str):
 
 if __name__ == "__main__":
     server_loger = get_logger('logs/server.log')
-    cfg_data_handler = get_cfgDataHandler()
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)
     app.run(port=3001, debug=True)

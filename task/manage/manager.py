@@ -21,6 +21,10 @@ def read_info_from_task(mqs, task_name: str, info_pool: ImgInfoPool):
                 if len(img_info['analysis']) > 0:
                     for analysis_info in img_info['analysis']:
                         info_pool.add(task_name=task_name, img_info=analysis_info)
+                        if analysis_info['info_type'] != 'pass' and TaskConfig.IS_PRINT_ANALYSIS_INFO:
+                            # 此处删除掉图像再显示，否则终端显示图像太长
+                            del analysis_info['imgs']
+                            print(analysis_info)
     except Empty:
         print('{} Task的读取信息线程停止'.format(task_name))
         for mq in mqs:

@@ -55,9 +55,9 @@ TaskCfg = {
                 'is_process':False # 是否开启该组件
             },
             # 数据库写入组件
-            # {
-            #     'type': 'InformationCollectorComponent',
-            # },
+            {
+                'type': 'InformationCollectorComponent',
+            }
             # {
             #   'type': 'DrawBoundingBoxComponent'  # 画框框
             # },

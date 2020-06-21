@@ -155,3 +155,4 @@ test.py
 *.json
 *.emd
 logs
+*.db

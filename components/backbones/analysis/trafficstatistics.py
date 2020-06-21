@@ -56,7 +56,7 @@ class TrafficStatistics(BaseBackboneComponent):
                     dir = self.dirStr[laneAndDir[1]]
                     lane = self.laneStr[laneAndDir[0]]
                     legalTurn = self.model['reachable_mat'][laneAndDir[0], laneAndDir[1]]
-                    print( 'id:{}为的{}，车牌为{},自第{}发出,{}'.format(id, cls_name, number_plate, lane, dir) )
+                    # print( 'id:{}为的{}，车牌为{},自第{}发出,{}'.format(id, cls_name, number_plate, lane, dir) )
                 passInfo = {
                     'info_type': 'pass',
                     'id': id,
