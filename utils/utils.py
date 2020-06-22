@@ -2,6 +2,7 @@ import math
 import random
 import datetime
 import time
+import os
 import cv2
 import numpy as np
 from hyperlpr import HyperLPR_plate_recognition
@@ -218,3 +219,21 @@ def time2format_time(nomal_time: str):
     """    
     format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(nomal_time))
     return format_time
+
+
+def path2source_path(path:str):
+    """将文件路径，强制转换为http src路径
+
+    Args:
+        path (str): 文件路径
+
+    Returns:
+        [type]: [description]
+
+    Example:
+        >>> x = "\\static\\data\\criminal\\x.jpg" # windows platfom
+        >>> x = path2source_path(x)
+        >>> print(x) # /static/data/criminal/x.jpg
+    """    
+    path = path.replace(os.sep,'/')
+    return path

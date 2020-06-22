@@ -13,6 +13,7 @@ from utils.logger import get_logger
 from flask import Flask, jsonify, url_for, request
 from task import TaskManager, ImgInfoPool, get_cfgDataHandler
 from utils.sqlitedao import excute_sql, get_connection
+from utils.utils import path2source_path
 
 app = Flask(__name__)
 
@@ -48,6 +49,8 @@ def get_video_list():
         # 如果快照不存在,则自动创建快照
         if not exists(video_snapshot_path):
             cv2.imwrite(video_snapshot_path, mmcv.VideoReader(video_path)[0])
+        # 强制转换读取的路径为资源路径
+        video_snapshot_path = path2source_path(video_snapshot_path)
         video_snapshot_paths.append(video_snapshot_path)
     video_infos = [{
         'video_name': video_name,
@@ -74,7 +77,7 @@ def get_task_list():
     task_list = [
         {
             'task_name': task_name,# task名
-            'task_snapshot': join('/',DataConfig.SNAPSHOT_DIR,task_name.split('.')[0]+'.jpg')# task处理的视频的截图
+            'task_snapshot': join('/',path2source_path(DataConfig.SNAPSHOT_DIR),task_name.split('.')[0]+'.jpg')# task处理的视频的截图
             # 'task_progress': task_name['task_progress'] # taks进度
         }
         for task_name in task_manger.tasks.keys()
@@ -315,7 +318,7 @@ def illegal_search():
             start_time_ymd = start_time_id.split(' ')[0]
             start_time_hms = start_time_id.split(' ')[1]
             # 解析图像
-            img_path = [join('/',path) for path in img_path.split('_')]
+            img_path = [join('/',path2source_path(path)) for path in img_path.split('_')]
             # 解析违规类型
             illegal_type = criminal_type
             result_list.append({
