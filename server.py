@@ -51,7 +51,7 @@ def get_video_list():
         video_snapshot_paths.append(video_snapshot_path)
     video_infos = [{
         'video_name': video_name,
-        'video_snapshot_url': video_snapshot_path
+        'video_snapshot_url': join('/',video_snapshot_path) 
     }
         for video_name, video_snapshot_path in zip(video_names, video_snapshot_paths)]
     server_loger.info('前端获取了视频列表{}'.format(video_infos))
@@ -67,21 +67,20 @@ def get_task_list():
         >>> {
         >>>     'task_name': task名
         >>>     'task_snapshot_url': task处理的视频的截图
-        >>>     'task_progress': taks进度
+        >>>     # 'task_progress': taks进度
         >>> }
     """
     # TODO：此处应该配合manager的信息实时刷新，现在还未实现
     task_list = [
-        task_name
-        # {
-        #     'task_name': task['task_name'],  # task名
-        #     'task_snapshot_url': task['task_snapshot_url'],  # task处理的视频的截图
-        #     'task_progress': task['task_progress'] # taks进度
-        # }
+        {
+            'task_name': task_name,# task名
+            'task_snapshot': join('/',DataConfig.SNAPSHOT_DIR,task_name.split('.')[0]+'.jpg')# task处理的视频的截图
+            # 'task_progress': task_name['task_progress'] # taks进度
+        }
         for task_name in task_manger.tasks.keys()
     ]
     server_loger.info('前端获取了task_list:{}'.format(task_list))
-    return jsonify({'task_list': task_list})
+    return jsonify(task_list)
 
 
 @app.route('/api/task/task_cfg_list')
@@ -277,7 +276,7 @@ def illegal_search(number_plate: str):
         start_time_ymd = start_time_id.split(' ')[0]
         start_time_hms = start_time_id.split(' ')[1]
         # 解析图像
-        img_path = [path for path in img_path.split('_')]
+        img_path = [join('/',path) for path in img_path.split('_')]
         # 解析违规类型
         illegal_type = criminal_type
         return jsonify({
