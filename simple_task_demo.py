@@ -25,3 +25,4 @@ if __name__ == '__main__':
     task_cfg = get_cfg(cfg_data)
     tm.submit(task_name='lot_15.mp4', task_cfg=task_cfg)
     tm.resume(task_name='lot_15.mp4')
+    

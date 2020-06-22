@@ -39,7 +39,7 @@ def excute_sql(connection:sqlite3.Connection,sql_str:str,args=(),is_return=False
         else:
             cursor.execute(sql_str) 
         if is_return:
-            result = cursor.fetchone()
+            result = cursor.fetchall()
             return result
         else:
             connection.commit()

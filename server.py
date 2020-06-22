@@ -258,12 +258,36 @@ def start_task(task_name: str):
 @app.route('/api/search/illegal/<string:number_plate>')
 def illegal_search(number_plate: str):
     """违规查询
-
+    查询到的结果为一个list，每个元素为一个字典，包含有一个可能查询到的结果
+    Example:
+        >>>[
+        >>>   {
+        >>>     "illegal_type": "illegal_parking",
+        >>>     "img_path": [
+        >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 0.jpg",
+        >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 1.jpg"
+        >>>     ],
+        >>>     "number_plate": "浙DD13G2",
+        >>>     "start_time_hms": "14:14:05",
+        >>>     "start_time_ymd": "2020-05-27"
+        >>>   },
+        >>>   {
+        >>>     "illegal_type": "illegal_parking",
+        >>>     "img_path": [
+        >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 0.jpg",
+        >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 1.jpg"
+        >>>     ],
+        >>>     "number_plate": "浙DD13G2",
+        >>>     "start_time_hms": "14:14:05",
+        >>>     "start_time_ymd": "2020-05-27"
+        >>>   }
+        >>>]
     """
     conn = get_connection(DataConfig.DATABASE_PATH)
+    number_plate = "%"+number_plate+"%"
     result = excute_sql(
         conn,
-        'SELECT start_time_id,img_path,criminal_type from criminal where number_plate like ?',
+        'SELECT start_time_id,number_plate,img_path,criminal_type from criminal where number_plate like ?',
         (number_plate,),
         True
     )
@@ -271,20 +295,24 @@ def illegal_search(number_plate: str):
         server_loger.info('收到对车牌号{}的违规查询'.format(number_plate))
         return jsonify({'info': '为查询到结果', 'is_success': False})
     else:
-        start_time_id, img_path, criminal_type = result
-        # 解析时间
-        start_time_ymd = start_time_id.split(' ')[0]
-        start_time_hms = start_time_id.split(' ')[1]
-        # 解析图像
-        img_path = [join('/',path) for path in img_path.split('_')]
-        # 解析违规类型
-        illegal_type = criminal_type
-        return jsonify({
+        result_list = []
+        for a_result in result:
+            start_time_id, number_plate, img_path, criminal_type = a_result
+            # 解析时间
+            start_time_ymd = start_time_id.split(' ')[0]
+            start_time_hms = start_time_id.split(' ')[1]
+            # 解析图像
+            img_path = [join('/',path) for path in img_path.split('_')]
+            # 解析违规类型
+            illegal_type = criminal_type
+            result_list.append({
             'start_time_ymd': start_time_ymd,
             'start_time_hms': start_time_hms,
             'img_path': img_path,
-            'illegal_type': illegal_type
-        })
+            'illegal_type': illegal_type,
+            'number_plate':number_plate
+            })
+        return jsonify(result_list)
 
 
 if __name__ == "__main__":
