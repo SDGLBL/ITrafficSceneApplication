@@ -255,8 +255,8 @@ def start_task(task_name: str):
 # 数据库查询api
 # ---------------------------------------
 
-@app.route('/api/search/illegal/<string:number_plate>')
-def illegal_search(number_plate: str):
+@app.route('/api/search/illegal/',methods=['GET','POST'])
+def illegal_search():
     """违规查询
     查询到的结果为一个list，每个元素为一个字典，包含有一个可能查询到的结果
     Example:
@@ -284,6 +284,19 @@ def illegal_search(number_plate: str):
         >>>]
     """
     conn = get_connection(DataConfig.DATABASE_PATH)
+    number_plate = request.args.get('number_plate')
+    # 如果前端发送的请求参数key错误
+    if number_plate is None:
+        server_loger.info('收到违规查询请求，但number_plate参数不存在，前端可能发送了错误的参数key')
+        return jsonify({'info': '请确保参数key为number_plate', 'is_success': False})
+    # 如果发送过来的数据为空
+    if number_plate == '':
+        server_loger.info('收到违规查询请求，但其查询目标车牌号为空')
+        return jsonify({'info': '请确保车牌号不为空', 'is_success': False})
+    # 如果发送过来的车牌号长度果断，可能导致列表过长，因此限制最短长度为4
+    if len(number_plate) < 4:
+        server_loger.info('收到违规查询请求，但其查询目标车牌号长度过短，为防止返回结果过多，不予处理')
+        return jsonify({'info': '请确保查询车牌号长度大于等于4，以保证返回list不会过长', 'is_success': False})
     number_plate = "%"+number_plate+"%"
     result = excute_sql(
         conn,
@@ -291,9 +304,9 @@ def illegal_search(number_plate: str):
         (number_plate,),
         True
     )
-    if result is None:
+    if result is None or len(result) == 0:
         server_loger.info('收到对车牌号{}的违规查询'.format(number_plate))
-        return jsonify({'info': '为查询到结果', 'is_success': False})
+        return jsonify({'info': '未查询到结果', 'is_success': False})
     else:
         result_list = []
         for a_result in result:
@@ -312,6 +325,7 @@ def illegal_search(number_plate: str):
             'illegal_type': illegal_type,
             'number_plate':number_plate
             })
+        server_loger.info('收到对车牌号{}的违规查询,且查询成功，结果为{}'.format(number_plate,result_list))
         return jsonify(result_list)
 
 
