@@ -58,6 +58,8 @@ def create_database(clear_exist = True):
         os.remove(DataConfig.DATABASE_PATH)
     # 清理违规图像
     for name in os.listdir(DataConfig.CRIMINAL_DIR):
+        if name == 'upload':
+            continue
         os.remove(os.path.join(DataConfig.CRIMINAL_DIR,name))
     create_traffic_str = "CREATE TABLE traffic (start_time_id TEXT NOT NULL,start_time INTEGER NOT NULL,end_time INTEGER NOT NULL,passage_type TEXT DEFAULT straight,obj_type TEXT DEFAULT car,number_plate TEXT,other_info TEXT,CONSTRAINT traffic_PK PRIMARY KEY (start_time_id));"
     create_criminal_str = "CREATE TABLE criminal (start_time_id TEXT NOT NULL,number_plate TEXT,img_path TEXT,criminal_type TEXT NOT NULL,CONSTRAINT criminal_PK PRIMARY KEY (start_time_id),CONSTRAINT criminal_FK FOREIGN KEY (start_time_id) REFERENCES traffic(start_time_id));"

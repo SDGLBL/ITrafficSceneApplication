@@ -1,4 +1,0 @@
-numpy>=1.18.4
-pywin32;platform_system=="Windows"
-addict==2.2.1
-yapf==0.30.0
