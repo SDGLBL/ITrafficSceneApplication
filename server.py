@@ -70,7 +70,6 @@ def get_task_list():
         >>> {
         >>>     'task_name': task名
         >>>     'task_snapshot_url': task处理的视频的截图
-        >>>     # 'task_progress': taks进度
         >>> }
     """
     # TODO：此处应该配合manager的信息实时刷新，现在还未实现
@@ -135,8 +134,8 @@ def get_video_info(video_name: str):
 
     Examples:
          >>> {
-         >>>    'is_exist_emd':True,
-         >>>    'is_exist_json':False
+         >>>    'is_exist_emd':True, # 是否存在环境文件
+         >>>    'is_exist_json':False # 是否存在json文件
          >>> }
     """
     video_info = {}
@@ -263,7 +262,7 @@ def illegal_search():
     """违规查询
     查询到的结果为一个list，每个元素为一个字典，包含有一个可能查询到的结果
     Example:
-        >>>[
+        >>> [
         >>>   {
         >>>     "illegal_type": "illegal_parking",
         >>>     "img_path": [
@@ -271,6 +270,7 @@ def illegal_search():
         >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 1.jpg"
         >>>     ],
         >>>     "number_plate": "浙DD13G2",
+        >>>     "obj_type": "car",
         >>>     "start_time_hms": "14:14:05",
         >>>     "start_time_ymd": "2020-05-27"
         >>>   },
@@ -281,10 +281,11 @@ def illegal_search():
         >>>       "/static/data/criminal/2020-05-27 14-14-05 23.0 1.jpg"
         >>>     ],
         >>>     "number_plate": "浙DD13G2",
+        >>>     "obj_type": null,
         >>>     "start_time_hms": "14:14:05",
         >>>     "start_time_ymd": "2020-05-27"
         >>>   }
-        >>>]
+        >>> ]
     """
     conn = get_connection(DataConfig.DATABASE_PATH)
     number_plate = request.args.get('number_plate')
@@ -303,7 +304,7 @@ def illegal_search():
     number_plate = "%"+number_plate+"%"
     result = excute_sql(
         conn,
-        'SELECT start_time_id,number_plate,img_path,criminal_type from criminal where number_plate like ?',
+        'SELECT C.start_time_id, C.number_plate, C.img_path, C.criminal_type,T.obj_type FROM criminal AS C LEFT JOIN traffic AS T ON C.start_time_id = T.start_time_id WHERE C.number_plate LIKE ?',
         (number_plate,),
         True
     )
@@ -313,7 +314,7 @@ def illegal_search():
     else:
         result_list = []
         for a_result in result:
-            start_time_id, number_plate, img_path, criminal_type = a_result
+            start_time_id, number_plate, img_path, criminal_type, obj_type = a_result
             # 解析时间
             start_time_ymd = start_time_id.split(' ')[0]
             start_time_hms = start_time_id.split(' ')[1]
@@ -326,7 +327,8 @@ def illegal_search():
             'start_time_hms': start_time_hms,
             'img_path': img_path,
             'illegal_type': illegal_type,
-            'number_plate':number_plate
+            'number_plate':number_plate,
+            'obj_type':obj_type
             })
         server_loger.info('收到对车牌号{}的违规查询,且查询成功，结果为{}'.format(number_plate,result_list))
         return jsonify(result_list)
