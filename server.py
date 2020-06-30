@@ -119,12 +119,14 @@ def get_task_cfg_list():
 
 # ------------------------
 # 获取各种信息
-# url: /api/video/video_info/<string:video_name> 获取视频video_name的信息情况，包括是否环境建模
-#
+# url: /api/video/video_info/?video_name=lot_15.mp4 获取视频video_name的信息情况，包括是否环境建模
+# url: /api/task/info/analysis/?task_name=lot_15.mp4 获取任务的分析信息，比如违规停车等
+# url: /api/task/info/progress/?task_name=lot_15.mp4 获取任务的进度，返回一个1-100的数字
+# url: /api/task/info/count/?task_name=lot_15.mp4 获取任务的车流量表格
 # ----------------------
 
-@app.route('/api/video/video_info/<string:video_name>')
-def get_video_info(video_name: str):
+@app.route('/api/video/video_info/')
+def get_video_info():
     """获取指定视频的视频处理信息
 
     Args:
@@ -133,18 +135,22 @@ def get_video_info(video_name: str):
     Returns:
 
     Examples:
+         >>> url = '/api/video/video_info/?video_name=lot15.mp4'
          >>> {
          >>>    'is_exist_emd':True, # 是否存在环境文件
          >>>    'is_exist_json':False # 是否存在json文件
          >>> }
     """
     video_info = {}
-    video_name = video_name.split('.')[1]
-    if not exists(join(DataConfig.EMODEL_DIR, video_name + '.emd')):
+    video_name = request.args.get('video_name')
+    print(video_name)
+    if '.' in video_name:
+        video_name = video_name.split('.')[0]
+    if exists(join(DataConfig.EMODEL_DIR, video_name + '.emd')):
         video_info['is_exist_emd'] = True
     else:
         video_info['is_exist_emd'] = False
-    if not exists(join(DataConfig.JSON_DIR, video_name + '.json')):
+    if exists(join(DataConfig.JSON_DIR, video_name + '.json')):
         video_info['is_exist_json'] = True
     else:
         video_info['is_exist_json'] = False
@@ -152,18 +158,83 @@ def get_video_info(video_name: str):
     return jsonify(video_info)
 
 
-@app.route('/api/task/info/<string:task_name>')
-def get_info_from_pool(task_name: str):
+@app.route('/api/task/info/analysis/')
+def get_analysis_info_from_pool():
+    """获取指定任务的分析信息
+
+    Args:
+        task_name (str): [description]
+
+    Returns:
+        [type]: [description]
+
+    Examples:
+        >>> url = '/api/task/info/analysis/?task_name=lot_15.mp4'
+        >>> [
+        >>>   {
+        >>>     "criminal_img_name": null,
+        >>>     "end_time": "2020-05-27 14:14:13",
+        >>>     "id": "26.0",
+        >>>     "imgs": [],
+        >>>     "info_type": "pass",
+        >>>     "number_plate": null,
+        >>>     "obj_type": "car",
+        >>>     "passage_type": "右拐",
+        >>>     "start_time": "2020-05-27 14:14:03"
+        >>>   }
+        >>> ]
+    """    
+    task_name = request.args.get('task_name')
     try:
-        info = img_info_pool.get(task_name)
-        if info['info_type'] == 'illegal_parking':
-            # 保存违规图像
-            # for img in info['imgs']:
-            pass
+        info = task_manger.get_analysis_info(task_name)
+        return jsonify(info)
     except RuntimeError as e:
         # server_loger.error(e)
-        return jsonify({'info': '获取失败，{}task还未存储信息'.format(task_name), 'is_success': False})
+        return jsonify({'info': '获取失败，原因:{}'.format(e), 'is_success': False})
 
+@app.route('/api/task/info/progress/')
+def get_progress_info():
+    """获取进度信息
+
+    Returns:
+        [type]: [description]
+    
+    Examples:
+        >>> url = '/api/task/info/progress/?task_name=lot_15.mp4'
+        >>> 12.57
+    """    
+    task_name = request.args.get('task_name')
+    try:
+        info = task_manger.get_progress_info(task_name)
+        return jsonify(info)
+    except RuntimeError as e:
+        # server_loger.error(e)
+        return jsonify({'info': '获取失败，原因:{}'.format(e), 'is_success': False})
+
+@app.route('/api/task/info/count/')
+def get_pass_count_table():
+    """获取通行表格
+
+    Returns:
+        [type]: [description]
+    
+    Examples:
+        >>> url = '/api/task/info/count/?task_name=lot_15.mp4'
+        >>> [
+        >>>   [" ","左拐","直行","右拐","总和"],
+        >>>   ["car","0.0","3.0","1.0","4.0"],
+        >>>   ["truck","0.0","1.0","0.0","1.0"],
+        >>>   ["bus","0.0","0.0","0.0","0.0"],
+        >>>   [ "总和","0.0","4.0","1.0","5.0"]
+        >>> ]
+    """    
+    task_name = request.args.get('task_name')
+    try:
+        info = task_manger.get_pass_count_table(task_name)
+        return jsonify(info)
+    except RuntimeError as e:
+        # server_loger.error(e)
+        return jsonify({'info': '获取失败，原因:{}'.format(e), 'is_success': False})
 
 # -----------------------------
 # 各种后台操作

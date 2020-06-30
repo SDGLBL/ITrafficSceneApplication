@@ -42,7 +42,8 @@ class VideoFileHead(mmcv.VideoReader, BaseVideoPipeline):
                 imgs_info.append({
                     'time': get_current_time(),  # 使用的时间
                     'index': self.start_index,  # 对应视频中的第几帧
-                    'shape': img.shape  # 图像的shape (H,W,C)
+                    'shape': img.shape,  # 图像的shape (H,W,C)
+                    'video_len':len(self) # 视频的长度
                 })
                 self.start_index += 1
             else:

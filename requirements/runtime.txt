@@ -1,10 +1,9 @@
 filterpy>=1.4.5
 hyperlpr>=0.0.2
 matplotlib>=3.0.3
-numba==0.48.0
 Pillow>=7.1.2
-scikit_learn==0.22.2.post1
-scikit-image==0.16.2
+scikit_learn
+scikit-image
 tqdm>=4.46.0
 ConcurrentLogHandler
 concurrent-log-handler

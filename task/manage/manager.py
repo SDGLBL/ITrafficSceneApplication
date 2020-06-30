@@ -18,13 +18,12 @@ def read_info_from_task(mqs, task_name: str, info_pool: ImgInfoPool):
         while True:
             for mq in mqs:
                 img_info = mq.get(timeout=5)
-                if len(img_info['analysis']) > 0:
-                    for analysis_info in img_info['analysis']:
-                        info_pool.add(task_name=task_name, img_info=analysis_info)
-                        if analysis_info['info_type'] != 'pass' and TaskConfig.IS_PRINT_ANALYSIS_INFO:
-                            # 此处删除掉图像再显示，否则终端显示图像太长
-                            del analysis_info['imgs']
-                            print(analysis_info)
+                info_pool.add(task_name=task_name, img_info=img_info)
+                for analysis_info in img_info['analysis']:
+                    if analysis_info['info_type'] != 'pass' and TaskConfig.IS_PRINT_ANALYSIS_INFO:
+                        # 此处删除掉图像再显示，否则终端显示图像太长
+                        del analysis_info['imgs']
+                        print(analysis_info)
     except Empty:
         print('{} Task的读取信息线程停止'.format(task_name))
         for mq in mqs:
@@ -135,3 +134,12 @@ class TaskManager(object):
             Thread(target=read_info_from_task, args=(task.get_readqs(), task_name, self.info_pool,)).start()
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
+
+    def get_progress_info(self,task_name: str):
+        return self.info_pool.get_progress_info(task_name)
+
+    def get_analysis_info(self,task_name: str):
+        return self.info_pool.get_analysis_info(task_name)
+    
+    def get_pass_count_table(self,task_name: str):
+        return self.info_pool.get_pass_count_table(task_name)
