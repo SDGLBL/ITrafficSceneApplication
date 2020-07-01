@@ -106,7 +106,7 @@ class Task(BaseBuild):
         if not self.pause_event.is_set():
             raise RuntimeError('Task已经被挂起,无法杀死')
         self.run_se.value = False
-        time.sleep(1)
+        time.sleep(2)
         # for p in self.process:
         #     p.close()
 

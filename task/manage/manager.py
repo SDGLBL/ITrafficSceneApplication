@@ -105,7 +105,7 @@ class TaskManager(object):
             try:
                 self.tasks[task_name].kill()
                 # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
-                time.sleep(1)
+                time.sleep(2)
             except RuntimeError as e:
                 raise e
             finally:

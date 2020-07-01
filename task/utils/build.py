@@ -55,7 +55,6 @@ def __head_process(head_cfg, sendqs, timeout, run_semaphore, pause_event):
         for sendq in sendqs:
             sendq.cancel_join_thread()
             sendq.close()
-    print('return head')
     return
 
 
@@ -93,8 +92,6 @@ def __detector_process(detector_cfg, recivq: Queue, sendqs, timeout, run_semapho
             sendq.cancel_join_thread()
             sendq.close()
         recivq.close()
-
-    print('return detector')
     return
 
 
@@ -134,8 +131,6 @@ def __tracker_process(tracker_cfg, recivq: Queue, sendqs, timeout, run_semaphore
             sendq.cancel_join_thread()
             sendq.close()
         recivq.close()
-
-    print('return tracker')
     return
 
 
@@ -169,6 +164,9 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
         logger.warning('通向主进程的队列已满，请检查主进程是否正常取出数据')
     except Exception as e:
         logger.exception(e)
+        logger.info('发生不可忽视的错误，因此强制停止整个后台程序运行，请检查log输出定位错误')
+        # import signal
+        # os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
     finally:
         logger.info('release backbone source')
         del logger
@@ -176,9 +174,6 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
         sendq.cancel_join_thread()
         recivq.close()
         sendq.close()
-    import signal
-    os.killpg(os.getpgid(os.getpid()), signal.SIGKILL)
-    print('return backbone')
     return
 
 
