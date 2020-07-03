@@ -108,10 +108,10 @@ class TaskManager(object):
                 time.sleep(2)
             except RuntimeError as e:
                 raise e
-            finally:
-                # 回收task
-                del self.tasks[task_name]
-                self.info_pool.remove(task_name)
+            # finally:
+            #     # 回收task
+            #     del self.tasks[task_name]
+            #     self.info_pool.remove(task_name)
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
 
