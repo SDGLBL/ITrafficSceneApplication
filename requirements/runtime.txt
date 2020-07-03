@@ -1,9 +1,9 @@
 filterpy>=1.4.5
-hyperlpr>=0.0.2
+hyperlpr
 matplotlib>=3.0.3
 Pillow>=7.1.2
-scikit_learn
-scikit-image
+scikit-learn==0.22.2
+scikit-image==0.16.2
 tqdm>=4.46.0
 ConcurrentLogHandler
 concurrent-log-handler
@@ -18,3 +18,4 @@ pywin32;platform_system=="Windows"
 addict==2.2.1
 yapf==0.30.0
 flask
+easydict==1.9
