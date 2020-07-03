@@ -10,12 +10,12 @@ concurrent-log-handler
 pandas
 six==1.14.0
 sklearn==0.0
-mmcv>=0.5.4
+mmcv==0.6.1
 pymysql==0.9.3
 llist==0.6 
 numpy>=1.18.4
 pywin32;platform_system=="Windows"
 addict==2.2.1
 yapf==0.30.0
-flask
 easydict==1.9
+flask
