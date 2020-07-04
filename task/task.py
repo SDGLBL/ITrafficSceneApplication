@@ -99,14 +99,13 @@ class Task(BaseBuild):
     def kill(self):
         """杀死该Task,调用此方法后将无法再start该task
         """
-        if not self.is_start:
-            raise RuntimeError('Task还未启动过，无法杀死')
         if not self.run_se.value:
             raise RuntimeError('Task已经被杀死，请勿重复杀死该task')
-        if not self.pause_event.is_set():
-            raise RuntimeError('Task已经被挂起,无法杀死')
+        if not self.is_start:
+            self.start()
         self.run_se.value = False
-        time.sleep(2)
+        # 等待3秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
+        time.sleep(3)
         # for p in self.process:
         #     p.close()
 

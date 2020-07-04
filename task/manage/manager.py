@@ -104,14 +104,13 @@ class TaskManager(object):
         if task_name in self.tasks.keys():
             try:
                 self.tasks[task_name].kill()
-                # 等待2秒，让task进程都停止都再回收内存,以防止task停止信号量过早被gc回收
-                time.sleep(2)
             except RuntimeError as e:
                 raise e
-            # finally:
-            #     # 回收task
-            #     del self.tasks[task_name]
-            #     self.info_pool.remove(task_name)
+            finally:
+                # 回收task
+                del self.tasks[task_name]
+                if self.info_pool.exist(task_name):
+                    self.info_pool.remove(task_name)
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
 

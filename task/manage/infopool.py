@@ -46,7 +46,7 @@ class ImgInfoPool(object):
         return self.task_progress[task_name]
 
     def get_analysis_info(self,task_name: str):
-        if task_name not in self.task_analysis_info.keys():
+        if not self.exist(task_name):
             raise RuntimeError('Task信息池中不存在task_name为{}的task_analysis_info信息队列'.format(task_name))
         if len(self.task_analysis_info[task_name]) == 0:
             raise RuntimeError('Task信息池中task_name为{}的task_analysis_info信息队列已空')
@@ -58,11 +58,16 @@ class ImgInfoPool(object):
         return self.task_pass_count_table[task_name]
 
     def remove(self,task_name: str):
-        if task_name not in self.task_analysis_info.keys():
+        if not self.exist(task_name):
             raise RuntimeError('Task信息池中不存在task_name为{}的task_analysis_info信息队列'.format(task_name))
         self.logger.info('清空信息池中{} task的输出信息')
         del self.task_analysis_info[task_name]
         del self.task_pass_count_table[task_name]
         del self.task_progress[task_name]
+    
+    def exist(self,task_name: str):
+        if task_name not in self.task_analysis_info.keys():
+            return False
+        return True
 
 
