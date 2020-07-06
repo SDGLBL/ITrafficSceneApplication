@@ -10,7 +10,7 @@ from cfg import TaskConfig
 from cfg import DataConfig
 
 TaskCfg = {
-    'task_name': '路口交通场景',
+    'task_name': '路边违规停车场景',
     'head':
         {
             'type': 'VideoFileHead',
@@ -39,24 +39,9 @@ TaskCfg = {
                 'isPrint': TaskConfig.IS_PRINT_FPS
             },
             {
-                'type': 'PathExtract',  # 路径分析模块，基础模块，不可或缺
-                'eModelPath': None  # 视频环境模型路径，必须赋值
-            },
-            {
-                'type': 'TrafficStatistics',  # 车流统计模块
-                'eModelPath': None,  # 视频环境模型路径，必须赋值
-                'is_process': False  # 是否开启该组件
-            },
-            {
                 'type': 'ParkingMonitoringComponent',  # 违章停车监控组件
                 'monitoring_area': None,  # 监控区域，必须赋值
                 'allow_stop_time': TaskConfig.ALLOW_STOP_TIME,
-                'is_process': False  # 是否开启该组件
-            },
-            {
-                'type': 'LaneMonitoringComponent',  # 违法占用车道组件
-                'monitoring_area': None,  # 监控区域，必须赋值
-                'no_allow_car': None,  # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
                 'is_process': False  # 是否开启该组件
             },
             # 数据库写入组件
@@ -86,28 +71,10 @@ def get_injected_cfg(cfg_data):
         raise RuntimeError('文件夹{}中不存在名字为{}的视频或者视频源头'.format(DataConfig.VIDEO_DIR, filename))
     taskCfg = deepcopy(TaskCfg)
     taskCfg['head']['filename'] = filepath
-    emodelname = filename.split('.')[0] + '.emd'
-    emodelpath = osp.join(DataConfig.EMODEL_DIR, emodelname)
-    if not osp.exists(emodelpath):
-        raise RuntimeError('文件夹{}中不存在名字为{}的环境模型,请先执行建模Task')
-    taskCfg['backbones'][0][1]['eModelPath'] = emodelpath
-    taskCfg['backbones'][0][2]['eModelPath'] = emodelpath
-    taskCfg['backbones'][0][2]['is_process'] = True
     if 'parking_monitoring_area' in cfg_data.keys():
         all_point_array = [np.array(x, dtype=np.int32) for x in cfg_data['parking_monitoring_area']]
         mask = np.ones_like(mmcv.VideoReader(filepath)[10][:,:,0])
         parking_mask = cv2.fillPoly(mask, all_point_array, 0)
-        taskCfg['backbones'][0][3]['monitoring_area'] = parking_mask
-        taskCfg['backbones'][0][3]['is_process'] = True
-    if 'lane_monitoring_area' in cfg_data.keys():
-        if 'lane_no_allow_cars' not in cfg_data.keys():
-            raise RuntimeError('如果已经提供车道检测区域，请也提供禁止出现车辆信息')
-        taskCfg['backbones'][0][4]['is_process'] = True
-        lane_no_allow_cars = cfg_data['lane_no_allow_cars']
-        all_point_array = [np.array(x, dtype=np.int32) for x in cfg_data['lane_monitoring_area']]
-        mask = np.ones_like(mmcv.VideoReader(filepath)[10][:,:,0])
-        for lane_area, no_allow_flag in zip(all_point_array, lane_no_allow_cars.keys()):
-            mask = cv2.fillPoly(mask, [lane_area],int(no_allow_flag) )
-        taskCfg['backbones'][0][4]['monitoring_area'] = mask
-        taskCfg['backbones'][0][4]['no_allow_car'] = lane_no_allow_cars
+        taskCfg['backbones'][0][1]['monitoring_area'] = parking_mask
+        taskCfg['backbones'][0][1]['is_process'] = True
     return taskCfg

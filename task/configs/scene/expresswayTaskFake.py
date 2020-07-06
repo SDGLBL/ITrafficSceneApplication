@@ -10,7 +10,7 @@ from cfg import TaskConfig
 from cfg import DataConfig
 
 TaskCfg = {
-    'task_name':'路口交通场景Fake',
+    'task_name':'高速公路场景Fake',
     'head':
         {
             'type': 'EquivalentHead',
