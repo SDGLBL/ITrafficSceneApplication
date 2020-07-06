@@ -76,7 +76,7 @@ def get_task_list():
     task_list = [
         {
             'task_name': task_name,# task名
-            'task_snapshot': join('/',path2source_path(DataConfig.SNAPSHOT_DIR),task_name.split('.')[0]+'.jpg')# task处理的视频的截图
+            'task_snapshot': path2source_path(join('/',DataConfig.SNAPSHOT_DIR,task_name.split('.')[0]+'.jpg'))# task处理的视频的截图
             # 'task_progress': task_name['task_progress'] # taks进度
         }
         for task_name in task_manger.tasks.keys()
