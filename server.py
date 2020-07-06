@@ -7,7 +7,9 @@ from os.path import exists, join
 import cv2
 import mmcv
 import json
+import platform
 import numpy as np
+import multiprocessing as mp
 from cfg import DataConfig, TaskConfig
 from utils.logger import get_logger
 from flask import Flask, jsonify, url_for, request
@@ -272,6 +274,14 @@ def submit_task():
     try:
         task_name = request.form["task_name"]
         task_type = request.form["task_type"]
+        if not exists(join(DataConfig.JSON_DIR,task_name.split('.')[0]+'.json')) and 'crossRoads' in task_type:
+            get_cfg = importlib.import_module(TaskConfig.MODELLING_CFG_DIR + 'modellingTask').get_injected_cfg
+            cfg_data = request.form["cfg_data"]
+            cfg_data = json.loads(cfg_data)
+            task_cfg = get_cfg(cfg_data)
+            task_manger.submit(task_name, task_cfg)
+            task_manger.resume(task_name)
+            raise RuntimeError('由于该视频的不存在环境建模json文件，本次提交路口场景检测任务失败，系统将会自动启动建模任务请耐心等待建模完成')
         get_cfg = importlib.import_module(TaskConfig.SCENE_CFG_DIR + task_type).get_injected_cfg
         cfg_data = request.form["cfg_data"]
         cfg_data = json.loads(cfg_data)
@@ -281,7 +291,7 @@ def submit_task():
         server_loger.info('前端提交了task_name:{}任务'.format(task_name))
         return jsonify({'info': '提交{}成功'.format(task_name), 'is_success': True})
     except RuntimeError as e:
-        server_loger.warning(e)
+        server_loger.error(e)
         return jsonify({'info': '提交{}失败,原因:{}'.format(task_name, e), 'is_success': False})
 
 
@@ -406,6 +416,9 @@ def illegal_search():
 
 
 if __name__ == "__main__":
+    # Linux平台启动
+    if platform.system() == 'Linux':
+        mp.set_start_method('spawn', force=True)
     server_loger = get_logger('logs/server.log')
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)

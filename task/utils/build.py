@@ -153,8 +153,9 @@ def __backbone_process(backbone_cfg: list, recivq: Queue, sendq: Queue, timeout,
                 for backbone_component in backbone_components[1:]:
                     kwargs = backbone_component(**kwargs)
             # print('backbone sendq len is {}'.format(sendq.qsize()))
-            for img_info in kwargs['imgs_info']:
-                sendq.put(img_info, timeout=timeout)
+            if kwargs is not None:
+                for img_info in kwargs['imgs_info']:
+                    sendq.put(img_info, timeout=timeout)
     except KeyboardInterrupt:
         logger.info('user stop a backbone_process process')
     except Empty:

@@ -17,7 +17,7 @@ def read_info_from_task(mqs, task_name: str, info_pool: ImgInfoPool):
     try:
         while True:
             for mq in mqs:
-                img_info = mq.get(timeout=5)
+                img_info = mq.get(timeout=20)
                 info_pool.add(task_name=task_name, img_info=img_info)
                 for analysis_info in img_info['analysis']:
                     if analysis_info['info_type'] != 'pass' and TaskConfig.IS_PRINT_ANALYSIS_INFO:
@@ -61,7 +61,7 @@ class TaskManager(object):
         if self.is_exist(task_name):
             raise RuntimeError("请勿重复提交task_name为{}的Task任务".format(task_name))
         task = Task(task_cfg)
-        task.build()
+        task.build(timeout=20)
         self.tasks[task_name] = task
 
     def is_exist(self, task_name: str):

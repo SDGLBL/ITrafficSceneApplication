@@ -199,4 +199,4 @@ class Modelling(BaseBackboneComponent):
             print('建模完毕，关闭进程')
             exit()
 
-        return kwargs
+        return None
