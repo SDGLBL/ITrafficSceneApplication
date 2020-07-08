@@ -21,6 +21,21 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
         self.is_process = is_process
         self.passLine = passLine
+        self.trans = {
+            'car':'小汽车',
+            'bus':'公交车',
+            'truck':'卡车',
+            'to':'驶去',
+            'from':'驶来'
+        }
+        self.CIndX = np.array(self.indX)
+        for i in range(len(self.CIndX)):
+            if self.CIndX[i] in self.trans:
+                self.CIndX[i] = self.trans[self.CIndX[i]]
+        self.CIndY = np.array(self.indY)
+        for i in range(len(self.CIndY)):
+            if self.CIndY[i] in self.trans:
+                self.CIndY[i] = self.trans[self.CIndY[i]]
             
     def pathStatistics(self, img, img_info):
         img_info['analysis'] = []
@@ -48,12 +63,8 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
                 }
                 print("一辆车通过")
                 print(passInfo)
-                print(self.getTabele(self.indX, self.indY, self.pass_count_table))
                 img_info['analysis'].append(passInfo)
-
-
-        img_info['pass_count_table'] = [self.getTabele(self.indX, self.indY, self.pass_count_table), change]
-                
+        img_info['pass_count_table'] = [self.getTabele(self.CIndX, self.CIndY, self.pass_count_table), change]  
 
         
     def getTabele(self,indX, indY, data):
