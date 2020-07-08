@@ -100,7 +100,7 @@ class TrafficStatistics(BaseBackboneComponent):
         indX = indX[np.newaxis, :]
         table = np.concatenate((indX, table), axis=0)
         indY = np.append(indY,['总和'])
-        indY = np.append([' '], indY)
+        indY = np.append(['车辆类型'], indY)
         indY = indY[:, np.newaxis]
         table = np.concatenate((indY,table), axis=1)
         # print(table)

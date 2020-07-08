@@ -8,19 +8,18 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
     """
         用于直行道的车辆计数类
     """
-    def __init__(self, is_process=False, direction="to", passLine = 720):
+    def __init__(self, is_process=False, direction=["to", "from"], passLine = 540):
         """初始化函数
         Args:
             is_process (bool, optional): 是否开启该模块. Defaults to False.
-            direction (str, optional): 选择统计方向，默认是去向方向"to"，将之设定为 "from" 表示统计来向车辆. Defaults to "to".
+            direction (str, optional): 表示计数方向，['to']表示只统计去向的车. ["to", "from"]表示即统计来向也统计去向的车，Defaults to ["to", 'from'].
             passLine (int, optional): 表示通过该线则计数器加一。 Defaults to 720.
         """
         # 表格初始化：
-        self.indX = ['直行']    # 只有直行一个方向
-        self.indY = ['car', 'truck', 'bus']     # 统计三个类别的车辆
+        self.indX = np.array(direction)    # 只有直行一个方向
+        self.indY = np.array(['car', 'truck', 'bus'])     # 统计三个类别的车辆
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
         self.is_process = is_process
-        self.direction = direction
         self.passLine = passLine
             
     def pathStatistics(self, img, img_info):
@@ -28,27 +27,28 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
         change = False
         # 遍历img_info中的每条路劲
         for path in img_info['end_path']:
+            # print(path['id'])
             id = str(path['id'])
             cls_name = path['cls_name']
             # 如果这条路径符合方向和位置要求，则对该条路劲进行处理：
             d = self.isPass(path)
-            if d is not None and d==self.direction and (cls_name in self.indX):
+            if d is not None and d in self.indX and (cls_name in self.indY):
                 change = True;
-                if cls_name == 'car':
-                    self.pass_count_table[0] += 1
-                else if cls_name = 'truck':
-                    self.pass_count_table[1] += 1
-                else if cls_name = 'bus':
-                    self.pass_count_table[2] += 1
+                # print(self.indY == cls_name)
+                # print(self.pass_count_table[self.indY == cls_name][self.indX == d])
+                self.pass_count_table[self.indY == cls_name, self.indX == d] += 1
                 passInfo = {
                     'info_type': 'pass',
                     'id': id,
                     'start_time': path['start_time'],
                     'end_time': path['end_time'],
-                    'passage_type': '直行',
+                    'passage_type': d,
                     'obj_type': cls_name,
                     'number_plate': None
                 }
+                print("一辆车通过")
+                print(passInfo)
+                print(self.getTabele(self.indX, self.indY, self.pass_count_table))
                 img_info['analysis'].append(passInfo)
 
 
@@ -70,7 +70,7 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
         indX = indX[np.newaxis, :]
         table = np.concatenate((indX, table), axis=0)
         indY = np.append(indY,['总和'])
-        indY = np.append([' '], indY)
+        indY = np.append(['车辆类型'], indY)
         indY = indY[:, np.newaxis]
         table = np.concatenate((indY,table), axis=1)
         # print(table)
@@ -89,9 +89,9 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
         start = dots[0][1]
         end = dots[-1][1]
         if start < self.passLine < end:
-            return False
-        else if start > self.passLine > end:
-            return True
+            return 'from'
+        elif start > self.passLine > end:
+            return 'to'
         return None
 
 
