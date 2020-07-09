@@ -13,7 +13,7 @@ if __name__ == '__main__':
     img_info_pool = ImgInfoPool(max_size=30)
     tm = TaskManager(img_info_pool)
     cfg_data = {
-        "task_type":"expresswayTask",
+        "task_type":"expresswayTaskFake",
         "filename": "gs.mp4", 
         "parking_monitoring_area": [
             [[1250, 800], [1250, 400], [750, 400], [750, 800]]
