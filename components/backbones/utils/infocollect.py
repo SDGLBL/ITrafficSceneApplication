@@ -26,7 +26,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
             process_type (list, optional):支持处理的事件类型. Defaults to ['pass', 'illegal_parking'].
         """            
         super().__init__()
-        create_database(clear_exist=True)
+        create_database()
         self.connection = get_connection(DataConfig.DATABASE_PATH)
         self.process_type = process_type
         self.img_save_path = DataConfig.CRIMINAL_DIR
@@ -56,7 +56,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 if info_type == 'pass':
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
                         'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
@@ -66,7 +66,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 elif info_type == 'illegal_parking':
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
                         'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
@@ -87,7 +87,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'INSERT OR IGNORE INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
                         'VALUES (?,?,?,?)',
                         (start_time_id, number_plate, img_path, info_type),
                         False
@@ -96,7 +96,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 elif info_type == 'illegal_occupation':
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
                         'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
@@ -117,7 +117,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'INSERT OR IGNORE INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
                         'VALUES (?,?,?,?)',
                         (start_time_id, number_plate, img_path, info_type),
                         False

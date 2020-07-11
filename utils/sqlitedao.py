@@ -48,7 +48,7 @@ def excute_sql(connection:sqlite3.Connection,sql_str:str,args=(),is_return=False
         logger.exception(e)
     return None
 
-def create_database(clear_exist = True):
+def create_database(clear_exist = False):
     """创建项目存储数据需要使用的数据库
 
     Args:
