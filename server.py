@@ -278,19 +278,19 @@ def submit_task():
     if request.method != 'POST':
         return jsonify({'info': '提交taskApi只接受POST'})
     try:
-        task_name = request.form["task_name"]
-        task_type = request.form["task_type"]
+        data = request.get_data()
+        data = json.loads(data)
+        task_name = data["task_name"]
+        task_type = data["task_type"]
         if not exists(join(DataConfig.JSON_DIR,task_name.split('.')[0]+'.json')) and 'crossRoads' in task_type:
             get_cfg = importlib.import_module(TaskConfig.MODELLING_CFG_DIR + 'modellingTask').get_injected_cfg
-            cfg_data = request.form["cfg_data"]
-            cfg_data = json.loads(cfg_data)
+            cfg_data = data["cfg_data"]
             task_cfg = get_cfg(cfg_data)
             task_manger.submit(task_name, task_cfg)
             task_manger.resume(task_name)
             raise RuntimeError('由于该视频的不存在环境建模json文件，本次提交路口场景检测任务失败，系统将会自动启动建模任务请耐心等待建模完成')
         get_cfg = importlib.import_module(TaskConfig.SCENE_CFG_DIR + task_type).get_injected_cfg
-        cfg_data = request.form["cfg_data"]
-        cfg_data = json.loads(cfg_data)
+        cfg_data = data["cfg_data"]
         task_cfg = get_cfg(cfg_data)
         # 提交任务到task manager
         task_manger.submit(task_name, task_cfg)
