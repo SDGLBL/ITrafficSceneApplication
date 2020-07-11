@@ -49,9 +49,43 @@ def draw_label(
         else:
             put_str = class_label + ' ' + str(cls_conf)[:4]
         cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
-    cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
+    # cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
+def draw_illegal_label(
+        bbox,
+        obj_conf,
+        cls_conf,
+        cls_pred,
+        id,
+        img: np.ndarray,
+        number_plate: str ):
+    """[summary]
+
+    Args:
+        bbox (list): bbox
+        obj_conf (float): bbox对应的object置信度
+        cls_conf (float): bbox对应的分类置信度
+        cls_pred (str): bbox对应的分类
+        id (int): 目标的id
+        img (np.ndarray): 图像list
+        number_plate (str): 违规车辆车牌号
+
+    Returns:
+        np.ndarray: 绘制后的图像
+    """        
+    thickness = len(img) // 200
+    if bbox is None:
+        # 如果bbox为None说明这个目标
+        raise RuntimeError("绘制违规框必须需要目标的bbox")
+    x1, y1, x2, y2 = bbox
+    offset = 10
+    x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
+    class_label = cls_pred
+    cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
+    put_str = class_label + ' cls_conf:{0}'.format(str(cls_conf)[:4]) + ' number plate{0}'.format(number_plate)
+    cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
+    return img
 
 def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
     """获取随机颜色，数量为传入的类别数量

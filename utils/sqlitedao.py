@@ -32,20 +32,17 @@ def excute_sql(connection:sqlite3.Connection,sql_str:str,args=(),is_return=False
     """
     if not isinstance(args,tuple):
         raise AttributeError('args必须为元组')
-    try:
-        cursor = connection.cursor()
-        if len(args) != 0:
-            cursor.execute(sql_str, args)
-        else:
-            cursor.execute(sql_str) 
-        if is_return:
-            result = cursor.fetchall()
-            return result
-        else:
-            connection.commit()
-            cursor.close()
-    except Exception as e:
-        logger.exception(e)
+    cursor = connection.cursor()
+    if len(args) != 0:
+        cursor.execute(sql_str, args)
+    else:
+        cursor.execute(sql_str) 
+    if is_return:
+        result = cursor.fetchall()
+        return result
+    else:
+        connection.commit()
+        cursor.close()
     return None
 
 def create_database(clear_exist = False):
@@ -61,8 +58,8 @@ def create_database(clear_exist = False):
         if name == 'upload':
             continue
         os.remove(os.path.join(DataConfig.CRIMINAL_DIR,name))
-    create_traffic_str = "CREATE TABLE traffic (start_time_id TEXT NOT NULL,start_time INTEGER NOT NULL,end_time INTEGER NOT NULL,passage_type TEXT DEFAULT straight,obj_type TEXT DEFAULT car,number_plate TEXT,other_info TEXT,CONSTRAINT traffic_PK PRIMARY KEY (start_time_id));"
-    create_criminal_str = "CREATE TABLE criminal (start_time_id TEXT NOT NULL,number_plate TEXT,img_path TEXT,criminal_type TEXT NOT NULL,CONSTRAINT criminal_PK PRIMARY KEY (start_time_id),CONSTRAINT criminal_FK FOREIGN KEY (start_time_id) REFERENCES traffic(start_time_id));"
+    create_traffic_str = "CREATE TABLE IF NOT EXISTS traffic (start_time_id TEXT NOT NULL,start_time INTEGER NOT NULL,end_time INTEGER NOT NULL,passage_type TEXT DEFAULT straight,obj_type TEXT DEFAULT car,number_plate TEXT,other_info TEXT,CONSTRAINT traffic_PK PRIMARY KEY (start_time_id));"
+    create_criminal_str = "CREATE TABLE IF NOT EXISTS criminal (start_time_id TEXT NOT NULL,number_plate TEXT,img_path TEXT,criminal_type TEXT NOT NULL,CONSTRAINT criminal_PK PRIMARY KEY (start_time_id),CONSTRAINT criminal_FK FOREIGN KEY (start_time_id) REFERENCES traffic(start_time_id));"
     conn = get_connection(DataConfig.DATABASE_PATH)
     excute_sql(conn,create_traffic_str)
     excute_sql(conn,create_criminal_str)

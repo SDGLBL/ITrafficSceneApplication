@@ -19,11 +19,11 @@ class InformationCollectorComponent(BaseBackboneComponent):
 
     def __init__(
             self,
-            process_type=['pass', 'illegal_parking']):
+            process_type=['pass', 'illegal_parking', 'illegal_occupation']):
         """收集违规信息并存入数据库中
 
         Args:
-            process_type (list, optional):支持处理的事件类型. Defaults to ['pass', 'illegal_parking'].
+            process_type (list, optional):支持处理的事件类型. Defaults to ['pass', 'illegal_parking', ' =illegal_occupation].
         """            
         super().__init__()
         create_database()
@@ -112,7 +112,6 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         if index == 1:
                             info['criminal_img_name'] = img_name
                             # 将违规图像列表记录
-                            
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)

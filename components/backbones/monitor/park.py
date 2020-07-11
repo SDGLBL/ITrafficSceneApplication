@@ -2,7 +2,7 @@ import numpy as np
 
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
-from utils.utils import bbox2center, identify_number_plate, point_distance,time2format_time,format_time2time
+from utils.utils import bbox2center, identify_number_plate, point_distance,time2format_time,format_time2time,draw_illegal_label
 
 
 @BACKBONE_COMPONENT.register_module
@@ -68,7 +68,15 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                             'point': (x_c, y_c),
                             'start_time': format_time2time(img_info['time']),
                             'end_time': format_time2time(img_info['time']),
-                            'imgs': [img],
+                            'imgs': [
+                                draw_illegal_label(
+                                    bbox=obj['bbox'],
+                                    obj_conf=obj['obj_conf'],
+                                    cls_pred=obj['cls_pred'],
+                                    cls_conf=obj['cls_conf'],
+                                    id=obj_id,
+                                    img=img,
+                                    number_plate = number_plate)],
                             'number_plate': number_plate
                         }
                     # 如果目标早已被监测，刷新其状态
@@ -80,13 +88,20 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         # 如果超过允许停车的时间限度且没有移动
                         if end_time - start_time >= self.allow_stop_time and point_distance(point, self.objs[obj_id][
                             'point']) < 20:
-                            # 记录最后一张证据图
-                            # 如果是完全不能停车的地方只需要记录一张违规截图
-                            if self.allow_stop_time != 0:
-                                self.objs[obj_id]['imgs'].append(img)
                             # 如果上次车牌号没检测出来继续检测识别
                             if self.objs[obj_id]['number_plate'] is None:
                                 self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])
+                            # 记录最后一张证据图
+                            if self.allow_stop_time != 0:
+                                self.objs[obj_id]['imgs'].append(
+                                    draw_illegal_label(
+                                    bbox=obj['bbox'],
+                                    obj_conf=obj['obj_conf'],
+                                    cls_pred=obj['cls_pred'],
+                                    cls_conf=obj['cls_conf'],
+                                    id=obj_id,
+                                    img=img,
+                                    number_plate = self.objs[obj_id]['number_plate']))
                             # 在img_info中添加停车违规记录
                             img_info['analysis'].append({
                                 'info_type': 'illegal_parking',
@@ -113,7 +128,14 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                             # print('{}移动了我们认为改目标不算违章停车那就更新它的start_time'.format(obj_id))
                             self.objs[obj_id]['start_time'] = format_time2time(img_info['time'])
                             # 刷新违规截图
-                            self.objs[obj_id]['imgs'][0] = img
+                            self.objs[obj_id]['imgs'][0] = draw_illegal_label(
+                                    bbox=obj['bbox'],
+                                    obj_conf=obj['obj_conf'],
+                                    cls_pred=obj['cls_pred'],
+                                    cls_conf=obj['cls_conf'],
+                                    id=obj_id,
+                                    img=img,
+                                    number_plate = self.objs[obj_id]['number_plate'])
                             self.objs[obj_id]['point'] = bbox2center(obj['bbox'])
                         else:
                             # print('{}没有移动但停车时间还未达到违规范围'.format(obj_id))
