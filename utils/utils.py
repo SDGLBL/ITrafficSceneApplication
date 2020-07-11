@@ -4,6 +4,7 @@ import datetime
 import time
 import os
 import cv2
+from PIL import Image,ImageDraw,ImageFont
 import numpy as np
 from copy import deepcopy
 from hyperlpr import HyperLPR_plate_recognition
@@ -36,6 +37,7 @@ def draw_label(
         np.ndarray: 绘制后的图像
     """        
     thickness = len(img) // 200
+    img = deepcopy(img)
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
         if bbox is None:
             # 如果bbox为None说明这个目标
@@ -45,11 +47,13 @@ def draw_label(
         class_label = cls_pred
         color = bbox_colors[cls_pred]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
+        cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车'}
         if id is not None:
-            put_str = class_label + ' ' + str(cls_conf)[:4] + ' {0}'.format(id)
+            put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + '目标ID:{0}'.format(int(id))
         else:
-            put_str = class_label + ' ' + str(cls_conf)[:4]
-        cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
+            put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4])
+        img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
+        # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
     # cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
@@ -77,16 +81,29 @@ def draw_illegal_label(
     """        
     thickness = len(img) // 200
     img = deepcopy(img)
+    # img = deepcopy(img)
     if bbox is None:
         # 如果bbox为None说明这个目标
         raise RuntimeError("绘制违规框必须需要目标的bbox")
     x1, y1, x2, y2 = bbox
     offset = 10
     x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
-    class_label = cls_pred
     cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
-    put_str = class_label + ' cls_conf:{0}'.format(str(cls_conf)[:4]) + ' number plate{0}'.format(number_plate)
-    cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车'}
+    put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + ' 车牌:{0}'.format(number_plate)
+    img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
+    # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
+    return img
+
+def paint_chinese_opencv(im,chinese,pos,color):
+    img_PIL = Image.fromarray(cv2.cvtColor(im,cv2.COLOR_BGR2RGB))
+    font = ImageFont.truetype('./fonts/msyhbd.ttc',30,encoding="utf-8")
+    fillColor = color #(255,0,0)
+    position = pos #(100,100)
+    draw = ImageDraw.Draw(img_PIL)
+    draw.text(position,chinese,font=font,fill=fillColor)
+ 
+    img = cv2.cvtColor(np.asarray(img_PIL),cv2.COLOR_RGB2BGR)
     return img
 
 def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
