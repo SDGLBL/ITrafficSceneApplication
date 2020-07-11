@@ -83,6 +83,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)
+                    info['criminal_imgs'] = save_paths
                     # 将保存的图像路径拼接起来存入数据库
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
@@ -110,9 +111,12 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         # 每次违规最少两张照片，取第二张存储在criminal_img_name
                         if index == 1:
                             info['criminal_img_name'] = img_name
+                            # 将违规图像列表记录
+                            
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)
+                    info['criminal_imgs'] = save_paths
                     # 将保存的图像路径拼接起来存入数据库
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
