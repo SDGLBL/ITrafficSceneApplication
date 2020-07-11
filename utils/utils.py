@@ -5,6 +5,7 @@ import time
 import os
 import cv2
 import numpy as np
+from copy import deepcopy
 from hyperlpr import HyperLPR_plate_recognition
 
 from components.detector.yolov3 import load_classes
@@ -75,6 +76,7 @@ def draw_illegal_label(
         np.ndarray: 绘制后的图像
     """        
     thickness = len(img) // 200
+    img = deepcopy(img)
     if bbox is None:
         # 如果bbox为None说明这个目标
         raise RuntimeError("绘制违规框必须需要目标的bbox")
