@@ -16,7 +16,7 @@ from flask import Flask, jsonify, url_for, request
 from task import TaskManager, ImgInfoPool, get_cfgDataHandler
 from utils.sqlitedao import excute_sql, get_connection
 from utils.utils import path2source_path
-
+from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 
@@ -420,6 +420,21 @@ def illegal_search():
         server_loger.info('收到对车牌号{}的违规查询,且查询成功，结果为{}'.format(number_plate,result_list))
         return jsonify(result_list)
 
+
+# ---------------------------------------
+# 上传文件api
+# ---------------------------------------
+@app.route('/api/video/upload',methods=['POST'])
+def upload_file():
+    try:
+        f = request.files["file"]
+        save_path = join(DataConfig.VIDEO_DIR,secure_filename(f.filename))
+        server_loger.info('收到文件名为{}的文件上传请求,保存到{}目录'.format(f.filename,DataConfig.VIDEO_DIR))
+        f.save(save_path)
+        return jsonify({'info': '提交文件成功', 'is_success': True})
+    except RuntimeError as e:
+        server_loger.error(e)
+        return jsonify({'info': '提交文件失败，原因为{}'.format(e), 'is_success': False})
 
 if __name__ == "__main__":
     # Linux平台启动
