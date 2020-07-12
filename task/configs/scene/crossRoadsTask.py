@@ -89,7 +89,7 @@ def get_injected_cfg(cfg_data):
     emodelname = filename.split('.')[0] + '.emd'
     emodelpath = osp.join(DataConfig.EMODEL_DIR, emodelname)
     if not osp.exists(emodelpath):
-        raise RuntimeError('文件夹{}中不存在名字为{}的环境模型,请先执行建模Task')
+        raise RuntimeError('文件夹{}中不存在名字为{}的环境模型,请先执行建模Task'.format(DataConfig.EMODEL_DIR, emodelname))
     taskCfg['backbones'][0][1]['eModelPath'] = emodelpath
     taskCfg['backbones'][0][2]['eModelPath'] = emodelpath
     taskCfg['backbones'][0][2]['is_process'] = True
