@@ -463,4 +463,4 @@ if __name__ == "__main__":
     server_loger = get_logger('logs/server.log')
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)
-    app.run(port=8899, debug=True)
+    app.run(port=3001, debug=True)
