@@ -26,7 +26,6 @@ class InformationCollectorComponent(BaseBackboneComponent):
             process_type (list, optional):支持处理的事件类型. Defaults to ['pass', 'illegal_parking', ' =illegal_occupation].
         """            
         super().__init__()
-        create_database()
         self.connection = get_connection(DataConfig.DATABASE_PATH)
         self.process_type = process_type
         self.img_save_path = DataConfig.CRIMINAL_DIR

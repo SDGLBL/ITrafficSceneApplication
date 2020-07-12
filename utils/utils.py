@@ -37,7 +37,7 @@ def draw_label(
         np.ndarray: 绘制后的图像
     """        
     thickness = len(img) // 200
-    img = deepcopy(img)
+    # img = deepcopy(img)
     cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
         if cls_pred not in cls2lable.keys():

@@ -10,6 +10,7 @@ import json
 import platform
 import numpy as np
 import multiprocessing as mp
+from utils.sqlitedao import create_database
 from cfg import DataConfig, TaskConfig
 from utils.logger import get_logger
 from flask import Flask, jsonify, url_for, request
@@ -469,6 +470,7 @@ if __name__ == "__main__":
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
     server_loger = get_logger()
+    create_database(True)
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)
     app.run(port=3001, debug=True)
