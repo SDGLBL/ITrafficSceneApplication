@@ -51,11 +51,11 @@ def draw_label(
         color = bbox_colors[cls_pred]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
         if id is not None:
-            put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + '目标ID:{0}'.format(int(id))
+            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4]) + 'target ID:{0}'.format(int(id))
         else:
-            put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4])
-        img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
-        # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
+            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4])
+        # img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
+        cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
     # cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
