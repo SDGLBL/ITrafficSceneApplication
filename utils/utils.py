@@ -38,7 +38,10 @@ def draw_label(
     """        
     thickness = len(img) // 200
     img = deepcopy(img)
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
+        if cls_pred not in cls2lable.keys():
+            continue
         if bbox is None:
             # 如果bbox为None说明这个目标
             continue
@@ -47,7 +50,6 @@ def draw_label(
         class_label = cls_pred
         color = bbox_colors[cls_pred]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
-        cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车'}
         if id is not None:
             put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + '目标ID:{0}'.format(int(id))
         else:
@@ -89,7 +91,7 @@ def draw_illegal_label(
     offset = 10
     x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
     cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
-    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车'}
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
     put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + ' 车牌:{0}'.format(number_plate)
     img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
     # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)

@@ -456,6 +456,14 @@ def user_info():
     'avatar': 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
     'name': 'Super Admin'}})
 
+@app.route('/api/vue-admin-template/user/logout',methods=['POST'])
+def user_logout():
+    """
+    退出登录
+    :return:
+    """
+    return jsonify({'code': 20000, 'data': 'success'})
+    
 if __name__ == "__main__":
     # Linux平台启动
     if platform.system() == 'Linux':
