@@ -3,7 +3,6 @@ from pymysql import cursors
 
 from .logger import get_logger
 
-logger = get_logger(filename='logs/database.log')
 
 
 def get_connection(
@@ -57,19 +56,16 @@ def excute_sql(connection:pymysql.Connection,sql_str:str,args=(),is_return=False
     """    
     if not isinstance(args,tuple):
         raise AttributeError('args必须为元组')
-    try:
-        with connection.cursor() as cursor:
-            if len(args) != 0:
-                cursor.execute(sql_str, args)
-            else:
-                cursor.execute(sql_str)
-        if is_return:
-            result = cursor.fetchone()
-            return result
+    with connection.cursor() as cursor:
+        if len(args) != 0:
+            cursor.execute(sql_str, args)
         else:
-            connection.commit()
-    except Exception as e:
-        logger.exception(e)
+            cursor.execute(sql_str)
+    if is_return:
+        result = cursor.fetchone()
+        return result
+    else:
+        connection.commit()
     return None
 
 

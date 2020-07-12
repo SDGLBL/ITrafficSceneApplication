@@ -8,7 +8,7 @@ class ImgInfoPool(object):
         self.task_pass_count_table = {}
         self.task_progress = {}
         self.max_size = max_size
-        self.logger = get_logger('logs/infoPool.log')
+        self.logger = get_logger()
 
 
     def add(self,task_name: str,img_info: dict):

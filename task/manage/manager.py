@@ -44,7 +44,7 @@ class TaskManager(object):
         self.config_dir = config_dir
         self.tasks = {}
         # TODO: 添加task实时信息刷新字典，方便前端api获取tak执行情况
-        self.logger = get_logger('logs/task.log')
+        self.logger = get_logger()
         self.info_pool = info_pool
 
     def submit(self, task_name: str, task_cfg: dict):

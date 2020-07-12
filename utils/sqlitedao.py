@@ -2,7 +2,7 @@ import sqlite3
 import os
 from .logger import get_logger
 from cfg import DataConfig
-logger = get_logger(filename='logs/database.log')
+
 
 
 def get_connection(

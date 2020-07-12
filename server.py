@@ -460,7 +460,7 @@ if __name__ == "__main__":
     # Linux平台启动
     if platform.system() == 'Linux':
         mp.set_start_method('spawn', force=True)
-    server_loger = get_logger('logs/server.log')
+    server_loger = get_logger()
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)
     app.run(port=3001, debug=True)
