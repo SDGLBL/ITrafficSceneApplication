@@ -278,7 +278,7 @@ def submit_task():
     if request.method != 'POST':
         return jsonify({'info': '提交taskApi只接受POST'})
     try:
-        data = request.get_data()
+        data = request.data
         data = json.loads(data)
         task_name = data["task_name"]
         task_type = data["task_type"]
@@ -436,6 +436,26 @@ def upload_file():
         server_loger.error(e)
         return jsonify({'info': '提交文件失败，原因为{}'.format(e), 'is_success': False})
 
+@app.route('/api/vue-admin-template/user/login', methods=['POST'])
+def user_login():
+    """
+    登录验证
+    :return: 
+    """
+    return jsonify({'code': 20000, 'data': 'admin-token'})
+
+@app.route('/api/vue-admin-template/user/info', )
+def user_info():
+    """
+    登录验证
+    :return: 
+    """
+    return jsonify({'code': 20000, 'data': {
+    'roles': ['admin'],
+    'introduction': 'I am a super administrator',
+    'avatar': 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+    'name': 'Super Admin'}})
+
 if __name__ == "__main__":
     # Linux平台启动
     if platform.system() == 'Linux':
@@ -443,4 +463,4 @@ if __name__ == "__main__":
     server_loger = get_logger('logs/server.log')
     img_info_pool = ImgInfoPool(max_size=30)
     task_manger = TaskManager(img_info_pool)
-    app.run(port=3001, debug=True)
+    app.run(port=8899, debug=True)
