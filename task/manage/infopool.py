@@ -60,7 +60,7 @@ class ImgInfoPool(object):
     def remove(self,task_name: str):
         if not self.exist(task_name):
             raise RuntimeError('Task信息池中不存在task_name为{}的task_analysis_info信息队列'.format(task_name))
-        self.logger.info('清空信息池中{} task的输出信息')
+        self.logger.info('清空信息池中{} task的输出信息'.format(task_name))
         del self.task_analysis_info[task_name]
         del self.task_pass_count_table[task_name]
         del self.task_progress[task_name]

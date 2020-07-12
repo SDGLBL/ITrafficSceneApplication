@@ -56,6 +56,15 @@ TaskCfg = {
                 'monitoring_area': None,  # 监控区域，必须赋值
                 'no_allow_car': None,  # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
                 'is_process': False  # 是否开启该组件
+            },
+            {
+              'type': 'DrawBoundingBoxComponent'  # 画框框
+            },
+            {
+                'type': 'RtmpWriteComponent',
+                'resolution': (1920, 1080),
+                'fps': 30,
+                'rtmpUrl': TaskConfig.RTMP_URL
             }
         ]
     ]
