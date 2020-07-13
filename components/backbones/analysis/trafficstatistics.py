@@ -11,14 +11,14 @@ class TrafficStatistics(BaseBackboneComponent):
         self.dirK = self.model['dir_classifier']
         self.dirStr = {}
         if self.model['reachable_mat'].shape[1] == 3:
-            self.indX = ['左拐','右拐','直行']
+            self.indX = ['左拐','直行','右拐']
             nc = np.array(self.dirK.cluster_centers_)
             nc = nc[:,0]
             dirC = np.argsort(nc)
             self.dirStr[dirC[0]] = self.indX[0]
             self.dirStr[dirC[1]] = self.indX[1]
             self.dirStr[dirC[2]] = self.indX[2]
-            print(self.dirStr)
+            # print(self.dirStr)
         elif self.model['reachable_mat'].shape[1] == 2:
             self.indX = ['左拐','右拐']
             dirC = np.argsort(self.dirK.cluster_centers_)
@@ -37,10 +37,20 @@ class TrafficStatistics(BaseBackboneComponent):
         self.indY = np.array(self.indY)
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
         self.is_process = is_process
+        self.trans = {
+            'car':'小汽车',
+            'bus':'公交车',
+            'truck':'卡车'
+        }
+        self.CIndY = np.array(self.indY)
+        for i in range(len(self.CIndY)):
+            if self.CIndY[i] in self.trans:
+                self.CIndY[i] = self.trans[self.CIndY[i]]
             
     def pathStatistics(self, img, img_info):
         img_info['analysis'] = []
         legalTurn = True
+        change = False
         for path in img_info['end_path']:
             if isPass(path, self.model):
                 laneAndDir = pathsStatus(path, self.model)
@@ -54,8 +64,8 @@ class TrafficStatistics(BaseBackboneComponent):
                 else:
                     dir = self.dirStr[laneAndDir[1]]
                     lane = self.laneStr[laneAndDir[0]]
-                    legalTurn = self.model['reachable_mat'][lane][dir]
-                    print( 'id:{}为的{}，车牌为{},自第{}发出,{}'.format(id, cls_name, number_plate, lane, dir) )
+                    legalTurn = self.model['reachable_mat'][laneAndDir[0], laneAndDir[1]]
+                    # print( 'id:{}为的{}，车牌为{},自第{}发出,{}'.format(id, cls_name, number_plate, lane, dir) )
                 passInfo = {
                     'info_type': 'pass',
                     'id': id,
@@ -79,8 +89,9 @@ class TrafficStatistics(BaseBackboneComponent):
                     }
                     img_info['analysis'].append(foulInfo)
                 self.pass_count_table[self.indY==cls_name, self.indX==dir] += 1
+                change = True
                 # print(self.pass_count_table)
-        img_info['pass_count_table'] = self.getTabele(self.indX, self.indY, self.pass_count_table)
+        img_info['pass_count_table'] = [self.getTabele(self.indX, self.CIndY, self.pass_count_table), change]
                 
 
         
@@ -98,7 +109,7 @@ class TrafficStatistics(BaseBackboneComponent):
         indX = indX[np.newaxis, :]
         table = np.concatenate((indX, table), axis=0)
         indY = np.append(indY,['总和'])
-        indY = np.append([' '], indY)
+        indY = np.append(['车辆类型'], indY)
         indY = indY[:, np.newaxis]
         table = np.concatenate((indY,table), axis=1)
         # print(table)

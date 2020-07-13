@@ -1,15 +1,17 @@
 import os
 import subprocess
 import time
-from setuptools import setup,find_packages
+
+from setuptools import setup, find_packages
+
 
 def readme():
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
 
-def get_git_hash():
 
+def get_git_hash():
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
@@ -33,7 +35,9 @@ def get_git_hash():
 
     return sha
 
+
 version_file = 'components/version.py'
+
 
 def get_hash():
     if os.path.exists('.git'):
@@ -151,15 +155,14 @@ def parse_requirements(fname='requirements.txt', with_version=True):
 
 
 if __name__ == "__main__":
-    import platform
     write_version_py()
     setup(
         name='ITrafficSceneApplication',
         version=get_version(),
-        description='None', # TODO: 需要添加简介
+        description='None',  # TODO: 需要添加简介
         author='lijie qiuqi chenxiao',
         author_email='lijieisguge@gmail.com',
-        packages=find_packages(exclude=('configs','tools','demo')),
+        packages=find_packages(exclude=('configs', 'tools', 'demo')),
         setup_requires=parse_requirements('requirements/build.txt'),
         tests_require=parse_requirements('requirements/tests.txt'),
         install_requires=parse_requirements('requirements/runtime.txt'),
@@ -170,5 +173,3 @@ if __name__ == "__main__":
         },
         zip_safe=False
     )
-
-        

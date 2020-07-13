@@ -2,13 +2,12 @@ import numpy as np
 
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
-from utils.dao import fomate_time2time, time2fomate_time
-from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img
+from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img,format_time2time,time2format_time,get_current_time,draw_illegal_label
 
 
 @BACKBONE_COMPONENT.register_module
 class LaneMonitoringComponent(BaseBackboneComponent):
-    def __init__(self, monitoring_area: np.ndarray, no_allow_car={}, check_step=30, is_process = False):
+    def __init__(self, monitoring_area: np.ndarray, no_allow_car={}, check_step=15, is_process = False):
 
         """
         违章占用车道监控类
@@ -35,7 +34,7 @@ class LaneMonitoringComponent(BaseBackboneComponent):
             return kwargs
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
-        self.curent_step += 1
+        self.curent_step += len(imgs)
         if self.curent_step >= self.check_step:
             self.curent_step = 0
             # 每次只取一张进行处理
@@ -46,6 +45,8 @@ class LaneMonitoringComponent(BaseBackboneComponent):
 
             # 循环添加当前帧数里面停止在目标到跟踪dict
             for obj in img_info['objects']:
+                if obj['cls_pred'] not in ['car','truck','bus']:
+                    continue
                 # 如果已经被记录为违章停车则不再记录
                 obj_id = obj['id']
                 if obj_id in self.no_record_id:
@@ -56,8 +57,14 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                 x_c, y_c = bbox2center(obj['bbox'])
                 # 如果该目标的中心位于检测区域
                 current_position_type = self.monitoring_area[int(y_c), int(x_c)]
-                start_time = fomate_time2time(img_info['time'])
-                end_time = fomate_time2time(img_info['time'])
+                start_time = format_time2time(img_info['time'])
+                end_time = format_time2time(img_info['time'])
+                # if int(obj_id) == 23:
+                #     print('23号目标被探测')
+                #     print('x:{0}-y:{1}'.format(int(x_c),int(y_c)))
+                #     print('current tyep is {}'.format(current_position_type))
+                #     print(self.no_allow_car.keys())
+                current_position_type = str(int(current_position_type))
                 if current_position_type in self.no_allow_car.keys():
                     # 如果目标的类别不允许出现在这个区域内则进行记录
                     number_plate = identify_number_plate(img, obj['bbox'])
@@ -65,15 +72,23 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                     if number_plate is None:
                         continue
                     if obj['cls_pred'] in self.no_allow_car[current_position_type]:
+                        draw_img = draw_illegal_label(
+                                    bbox=obj['bbox'],
+                                    obj_conf=obj['obj_conf'],
+                                    cls_pred=obj['cls_pred'],
+                                    cls_conf=obj['cls_conf'],
+                                    id=obj_id,
+                                    img=img,
+                                    number_plate = number_plate)
                         img_info['analysis'].append({
                                 'info_type': 'illegal_occupation',
                                 'id': obj_id,
-                                'start_time': time2fomate_time(start_time),
-                                'end_time': time2fomate_time(end_time),
+                                'start_time': time2format_time(start_time),
+                                'end_time': time2format_time(end_time),
                                 'passage_type': 'None',  # 因为是违法占用车道，所以没有通行类型
                                 'obj_type': obj['cls_pred'],
-                                'number_plate': identify_number_plate(img,obj['bbox']),
-                                'imgs': [img,img]
+                                'number_plate': number_plate,
+                                'imgs': [draw_img,draw_img]
                             })
                         # 将该车辆记录为不再追踪车辆，因为其违法记录已经捕捉
                         self.no_record_id.append(obj_id)

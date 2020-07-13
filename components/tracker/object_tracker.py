@@ -1,16 +1,23 @@
 from .sort import Sort
+from .fastsort import FastSort
 from .deep_sort_pytorch import build_tracker
 from .deep_sort_pytorch import get_config as get_deepsort_config
 from .base import BaseTracker
 from .registry import TRACKER
 from components.detector.yolov3 import load_classes
 import numpy as np
+from utils.modeltools import *
 
 @TRACKER.register_module
 class SORT_Track(BaseTracker):
-    def __init__(self):
+    def __init__(self, eModelPath=None):
         BaseTracker.__init__(SORT_Track)
-        self.tracker = Sort()
+        if eModelPath is None:
+            self.tracker = Sort()
+        else:
+            print('启用fastSORT')
+            emodel = emdLoad(eModelPath)
+            self.tracker = FastSort(emodel=emodel)
     
     def preprocessing(self, img_info):
         """跟踪模块预处理函数

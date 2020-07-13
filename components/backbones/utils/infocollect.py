@@ -4,7 +4,9 @@ from functools import reduce
 
 import cv2
 
-from utils.dao import get_connection, excute_sql
+from utils.sqlitedao import get_connection, excute_sql, create_database
+from utils.utils import format_time2time,time2format_time
+from cfg import DataConfig
 from ..base import BaseBackboneComponent
 from ..registry import BACKBONE_COMPONENT
 
@@ -17,21 +19,18 @@ class InformationCollectorComponent(BaseBackboneComponent):
 
     def __init__(
             self,
-            host: str,
-            user: str,
-            password: str,
-            db: str,
-            img_save_path=None,
-            verbose=False,
-            process_type=['pass', 'illegal_parking']):
+            process_type=['pass', 'illegal_parking', 'illegal_occupation']):
+        """收集违规信息并存入数据库中
+
+        Args:
+            process_type (list, optional):支持处理的事件类型. Defaults to ['pass', 'illegal_parking', ' =illegal_occupation].
+        """            
         super().__init__()
-        assert img_save_path!=None
-        self.connection = get_connection(host, user, password, db)
+        self.connection = get_connection(DataConfig.DATABASE_PATH)
         self.process_type = process_type
-        self.img_save_path = img_save_path
-        if not osp.exists(img_save_path):
-            os.mkdir(img_save_path)
-        self.verbose = verbose
+        self.img_save_path = DataConfig.CRIMINAL_DIR
+        if not osp.exists(self.img_save_path):
+            os.mkdir(self.img_save_path)
 
     def process(self, **kwargs):
         imgs = kwargs['imgs']
@@ -45,30 +44,29 @@ class InformationCollectorComponent(BaseBackboneComponent):
                 if info_type not in self.process_type:
                     raise AttributeError('该组件不支持处理类型为{}的车辆通行数据'.format(info_type))
                 # 如果为可以进行处理的数据则开始进行处理
-                object_id = int(info['id'])  # 目标id
-                start_time = info['start_time']  # 被开始跟踪时间点
-                end_time = info['end_time']  # 结束跟踪时间点
+                object_id = info['id']  # 目标id
+                start_time = format_time2time(info['start_time'] ) # 被开始跟踪时间点
+                end_time = format_time2time(info['end_time'])  # 结束跟踪时间点
                 passage_type = info['passage_type']  # 通行类型  直行 左转 右行
                 obj_type = info['obj_type']  # 目标类型
                 number_plate = info['number_plate']  # 车牌号 车牌号
+                start_time_id = time2format_time(start_time) + ' ' + str(object_id)
                 # 处理通过信息
                 if info_type == 'pass':
-                    start_time_id = start_time + ' ' + str(object_id)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
-                        'VALUES (%s,%s,%s,%s,%s,%s)',
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
                     )
                     info['criminal_img_name'] = None  # 因为没有违规所以没有违规图像名称
                     info['imgs'] = []
                 elif info_type == 'illegal_parking':
-                    start_time_id = start_time + ' ' + str(object_id)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
-                        'VALUES (%s,%s,%s,%s,%s,%s)',
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
                     )
@@ -84,22 +82,22 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)
+                    info['criminal_imgs'] = save_paths
                     # 将保存的图像路径拼接起来存入数据库
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
-                        'VALUES (%s,%s,%s,%s)',
+                        'INSERT OR IGNORE INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'VALUES (?,?,?,?)',
                         (start_time_id, number_plate, img_path, info_type),
                         False
                     )
                 # 如果是违法占用车道信息
                 elif info_type == 'illegal_occupation':
-                    start_time_id = start_time + ' ' + str(object_id)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
-                        'VALUES (%s,%s,%s,%s,%s,%s)',
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'VALUES (?,?,?,?,?,?)',
                         (start_time_id, start_time, end_time, passage_type, obj_type, number_plate),
                         False
                     )
@@ -112,15 +110,17 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         # 每次违规最少两张照片，取第二张存储在criminal_img_name
                         if index == 1:
                             info['criminal_img_name'] = img_name
+                            # 将违规图像列表记录
                         save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
                         cv2.imwrite(save_path, img)
                         save_paths.append(save_path)
+                    info['criminal_imgs'] = save_paths
                     # 将保存的图像路径拼接起来存入数据库
                     img_path = reduce(lambda x, y: x + '_' + y, save_paths)
                     excute_sql(
                         self.connection,
-                        'INSERT INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
-                        'VALUES (%s,%s,%s,%s)',
+                        'INSERT OR IGNORE INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'VALUES (?,?,?,?)',
                         (start_time_id, number_plate, img_path, info_type),
                         False
                     )

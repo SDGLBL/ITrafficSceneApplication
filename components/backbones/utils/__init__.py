@@ -4,3 +4,4 @@ from .infocollect import InformationCollectorComponent
 from .rtmpwrite import RtmpWriteComponent
 from .saveimginfo import SaveImgInfo
 from .writevideo import WriteVideoComponent
+from .drawinfo import DrawInfoComponent

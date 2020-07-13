@@ -1,4 +1,6 @@
+
 class BaseBuild(object):
+
     def __init__(self):
         """基础建造者类
         
@@ -6,8 +8,6 @@ class BaseBuild(object):
         并根据性能需求决定component是否组合在一个进程中,或分发到多个进程中,也就是放在多个函
         数中.详细例子请自行看YoLov3TaskBuilder.
 
-        Args:
-            object ([type]): [description]
         """        
         super().__init__()
 
@@ -19,4 +19,19 @@ class BaseBuild(object):
         此方法必须使用多进程和进程队列,分别将build创建的函数使用多进程启动,编写过程请一定注意
         差错捕捉与处理,并在关键运行处添加Loger
         """        
+        pass
+
+    def kill(self):
+        """停止该Task
+        """
+        pass
+
+    def suspend(self):
+        """暂停该Task
+        """
+        pass
+
+    def is_alive(self):
+        """task是否存活（是否被杀死）
+        """
         pass

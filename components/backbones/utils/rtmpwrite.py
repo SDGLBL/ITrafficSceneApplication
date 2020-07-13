@@ -21,7 +21,6 @@ class RtmpWriteComponent(BaseBackboneComponent):
                         '-s', "{}x{}".format(resolution[0], resolution[1]),
                         '-r', str(fps),
                         '-i', '-',
-                        '-c:v', 'libx264',
                         '-pix_fmt', 'yuv420p',
                         '-preset', 'ultrafast',
                         '-f', 'flv',
@@ -35,8 +34,10 @@ class RtmpWriteComponent(BaseBackboneComponent):
     def process(self, **kwargs):
         super().process(**kwargs)
         imgs = kwargs['imgs']
-
-        for img in imgs:
+        imgs_info = kwargs['imgs_info']
+        for img,img_info in zip(imgs,imgs_info):
+            if 'show_img' in img_info:
+                img = img_info['show_img']
             if not (img.shape[1], img.shape[0]) == self.resolution:
                 img = cv2.resize(img, self.resolution)
             self.p.stdin.write(img.tostring())

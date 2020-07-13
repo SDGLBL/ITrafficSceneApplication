@@ -8,14 +8,12 @@ import numpy as np
 def emdLoad(filePath):
     with open(filePath, 'rb') as f:
         model = pickle.load(f)
-        print(model)
     if not isinstance(model,dict):
         print('错误的.emd文件')
         return None
     if 'type' not in model.keys():
         print('错误的.emd文件')
         return None
-    print(model)
     return model
 
 def dotStatus(dot, emd):

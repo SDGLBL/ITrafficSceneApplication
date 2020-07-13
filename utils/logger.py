@@ -20,12 +20,12 @@ config_info_for_windows = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'concurrent_log_handler.ConcurrentRotatingFileHandler',
             # 当达到10MB时分割日志
             'maxBytes': 1024 * 1024 * 10,
@@ -60,12 +60,12 @@ config_info_for_linux = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'cloghandler.ConcurrentRotatingFileHandler',
             # 当达到10MB时分割日志
             'maxBytes': 1024 * 1024 * 10,
@@ -81,7 +81,7 @@ config_info_for_linux = {
     'loggers': {
         '': {
             'handlers': ['console','file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     }
 }
@@ -99,7 +99,7 @@ def get_logger(filename='logs/main.log'):
         logging.config.dictConfig(config_info_for_linux)
     else:
         raise EnvironmentError('运行环境错误，该程序不能在{0}上运行'.format(platform.system()))
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     return logging.getLogger(__name__)
 
 def t1():

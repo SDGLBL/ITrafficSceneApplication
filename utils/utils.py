@@ -1,8 +1,12 @@
 import math
 import random
-
+import datetime
+import time
+import os
 import cv2
+from PIL import Image,ImageDraw,ImageFont
 import numpy as np
+from copy import deepcopy
 from hyperlpr import HyperLPR_plate_recognition
 
 from components.detector.yolov3 import load_classes
@@ -33,7 +37,11 @@ def draw_label(
         np.ndarray: 绘制后的图像
     """        
     thickness = len(img) // 200
+    # img = deepcopy(img)
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
+        if cls_pred not in cls2lable.keys():
+            continue
         if bbox is None:
             # 如果bbox为None说明这个目标
             continue
@@ -43,17 +51,65 @@ def draw_label(
         color = bbox_colors[cls_pred]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
         if id is not None:
-            put_str = class_label + ' ' + str(cls_conf)[:4] + ' {0}'.format(id)
+            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4]) + 'target ID:{0}'.format(int(id))
         else:
-            put_str = class_label + ' ' + str(cls_conf)[:4]
+            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4])
+        # img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
         cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
-    cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
+    # cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
+def draw_illegal_label(
+        bbox,
+        obj_conf,
+        cls_conf,
+        cls_pred,
+        id,
+        img: np.ndarray,
+        number_plate: str ):
+    """[summary]
+
+    Args:
+        bbox (list): bbox
+        obj_conf (float): bbox对应的object置信度
+        cls_conf (float): bbox对应的分类置信度
+        cls_pred (str): bbox对应的分类
+        id (int): 目标的id
+        img (np.ndarray): 图像list
+        number_plate (str): 违规车辆车牌号
+
+    Returns:
+        np.ndarray: 绘制后的图像
+    """        
+    thickness = len(img) // 200
+    img = deepcopy(img)
+    # img = deepcopy(img)
+    if bbox is None:
+        # 如果bbox为None说明这个目标
+        raise RuntimeError("绘制违规框必须需要目标的bbox")
+    x1, y1, x2, y2 = bbox
+    offset = 10
+    x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
+    cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
+    put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + ' 车牌:{0}'.format(number_plate)
+    img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
+    # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
+    return img
+
+def paint_chinese_opencv(im,chinese,pos,color):
+    img_PIL = Image.fromarray(cv2.cvtColor(im,cv2.COLOR_BGR2RGB))
+    font = ImageFont.truetype('./fonts/msyhbd.ttc',30,encoding="utf-8")
+    fillColor = color #(255,0,0)
+    position = pos #(100,100)
+    draw = ImageDraw.Draw(img_PIL)
+    draw.text(position,chinese,font=font,fill=fillColor)
+ 
+    img = cv2.cvtColor(np.asarray(img_PIL),cv2.COLOR_RGB2BGR)
+    return img
 
 def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
-    """
-    获取随机颜色，数量为传入的类别数量
+    """获取随机颜色，数量为传入的类别数量
     Args:
         classes:
 
@@ -69,8 +125,7 @@ def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/da
 
 
 def bbox2center(bbox):
-    """
-    将bbox转换为中心坐标点
+    """将bbox转换为中心坐标点
     Arguments:
         bbox {list(int64)} -- [x1,y1,x2,y2]
 
@@ -83,8 +138,7 @@ def bbox2center(bbox):
 
 
 def bbox_distance(bbox1, bbox2):
-    """
-    计算两个bbox之间的距离
+    """计算两个bbox之间的距离
 
     Arguments:
         bbox1 {list(int64)} -- [x1,y1,x2,y2]
@@ -99,8 +153,7 @@ def bbox_distance(bbox1, bbox2):
 
 
 def point_distance(point1, point2):
-    """
-    计算两点的距离
+    """计算两点的距离
     Args:
         point1: 第一个点
         point2: 第二个点
@@ -176,12 +229,66 @@ def identify_number_plate(raw_img: np.ndarray, bbox):
         # 如果截取的车辆画面比例悬殊直接不识别
         if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
             return None
-        # 如果截取到的车辆占整幅画面的占比低于5%则直接选择不识别
-        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.05:
+        # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
+        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
             return None
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         result = HyperLPR_plate_recognition(img)
-        if len(result) > 0 and result[0][1] > 0.95:
+        if len(result) > 0 and result[0][1] > 0.8:
             return result[0][0]
         else:
             return None
+
+
+def get_current_time():
+    """获取格式化时间
+    Example: Year-month-day hour:minute:second
+
+    Returns:
+        str: 格式化的时间
+    """    
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def format_time2time(format_time: str):
+    """将格式化时间转换为时间戳
+
+    Args:
+        format_time (str): 格式化的时间 格式为 Year-month-day hour:minute:second
+
+    Returns:
+        time: 时间戳
+    """    
+    ts = time.strptime(format_time, "%Y-%m-%d %H:%M:%S")
+    return time.mktime(ts)
+
+
+def time2format_time(nomal_time: str):
+    """将时间戳转换为格式化时间
+
+    Args:
+        nomal_time (str): 字符串化的时间戳
+
+    Returns:
+        str: 格式化时间
+    """    
+    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(nomal_time))
+    return format_time
+
+
+def path2source_path(path:str):
+    """将文件路径，强制转换为http src路径
+
+    Args:
+        path (str): 文件路径
+
+    Returns:
+        [type]: [description]
+
+    Example:
+        >>> x = "\\static\\data\\criminal\\x.jpg" # windows platfom
+        >>> x = path2source_path(x)
+        >>> print(x) # /static/data/criminal/x.jpg
+    """    
+    path = path.replace(os.sep,'/')
+    return path
