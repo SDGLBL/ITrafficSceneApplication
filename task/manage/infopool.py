@@ -24,16 +24,17 @@ class ImgInfoPool(object):
         if 'video_len' in img_info.keys():
             self.task_progress[task_name] = '{:.2f}'.format(img_info['index'] / img_info['video_len'] * 100)
         # 预处理分析信息
-        analysis_info = img_info['analysis']
-        if len(analysis_info) > 0:
-            if len(self.task_analysis_info[task_name]) >= self.max_size:
-                # 弹出分析信息保存链表最旧的信息
-                self.task_analysis_info[task_name].popleft()
-                # 在v后插入最新的信息
-                self.task_analysis_info[task_name].append(analysis_info)
-            else:
-                # 在分析信息保存链表后插入最新的信息
-                self.task_analysis_info[task_name].append(analysis_info)
+        if 'analysis' in img_info.keys():
+            analysis_info = img_info['analysis']
+            if len(analysis_info) > 0:
+                if len(self.task_analysis_info[task_name]) >= self.max_size:
+                    # 弹出分析信息保存链表最旧的信息
+                    self.task_analysis_info[task_name].popleft()
+                    # 在v后插入最新的信息
+                    self.task_analysis_info[task_name].append(analysis_info)
+                else:
+                    # 在分析信息保存链表后插入最新的信息
+                    self.task_analysis_info[task_name].append(analysis_info)
         # 刷新通行记录表格
         # 如果表格刷新了
         if 'pass_count_table' in img_info.keys():

@@ -250,6 +250,7 @@ def peakLine(speedMap, starRow, endRow, core, lanNum):
 
 # 得到一个以th为阈值的蒙版
 def getMapMask(map, th):
+    th = 0.5
     th = np.max(map) * th
     return map >= th
 
