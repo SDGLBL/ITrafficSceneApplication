@@ -20,7 +20,7 @@ def dotStatus(dot, emd):
     status = dotByLine(dot, emd['stop_line'], emd['avg_bbox']/10)
     return status
 
-def pathsStatus(path, emd, lenTh=30):
+def pathsStatus(path, emd, lenTh=10):
     path = straighten(path, emd['avg_bbox']/10)
     if len(path['zipDots']) < lenTh:    # 如果路径太短则判定为无法判断
         return None
