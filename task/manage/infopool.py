@@ -18,7 +18,8 @@ class ImgInfoPool(object):
             # 初始化task运行进度为0
             self.task_progress[task_name] = 0
             # 初始化task通行记录表
-            self.task_pass_count_table[task_name] = img_info['pass_count_table'][0]
+            if 'pass_count_table' in img_info.keys():
+                self.task_pass_count_table[task_name] = img_info['pass_count_table'][0]
         # 刷新task进度
         if 'video_len' in img_info.keys():
             self.task_progress[task_name] = '{:.2f}'.format(img_info['index'] / img_info['video_len'] * 100)
@@ -35,9 +36,10 @@ class ImgInfoPool(object):
                 self.task_analysis_info[task_name].append(analysis_info)
         # 刷新通行记录表格
         # 如果表格刷新了
-        is_table_refresh = img_info['pass_count_table'][1]
-        if is_table_refresh:
-            self.task_pass_count_table[task_name] = img_info['pass_count_table'][0]
+        if 'pass_count_table' in img_info.keys():
+            is_table_refresh = img_info['pass_count_table'][1]
+            if is_table_refresh:
+                self.task_pass_count_table[task_name] = img_info['pass_count_table'][0]
 
     
     def get_progress_info(self,task_name: str):

@@ -114,7 +114,7 @@ class TaskManager(object):
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))
 
-    def resume(self, task_name):
+    def resume(self, task_name, is_join = False):
         """使指定的task从挂起状态恢复
 
         Args:
@@ -129,7 +129,7 @@ class TaskManager(object):
                 if task.is_running():
                     raise RuntimeError('已经有Task在运行状态中，无法启动该Task')
             task = self.tasks[task_name]
-            task.start()
+            task.start(is_join)
             Thread(target=read_info_from_task, args=(task.get_readqs(), task_name, self.info_pool,)).start()
         else:
             raise RuntimeError('TaskManger中不存在名字为{}的task'.format(task_name))

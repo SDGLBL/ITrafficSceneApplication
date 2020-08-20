@@ -37,10 +37,8 @@ TaskCfg = {
                 'type': 'PathExtract'   # 路径分析模块，基础模块，不可或缺
             },
             {
-                'type': 'Modelling',
-                'revise': False,
-                'modelPath': None, # 保存路径
-                'dataNum': 400
+                'type': 'SaveImgInfo',
+                'savePath': None,
             }
         ]
     ]
@@ -57,7 +55,7 @@ def get_injected_cfg(cfg_data):
         raise RuntimeError('文件夹{}中不存在名字为{}的视频或者视频源头'.format(DataConfig.VIDEO_DIR, filename))
     taskCfg = deepcopy(TaskCfg)
     taskCfg['head']['filename'] = filepath
-    emodelname = filename.split('.')[0] + '.emd'
-    emodelpath = osp.join(DataConfig.EMODEL_DIR, emodelname)
-    taskCfg['backbones'][0][1]['modelPath'] = emodelpath
+    savename = filename.split('.')[0] + '.json'
+    savepath = osp.join(DataConfig.JSON_DIR, savename)
+    taskCfg['backbones'][0][1]['savePath'] = savepath
     return taskCfg

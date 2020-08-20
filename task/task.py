@@ -70,7 +70,7 @@ class Task(BaseBuild):
             self.task_args.append((tc_type, tc_cfg, recivq, sendqs, timeout))
         self.backbone2main = backbone2main
 
-    def start(self):
+    def start(self,is_join = False):
         """启动该Task,如果该Task已经被挂起则使用该函数将会唤醒该Task,但如果task已经被kill调用此方法将会抛出错误
 
         Raises:
@@ -80,11 +80,15 @@ class Task(BaseBuild):
         if not self.is_start:
             self.is_start = True
             # 默认Task是正常运行的
+            last_process = None
             for args in self.task_args:
                 processes = build_process(*args, run_semaphore=self.run_se, pause_event=self.pause_event)
                 for p in processes:
                     # self.process.append(p)
                     p.start()
+                last_process = processes[-1]
+            if is_join:
+                last_process.join()
             time.sleep(2)
         # 如果task已经成功启动过但被杀死了
         elif self.is_start and not self.run_se.value:
