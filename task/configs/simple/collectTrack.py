@@ -33,6 +33,11 @@ TaskCfg = {
     ,
     'backbones': [
         [
+            # fps计数组件
+            {
+                'type': 'FpsCollectorComponent',
+                'isPrint': TaskConfig.IS_PRINT_FPS
+            },
             {
                 'type': 'PathExtract'   # 路径分析模块，基础模块，不可或缺
             },
@@ -57,5 +62,5 @@ def get_injected_cfg(cfg_data):
     taskCfg['head']['filename'] = filepath
     savename = filename.split('.')[0] + '.json'
     savepath = osp.join(DataConfig.JSON_DIR, savename)
-    taskCfg['backbones'][0][1]['savePath'] = savepath
+    taskCfg['backbones'][0][2]['savePath'] = savepath
     return taskCfg
