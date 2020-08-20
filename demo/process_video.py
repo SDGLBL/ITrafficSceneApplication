@@ -26,7 +26,7 @@ if __name__ == "__main__":
         "task_type":"processVideo",
         "filepath": args.i,
         "write_path":args.o,
-        "resolution":(3840,2160)
+        "resolution":(1600,900)
         }
     task_type = cfg_data['task_type']
     get_cfg = importlib.import_module(TaskConfig.SIMPLE_CFG_DIR + task_type).get_injected_cfg

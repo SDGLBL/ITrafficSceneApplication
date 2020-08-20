@@ -21,8 +21,8 @@ TaskCfg = {
     ,
     'detector': 
         {
-            'type': 'Yolov4Detector',
-            'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+            'type': 'Yolov5Detector',
+            'device': 'cpu',
             'batch_size': TaskConfig.BATCH_SIZE
         }
     ,

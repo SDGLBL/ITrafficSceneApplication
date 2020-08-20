@@ -87,7 +87,7 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                         self.objs[obj_id]['end_time'] = end_time
                         # 如果超过允许停车的时间限度且没有移动
                         if end_time - start_time >= self.allow_stop_time and point_distance(point, self.objs[obj_id][
-                            'point']) < 20:
+                            'point']) < 50:
                             # 如果上次车牌号没检测出来继续检测识别
                             if self.objs[obj_id]['number_plate'] is None:
                                 self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])

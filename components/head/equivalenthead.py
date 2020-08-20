@@ -49,7 +49,10 @@ class EquivalentHead(mmcv.VideoReader, BaseVideoPipeline):
             if img is not None:
                 imgs.append(img)
                 json_str = self.json_file_read.readline()
-                imgs_info.append(json.loads(json_str))
+                try:
+                    imgs_info.append(json.loads(json_str))
+                except:
+                    raise StopIteration
                 imgs_info[-1]['video_len'] = len(self)
                 self.start_index += 1
             else:
