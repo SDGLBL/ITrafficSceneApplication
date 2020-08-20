@@ -9,7 +9,7 @@ import numpy as np
 from copy import deepcopy
 from hyperlpr import HyperLPR_plate_recognition
 
-from components.detector.yolov3 import load_classes
+
 
 
 def draw_label(
@@ -97,6 +97,40 @@ def draw_illegal_label(
     # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
     return img
 
+def draw_label_from_infer(
+        infer_output,
+        bbox_colors):
+    """[summary]
+
+    Args:
+
+    Returns:
+        np.ndarray: 绘制后的图像
+    """
+    results = []
+    imgs = infer_output['imgs']
+    imgs_info = infer_output['imgs_info']
+    for img,img_info in zip(imgs,imgs_info):
+        bboxs = [ target['bbox'] for target in img_info['objects']]
+        obj_confs = [ target['obj_conf'] for target in img_info['objects']]
+        cls_confs = [ target['cls_conf'] for target in img_info['objects']]
+        cls_preds = [ target['cls_pred'] for target in img_info['objects']]
+        ids  = [index for index,_ in enumerate(img_info['objects'])]
+        results.append(draw_label(
+            bboxs,
+            obj_confs,
+            cls_confs,
+            cls_preds,
+            ids,
+            img,
+            None,
+            bbox_colors
+        ))
+    return results
+
+
+
+
 def paint_chinese_opencv(im,chinese,pos,color):
     img_PIL = Image.fromarray(cv2.cvtColor(im,cv2.COLOR_BGR2RGB))
     font = ImageFont.truetype('./fonts/msyhbd.ttc',30,encoding="utf-8")
@@ -108,16 +142,17 @@ def paint_chinese_opencv(im,chinese,pos,color):
     img = cv2.cvtColor(np.asarray(img_PIL),cv2.COLOR_RGB2BGR)
     return img
 
-def get_random_bbox_colors(classes=load_classes('./components/detector/yolov3/data/coco.names')):
+def get_random_bbox_colors():
     """获取随机颜色，数量为传入的类别数量
     Args:
-        classes:
 
     Returns:
 
     """
     # Bounding-box colors
     bbox_colors = {}
+    fp = open('./components/detector/yolov3/data/coco.names', "r")
+    classes = fp.read().split("\n")[:-1]
     for i in range(len(classes)):
         key = classes[i]
         bbox_colors[key] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))

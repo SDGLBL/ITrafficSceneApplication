@@ -156,7 +156,9 @@ class Yolov4Detector(BaseDetector):
         conf_thres=0.8,
         nms_thres=0.4,
         img_size=416,
-        batch_size=1):
+        batch_size=1,
+        cfgs='./components/detector/yolov4/cfg/yolov4.cfg',
+        weightp='./components/detector/yolov4/weight/yolov4.weights'):
         """Yolov4目标探测网络
         Args:
             device (torch.device): 模型运行硬件 cuda or cpu
@@ -171,9 +173,7 @@ class Yolov4Detector(BaseDetector):
         self.conf_thres = conf_thres
         # 非极大值抑制阈值
         self.nms_thres = nms_thres
-        model = get_yolov4(cfgs='./components/detector/yolov4/cfg/yolov4.cfg',
-                           weightp='./components/detector/yolov4/weight/yolov4.weights',
-                           img_size=img_size)
+        model = get_yolov4(cfgs,weightp,img_size)
         super().__init__(model, device, batch_size)
 
     def preprocessing(self, imgs: list):
