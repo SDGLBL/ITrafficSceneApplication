@@ -2,9 +2,9 @@
 # Download common models
 
 python -c "
-from utils.google_utils import *;
-attempt_download('weights/yolov5s.pt');
-attempt_download('weights/yolov5m.pt');
-attempt_download('weights/yolov5l.pt');
-attempt_download('weights/yolov5x.pt')
+from components.detector.yolov5.utilsv5.google_utils import *;
+attempt_download('components/detector/yolov5/weights/yolov5s.pt');
+attempt_download('components/detector/yolov5/weights/yolov5m.pt');
+attempt_download('components/detector/yolov5/weights/yolov5l.pt');
+attempt_download('components/detector/yolov5/weights/yolov5x.pt')
 "
