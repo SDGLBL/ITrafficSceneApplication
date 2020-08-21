@@ -62,7 +62,7 @@ class SORT_Track(BaseTracker):
             bbox = bbox_id[0:4].tolist()    # 平滑处理后的bbox框
             index = int(id_index[id])
             obj = img_info['objects'][index]
-            obj['bbox'] = bbox
+            # obj['bbox'] = bbox
             obj['id'] = id
             objs.append(obj)
         # 更新img_info 的objects

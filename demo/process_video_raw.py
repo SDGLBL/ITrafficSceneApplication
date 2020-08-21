@@ -23,7 +23,7 @@ if __name__ == "__main__":
     tm = TaskManager(img_info_pool)
     args = args_parse()
     cfg_data = {
-        "task_type":"processVideo",
+        "task_type":"processVideoFromRaw",
         "filepath": args.i,
         "write_path":args.o,
         "resolution":(1600,900)

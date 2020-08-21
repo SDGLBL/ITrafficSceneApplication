@@ -10,7 +10,7 @@ from cfg import TaskConfig
 from cfg import DataConfig
 
 TaskCfg = {
-    'task_name':'环境建模',
+    'task_name': 'process video',
     'head': 
         {
             'type': 'VideoFileHead',
@@ -27,7 +27,7 @@ TaskCfg = {
             'weights':'./components/detector/yolov5/weights/yolov5x.pt'
         }
     ,
-    'tracker': 
+    'tracker':
         {
             'type': 'SORT_Track'
         }
@@ -40,15 +40,21 @@ TaskCfg = {
                 'isPrint': TaskConfig.IS_PRINT_FPS
             },
             {
-                'type': 'PathExtract'   # 路径分析模块，基础模块，不可或缺
+                'type': 'PathExtract',  # 路径分析模块，基础模块，不可或缺
             },
             {
-                'type': 'SaveImgInfo',
-                'savePath': None,
+              'type': 'DrawBoundingBoxComponent'  # 画框框
+            },
+            {
+                'type':'WriteVideoComponent',
+                'resolution':None,
+                'write_path':None,
+                'fps':30
             }
         ]
     ]
 }
+
 
 def get_injected_cfg(cfg_data):
     if 'filepath' not in cfg_data.keys():
@@ -61,7 +67,6 @@ def get_injected_cfg(cfg_data):
         raise RuntimeError('文件夹{}中不存在名字为{}的视频或者视频源头'.format(DataConfig.VIDEO_DIR, filename))
     taskCfg = deepcopy(TaskCfg)
     taskCfg['head']['filename'] = filepath
-    savename = filename.split('.')[0] + '.json'
-    savepath = osp.join(DataConfig.JSON_DIR, savename)
-    taskCfg['backbones'][0][2]['savePath'] = savepath
+    taskCfg['backbones'][0][3]['resolution'] = cfg_data['resolution']
+    taskCfg['backbones'][0][3]['write_path'] = cfg_data['write_path']
     return taskCfg

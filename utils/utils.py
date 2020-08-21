@@ -8,9 +8,14 @@ from PIL import Image,ImageDraw,ImageFont
 import numpy as np
 from copy import deepcopy
 from hyperlpr import HyperLPR_plate_recognition
+from components.detector.yolov5.utilsv5.general import xyxy2xywh, plot_one_box
 
-
-
+def get_classes():
+    # Bounding-box colors
+    bbox_colors = {}
+    fp = open('./components/detector/yolov3/data/coco.names', "r")
+    classes = fp.read().split("\n")[:-1]
+    return classes
 
 def draw_label(
         bboxs,
@@ -20,7 +25,8 @@ def draw_label(
         ids,
         img: np.ndarray,
         pass_count,
-        bbox_colors):
+        bbox_colors,
+        classes = get_classes()):
     """[summary]
 
     Args:
@@ -45,17 +51,19 @@ def draw_label(
         if bbox is None:
             # 如果bbox为None说明这个目标
             continue
-        x1, y1, x2, y2 = bbox
-        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+
+        # x1, y1, x2, y2 = bbox
+        # x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
         class_label = cls_pred
-        color = bbox_colors[cls_pred]
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
-        if id is not None:
-            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4]) + 'target ID:{0}'.format(int(id))
+        color = bbox_colors[classes.index(cls_pred)]
+        # cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
+        if id is not None and id != 'None':
+            put_str = 'type:{}'.format(cls_pred) + ' score:{0}'.format(str(cls_conf)[:4]) + 'target ID:{0}'.format(int(id))
         else:
-            put_str = 'car type:{}'.format(cls2lable[cls_pred]) + ' score:{0}'.format(str(cls_conf)[:4])
+            put_str = 'type:{}'.format(cls_pred) + ' score:{0}'.format(str(cls_conf)[:4])
         # img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
-        cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
+        plot_one_box(bbox,img,label=put_str,color=color,line_thickness=thickness)
+        # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 1, color, 2)
     # cv2.putText(img, 'carNumber:' + str(pass_count), (200, 200), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
     return img
 
@@ -142,6 +150,8 @@ def paint_chinese_opencv(im,chinese,pos,color):
     img = cv2.cvtColor(np.asarray(img_PIL),cv2.COLOR_RGB2BGR)
     return img
 
+
+
 def get_random_bbox_colors():
     """获取随机颜色，数量为传入的类别数量
     Args:
@@ -149,14 +159,9 @@ def get_random_bbox_colors():
     Returns:
 
     """
-    # Bounding-box colors
-    bbox_colors = {}
-    fp = open('./components/detector/yolov3/data/coco.names', "r")
-    classes = fp.read().split("\n")[:-1]
-    for i in range(len(classes)):
-        key = classes[i]
-        bbox_colors[key] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-    return bbox_colors
+    classes = get_classes()
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(classes))]
+    return colors
 
 
 def bbox2center(bbox):

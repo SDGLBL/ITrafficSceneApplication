@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
-
+import os
 from .base import BaseDetector
 from .registry import DETECTOR
 from .yolov3 import get_yolov3, pad_to_square, non_max_suppression, rescale_boxes
@@ -319,4 +319,97 @@ class Yolov4Detector(BaseDetector):
             print('inference use {0}'.format(t2-t1))
             print('afterprocessing use {0}'.format(t3-t2))
             print('|-----------------------------------|')
+        return {'imgs': imgs, 'imgs_info': imgs_info}
+
+
+from models.experimental import attempt_load
+from components.detector.yolov5.utilsv5.datasets import letterbox
+from components.detector.yolov5.utilsv5.general import (
+    check_img_size, non_max_suppression, apply_classifier, scale_coords,
+    xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
+from components.detector.yolov5.utilsv5.torch_utils import select_device, load_classifier
+import random
+
+@DETECTOR.register_module
+class Yolov5Detector(BaseDetector):
+    def __init__(self,
+                 device='0',
+                 conf_thres=0.4,
+                 nms_thres=0.4,
+                 img_size=640,
+                 batch_size=1,
+                 weights='./components/detector/yolov5/weights/yolov5m.pt',
+                 half = False):
+        self.device = select_device(device)
+        self.conf_thres = conf_thres
+        import os
+        x = os.getcwd()
+        self.model = attempt_load(weights, map_location=self.device)
+        self.img_size = check_img_size(img_size, s=self.model.stride.max())
+        if half:
+            self.model.half()  # to FP16
+        self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
+        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
+        self.half = half
+        self.iou_thres = 0.6
+        super().__init__(self.model, self.device, batch_size)
+
+    def preprocessing(self, imgs):
+        imgs = [letterbox(img,new_shape=self.img_size)[0] for img in imgs]
+        imgs = [img[:, :, ::-1].transpose(2, 0, 1) for img in imgs]
+        imgs = [np.ascontiguousarray(img) for img in imgs]
+        imgs = [torch.from_numpy(img) for img in imgs]
+        if self.half:
+            imgs = [img.half() for img in imgs]
+        imgs = [img / 255.0 for img in imgs]
+        imgs = [img.unsqueeze(0) for img in imgs]
+        imgs = torch.cat(imgs,0).to(self.device)
+        return imgs
+
+    def afterprocessing(self, detections, imgs_batch, imgs_info):
+        preds = non_max_suppression(detections, self.conf_thres, self.iou_thres)
+        for i,det in enumerate(preds):
+            if det is not None and len(det):
+                det[:, :4] = scale_coords(imgs_batch.shape[2:], det[:, :4], imgs_info[i]['shape']).round()
+                # Print results
+                for c in det[:, -1].unique():
+                    n = (det[:, -1] == c).sum()  # detections per class
+                    s = '%g %ss, ' % (n, self.names[int(c)])  # add to string
+                imgs_info[i]['objects'] = []
+                # Write results
+                for *xyxy, conf, cls in reversed(det):
+                    x1, y1, x2, y2 = xyxy
+                    x1, y1, x2, y2 = x1.cpu().item(),y1.cpu().item(), x2.cpu().item(), y2.cpu().item()
+                    obj_conf = conf.cpu().item()
+                    cls_conf = obj_conf
+                    cls_pred = cls.cpu().item()
+                    imgs_info[i]['objects'].append({
+                        'bbox': [x1, y1, x2, y2],
+                        'obj_conf': obj_conf,
+                        'cls_conf': cls_conf,
+                        'cls_pred': self.classes[int(cls_pred)]
+                    })
+        return imgs_info
+
+    def __call__(self, **kwargs):
+        """
+        YoLov5前传函数
+        Args:
+            imgs: 图像list or 图像 np.ndarray len(imgs)一个与batch_size匹配 
+            imgs_info: 图像信息list，其中需要包含如下信息
+            imgs_info[index] = {
+                'time':time,
+                'index':index, 
+                'shape':shape, (H,W,C)
+            }
+
+        Returns:
+            imgs_info: 图像信息list,其中每个img_info添加了obejcts
+        """
+        imgs = kwargs['imgs']
+        imgs_info = kwargs['imgs_info']
+        imgs_batch = self.preprocessing(imgs)
+        with torch.no_grad():
+            preds = self.model(imgs_batch, augment=False)[0]
+        imgs_info = self.afterprocessing(preds,imgs_batch,imgs_info)
         return {'imgs': imgs, 'imgs_info': imgs_info}
