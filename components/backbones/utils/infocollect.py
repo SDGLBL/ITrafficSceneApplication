@@ -19,7 +19,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
 
     def __init__(
             self,
-            process_type=['pass', 'illegal_parking', 'illegal_occupation']):
+            process_type=['pass', 'illegal_parking', 'illegal_occupation','illegal_person']):
         """收集违规信息并存入数据库中
 
         Args:
@@ -124,5 +124,37 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         (start_time_id, number_plate, img_path, info_type),
                         False
                     )
+                elif info_type == 'illegal_person':
+                    print('----------------------')
+                    excute_sql(
+                        self.connection,
+                        'INSERT OR IGNORE INTO traffic (start_time_id,start_time,end_time,passage_type,obj_type,number_plate) '
+                        'VALUES (?,?,?,?,?,?)',
+                        (start_time_id, start_time, end_time, passage_type, obj_type, 'None'),
+                        False
+                    )
+                    # 因为非法占用车道还是违规行为，需要记录到违规记录中
+                    # 首先取出违规图像并保存
+                    save_paths = []
+                    for index, img in enumerate(info['imgs']):
+                        img_name = start_time_id + ' ' + str(index) + '.jpg'
+                        save_path = osp.join(self.img_save_path, img_name)
+                        # 每次违规最少两张照片，取第二张存储在criminal_img_name
+                        if index == 1:
+                            info['criminal_img_name'] = img_name
+                            # 将违规图像列表记录
+                        save_path = save_path.replace(':', '-')  # opencv存储图片名字不能包括:
+                        cv2.imwrite(save_path, img)
+                        save_paths.append(save_path)
+                    info['criminal_imgs'] = save_paths
+                    # 将保存的图像路径拼接起来存入数据库
+                    img_path = reduce(lambda x, y: x + '_' + y, save_paths)
+                    excute_sql(
+                        self.connection,
+                        'INSERT OR IGNORE INTO criminal (start_time_id,number_plate,img_path,criminal_type) '
+                        'VALUES (?,?,?,?)',
+                        (start_time_id, number_plate, img_path, info_type),
+                        False
+                    ) 
                 continue
         return kwargs
