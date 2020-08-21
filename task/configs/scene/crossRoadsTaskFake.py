@@ -54,6 +54,11 @@ TaskCfg = {
                 'no_allow_car':None, # 比如{1:['car','truck']} 则在monitoring_area中值为1的区域内不允许出现car和truck
                 'is_process':False # 是否开启该组件
             },
+            {
+                'type': 'PersonMonitoringComponent', # 违章停车监控组件
+                'monitoring_area': None, # 监控区域，必须赋值
+                'is_process':False # 是否开启该组件
+            },
             # 数据库写入组件
             {
                 'type': 'InformationCollectorComponent',
@@ -108,4 +113,10 @@ def get_injected_cfg(cfg_data):
             new_mask = cv2.fillPoly(mask, [lane_area],int(no_allow_flag))
         taskCfg['backbones'][0][4]['monitoring_area'] = new_mask
         taskCfg['backbones'][0][4]['no_allow_car'] = lane_no_allow_cars
+    if 'parking_monitoring_area' in cfg_data.keys():
+        all_point_array = [np.array(x, dtype=np.int32) for x in cfg_data['parking_monitoring_area']]
+        mask = np.ones_like(mmcv.VideoReader(filepath)[10][:,:,0])
+        new_mask = cv2.fillPoly(mask, all_point_array, 1)
+        taskCfg['backbones'][0][5]['monitoring_area'] = new_mask
+        taskCfg['backbones'][0][5]['is_process'] = True
     return taskCfg

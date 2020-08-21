@@ -105,6 +105,44 @@ def draw_illegal_label(
     # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
     return img
 
+def draw_illegal_label_for_person(
+        bbox,
+        obj_conf,
+        cls_conf,
+        cls_pred,
+        id,
+        img: np.ndarray):
+    """[summary]
+
+    Args:
+        bbox (list): bbox
+        obj_conf (float): bbox对应的object置信度
+        cls_conf (float): bbox对应的分类置信度
+        cls_pred (str): bbox对应的分类
+        id (int): 目标的id
+        img (np.ndarray): 图像list
+
+    Returns:
+        np.ndarray: 绘制后的图像
+    """        
+    thickness = len(img) // 200
+    img = deepcopy(img)
+    # img = deepcopy(img)
+    if bbox is None:
+        # 如果bbox为None说明这个目标
+        raise RuntimeError("绘制违规框必须需要目标的bbox")
+    x1, y1, x2, y2 = bbox
+    offset = 10
+    x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
+    cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
+    cls2lable = {'person':'人'}
+    put_str = '类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4])
+    img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
+    # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
+    return img
+
+
+
 def draw_label_from_infer(
         infer_output,
         bbox_colors):
@@ -220,7 +258,7 @@ def get_sub_img(raw_img,bbox):
     x1, y1, x2, y2 = [int(x) for x in bbox]
     x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
     x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
-    img = raw_img[y1:y2, x1:x2]
+    img = raw_img[max(y1-50,0):min(y2+50,h), max(x1-50,0):min(x2+50,w)]
     return img
 
 
@@ -241,7 +279,13 @@ def is_bbox_in_img(img,bbox):
     h = img_shape[0]
     w = img_shape[1]
     x1, y1, x2, y2 = bbox
-    if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
+    # [1379.0, 240.0, 1497.0, 284.0]
+    # 900 1600
+    # print('---------------')
+    # print(bbox)
+    # print(h,w)
+    # print('---------------')
+    if x1 > 0 and x2 < w and y1 > 0 and y2 < h:
         return True
     else:
         return False
@@ -269,12 +313,12 @@ def identify_number_plate(raw_img: np.ndarray, bbox):
         # 如果截取的车辆画面比例悬殊直接不识别
         if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
             return None
-        # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
-        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
-            return None
+        # # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
+        # if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
+        #     return None
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         result = HyperLPR_plate_recognition(img)
-        if len(result) > 0 and result[0][1] > 0.8:
+        if len(result) > 0 and result[0][1] > 0.5:
             return result[0][0]
         else:
             return None
