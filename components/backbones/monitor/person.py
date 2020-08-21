@@ -44,7 +44,7 @@ class PersonMonitoringComponent(BaseBackboneComponent):
 
             # 循环添加当前帧数里面停止在目标到跟踪dict
             for obj in img_info['objects']:
-                print('find a person')
+                # print('find a person')
                 if obj['cls_pred'] not in ['person'] or obj['cls_conf'] < 0.8:
                     continue
                 # 如果已经被记录则不再记录
@@ -67,13 +67,6 @@ class PersonMonitoringComponent(BaseBackboneComponent):
                 current_position_type = str(int(current_position_type))
                 # print('person position type is {}'.format(current_position_type))
                 if current_position_type == '1':
-                    # # 如果目标的类别不允许出现在这个区域内则进行记录
-                    # number_plate = identify_number_plate(img, obj['bbox'])
-                    # # 如果车牌没有被识别到则放弃这次拍照
-                    # if number_plate is None:
-                    #     print('try to recog the id {} target number plate but failed'.format(obj_id))
-                    #     continue
-                    # if obj['cls_pred'] in self.no_allow_car[current_position_type]:
                     draw_img = draw_illegal_label_for_person(
                                 bbox=obj['bbox'],
                                 obj_conf=obj['obj_conf'],
@@ -89,7 +82,7 @@ class PersonMonitoringComponent(BaseBackboneComponent):
                             'passage_type': 'None',  # 没有通行类型
                             'obj_type': obj['cls_pred'],
                             'imgs': [draw_img,draw_img],
-                            'number_plate': None
+                            'number_plate': 'None'
                         })
                     # print('a person data')
                     # 将该车辆记录为不再追踪，因为其违法记录已经捕捉

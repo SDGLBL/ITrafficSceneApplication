@@ -22,7 +22,7 @@ class RtmpWriteComponent(BaseBackboneComponent):
                         '-r', str(fps),
                         '-i', '-',
                         '-pix_fmt', 'yuv420p',
-                        '-preset', 'medium',
+                        '-preset', 'slow',
                         '-f', 'flv',
                         rtmpUrl]
         self.resolution=resolution

@@ -113,8 +113,8 @@ def get_injected_cfg(cfg_data):
             new_mask = cv2.fillPoly(mask, [lane_area],int(no_allow_flag))
         taskCfg['backbones'][0][4]['monitoring_area'] = new_mask
         taskCfg['backbones'][0][4]['no_allow_car'] = lane_no_allow_cars
-    if 'parking_monitoring_area' in cfg_data.keys():
-        all_point_array = [np.array(x, dtype=np.int32) for x in cfg_data['parking_monitoring_area']]
+    if 'person_monitoring_area' in cfg_data.keys():
+        all_point_array = [np.array(x, dtype=np.int32) for x in cfg_data['person_monitoring_area']]
         mask = np.ones_like(mmcv.VideoReader(filepath)[10][:,:,0])
         new_mask = cv2.fillPoly(mask, all_point_array, 1)
         taskCfg['backbones'][0][5]['monitoring_area'] = new_mask
