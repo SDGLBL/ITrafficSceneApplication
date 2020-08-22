@@ -142,7 +142,7 @@ def get_video_info():
          >>> {
          >>>    'is_exist_emd':True, # 是否存在环境文件
          >>>    'is_exist_json':False # 是否存在json文件
-         >>>    'video_shape':(1080,1920,3)
+         >>>    'video_shape':[1080,1920,3]  # 高度,宽度,深度
          >>> }
     """
     try:
@@ -150,6 +150,7 @@ def get_video_info():
         video_name = request.args.get('video_name')
         if not exists(join(DataConfig.VIDEO_DIR,video_name)):
             raise RuntimeError('不存在名字为{}的视频'.format(video_name))
+        video_info['video_shape'] =mmcv.VideoReader(join(DataConfig.VIDEO_DIR,video_name))[0].shape
         if '.' in video_name:
             video_name = video_name.split('.')[0]
         if exists(join(DataConfig.EMODEL_DIR, video_name + '.emd')):
@@ -160,7 +161,6 @@ def get_video_info():
             video_info['is_exist_json'] = True
         else:
             video_info['is_exist_json'] = False
-        video_info['video_shape'] =mmcv.VideoReader(join(DataConfig.VIDEO_DIR,video_name))[0].shape
         server_loger.info('前端获取视频{}的信息{}'.format(video_name, video_info))
     except RuntimeError as e:
         server_loger.error(e)
