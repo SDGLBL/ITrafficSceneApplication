@@ -100,7 +100,10 @@ def draw_illegal_label(
     x1, y1, x2, y2 = int(x1) - offset, int(y1) - offset , int(x2) + offset, int(y2) + offset
     cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), thickness)
     cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
-    put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + ' 车牌:{0}'.format(number_plate)
+    if number_plate is not None:
+        put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4]) + ' 车牌:{0}'.format(number_plate)
+    else:
+        put_str = '车辆类型:{}'.format(cls2lable[cls_pred]) + ' 置信度:{0}'.format(str(cls_conf)[:4])
     img = paint_chinese_opencv(img,put_str,(x1,y1-50),(255,0,0))
     # cv2.putText(img, put_str, (x1, y1 - 5), cv2.FONT_HERSHEY_COMPLEX, 0.75, (0,0,255), 2)
     return img
@@ -175,7 +178,11 @@ def draw_label_from_infer(
     return results
 
 
-
+def draw_mask(raw_img,save_path,poins):
+    save_mask = np.zeros_like(raw_img)
+    for lane_area in poins:
+        new_mask = cv2.fillPoly(raw_img, [lane_area],(0,0,255)) 
+    cv2.imwrite(save_path,new_mask)
 
 def paint_chinese_opencv(im,chinese,pos,color):
     img_PIL = Image.fromarray(cv2.cvtColor(im,cv2.COLOR_BGR2RGB))
@@ -256,9 +263,9 @@ def get_sub_img(raw_img,bbox):
     h = img_shape[0]
     w = img_shape[1]
     x1, y1, x2, y2 = [int(x) for x in bbox]
-    x1, y1, x2, y2 = max((0, x1)), max((0, y1)), max((0, x2)), max((0, y2))
-    x1, y1, x2, y2 = min((h, x1)), min((w, y1)), min((h, x2)), min((w, y2))
-    img = raw_img[max(y1-50,0):min(y2+50,h), max(x1-50,0):min(x2+50,w)]
+    x1, y1, x2, y2 = max(0, x1), max(0, y1), min(w, x2), min(h, y2)
+    img = raw_img[max(y1-100,0):min(y2+100,h), max(x1-100,0):min(x2+50,w)]
+    # img = raw_img[y1:y2,x1:x2]
     return img
 
 
@@ -313,12 +320,12 @@ def identify_number_plate(raw_img: np.ndarray, bbox):
         # 如果截取的车辆画面比例悬殊直接不识别
         if img.shape[0] / img.shape[1] > 5 or img.shape[0] / img.shape[1] < 1 / 5:
             return None
-        # # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
-        # if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
-        #     return None
+        # 如果截取到的车辆占整幅画面的占比低于3%则直接选择不识别
+        if (img.shape[0] * img.shape[1]) / (raw_img.shape[0] * raw_img.shape[1]) < 0.03:
+            return None
         img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         result = HyperLPR_plate_recognition(img)
-        if len(result) > 0 and result[0][1] > 0.5:
+        if len(result) > 0 and result[0][1] > 0.8:
             return result[0][0]
         else:
             return None

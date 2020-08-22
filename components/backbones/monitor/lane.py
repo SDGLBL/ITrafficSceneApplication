@@ -1,13 +1,13 @@
 import numpy as np
-
+import cv2
 from components.backbones.base import BaseBackboneComponent
 from components.backbones.registry import BACKBONE_COMPONENT
-from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img,format_time2time,time2format_time,get_current_time,draw_illegal_label
+from utils.utils import bbox2center, identify_number_plate, point_distance,is_bbox_in_img,format_time2time,time2format_time,get_current_time,draw_illegal_label,get_sub_img
 
 
 @BACKBONE_COMPONENT.register_module
 class LaneMonitoringComponent(BaseBackboneComponent):
-    def __init__(self, monitoring_area: np.ndarray, no_allow_car={}, check_step=10, is_process = False):
+    def __init__(self, monitoring_area: np.ndarray, no_allow_car={}, check_step=16, is_process = False):
 
         """
         违章占用车道监控类
@@ -27,6 +27,7 @@ class LaneMonitoringComponent(BaseBackboneComponent):
         self.objs = {}
         self.no_record_id = []
         self.is_process = is_process
+        self.index = 0
 
     def process(self, **kwargs):
         super().process(**kwargs)
@@ -35,6 +36,7 @@ class LaneMonitoringComponent(BaseBackboneComponent):
         imgs = kwargs['imgs']
         imgs_info = kwargs['imgs_info']
         self.curent_step += len(imgs)
+        self.index += len(imgs)
         if self.curent_step >= self.check_step:
             self.curent_step = 0
             # 每次只取一张进行处理
@@ -71,9 +73,11 @@ class LaneMonitoringComponent(BaseBackboneComponent):
                     # 如果目标的类别不允许出现在这个区域内则进行记录
                     number_plate = identify_number_plate(img, obj['bbox'])
                     # 如果车牌没有被识别到则放弃这次拍照
-                    if number_plate is None:
-                        print('try to recog the id {} target number plate but failed'.format(obj_id))
-                        continue
+                    # if number_plate is None:
+                    #     name = 'save/' + str(self.index) + str(obj['bbox']) + '.jpg'
+                    #     cv2.imwrite(name,get_sub_img(img,obj['bbox']))
+                    #     print('try to recog the id {} target number plate but failed'.format(obj_id))
+                    #     continue
                     if obj['cls_pred'] in self.no_allow_car[current_position_type]:
                         draw_img = draw_illegal_label(
                                     bbox=obj['bbox'],

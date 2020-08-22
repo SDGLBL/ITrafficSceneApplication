@@ -59,11 +59,11 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                 x_c, y_c = bbox2center(obj['bbox'])
                 # 如果该目标的中心位于不允许停车区域,将其添加进入跟踪检查字典
                 if self.monitoring_area[int(y_c), int(x_c)] == 0:
-                    number_plate = identify_number_plate(img, obj['bbox'])
                     # 如果是第一次监测到
                     if obj_id not in self.objs.keys():
                         # print('当前时间为{}'.format(img_info['index'] // 30))
                         # print('id 为 {} 的目标进入禁止停车位置,车牌号为 {}'.format(obj['id'], number_plate))
+                        number_plate = identify_number_plate(img, obj['bbox'])
                         self.objs[obj_id] = {
                             'point': (x_c, y_c),
                             'start_time': format_time2time(img_info['time']),
@@ -124,8 +124,11 @@ class ParkingMonitoringComponent(BaseBackboneComponent):
                             if self.objs[obj_id]['number_plate'] is None:
                                 self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])
                         # 如果移动了，我们认为改目标不算违章停车那就更新它的start_time
-                        elif point_distance(point, self.objs[obj_id]['point']) > 100:
+                        elif point_distance(point, self.objs[obj_id]['point']) > 200:
                             # print('{}移动了我们认为改目标不算违章停车那就更新它的start_time'.format(obj_id))
+                            # 如果上次车牌号没检测出来继续检测识别
+                            if self.objs[obj_id]['number_plate'] is None:
+                                self.objs[obj_id]['number_plate'] = identify_number_plate(img, obj['bbox'])
                             self.objs[obj_id]['start_time'] = format_time2time(img_info['time'])
                             # 刷新违规截图
                             self.objs[obj_id]['imgs'][0] = draw_illegal_label(

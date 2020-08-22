@@ -8,7 +8,7 @@ import numpy as np
 from copy import deepcopy
 from cfg import TaskConfig
 from cfg import DataConfig
-
+from utils.utils import draw_mask
 TaskCfg = {
     'task_name':'路口交通场景Fake',
     'head':
@@ -102,6 +102,10 @@ def get_injected_cfg(cfg_data):
         parking_mask = cv2.fillPoly(mask, all_point_array, 0)
         taskCfg['backbones'][0][3]['monitoring_area'] = parking_mask
         taskCfg['backbones'][0][3]['is_process'] = True
+        # 此段代码用于绘制图像进行检查
+        # ------------------------
+        draw_mask(mmcv.VideoReader(filepath)[10],'park_cover.jpg',all_point_array)
+        # ------------------------
     if 'lane_monitoring_area' in cfg_data.keys():
         if 'lane_no_allow_cars' not in cfg_data.keys():
             raise RuntimeError('如果已经提供车道检测区域，请也提供禁止出现车辆信息')
@@ -111,6 +115,10 @@ def get_injected_cfg(cfg_data):
         mask = np.ones_like(mmcv.VideoReader(filepath)[10][:,:,0])
         for lane_area, no_allow_flag in zip(all_point_array, lane_no_allow_cars.keys()):
             new_mask = cv2.fillPoly(mask, [lane_area],int(no_allow_flag))
+        # 此段代码用于绘制图像进行检查
+        # ------------------------
+        draw_mask(mmcv.VideoReader(filepath)[10],'lane_cover.jpg',all_point_array)
+        # ------------------------
         taskCfg['backbones'][0][4]['monitoring_area'] = new_mask
         taskCfg['backbones'][0][4]['no_allow_car'] = lane_no_allow_cars
     if 'person_monitoring_area' in cfg_data.keys():
@@ -119,4 +127,8 @@ def get_injected_cfg(cfg_data):
         new_mask = cv2.fillPoly(mask, all_point_array, 1)
         taskCfg['backbones'][0][5]['monitoring_area'] = new_mask
         taskCfg['backbones'][0][5]['is_process'] = True
+        # 此段代码用于绘制图像进行检查
+        # ------------------------
+        draw_mask(mmcv.VideoReader(filepath)[10],'person_cover.jpg',all_point_array)
+        # ------------------------
     return taskCfg
