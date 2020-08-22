@@ -142,6 +142,7 @@ def get_video_info():
          >>> {
          >>>    'is_exist_emd':True, # 是否存在环境文件
          >>>    'is_exist_json':False # 是否存在json文件
+         >>>    'video_shape':(1080,1920,3)
          >>> }
     """
     try:
@@ -159,6 +160,7 @@ def get_video_info():
             video_info['is_exist_json'] = True
         else:
             video_info['is_exist_json'] = False
+        video_info['video_shape'] =mmcv.VideoReader(join(DataConfig.VIDEO_DIR,video_name))[0].shape
         server_loger.info('前端获取视频{}的信息{}'.format(video_name, video_info))
     except RuntimeError as e:
         server_loger.error(e)
