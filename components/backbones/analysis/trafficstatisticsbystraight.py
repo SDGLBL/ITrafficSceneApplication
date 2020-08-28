@@ -17,14 +17,15 @@ class TrafficStatisticsByStraight(BaseBackboneComponent):
         """
         # 表格初始化：
         self.indX = np.array(direction)    # 只有直行一个方向
-        self.indY = np.array(['car', 'truck', 'bus'])     # 统计三个类别的车辆
+        self.indY = np.array(['car', 'truck', 'bus','motorbike'] )     # 统计三个类别的车辆
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
         self.is_process = is_process
         self.passLine = passLine
         self.trans = {
             'car':'小汽车',
-            'bus':'公交车',
+            'bus':'巴士',
             'truck':'卡车',
+            'motorbike':'摩托车',
             'to':'驶去',
             'from':'驶来'
         }

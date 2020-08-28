@@ -45,6 +45,10 @@ TaskCfg = {
             {
                 'type': 'SaveImgInfo',
                 'savePath': None,
+            },
+            {
+                'type':'ProcessCollectorComponent',
+                'isPrint': TaskConfig.IS_PRINT_PROCESS
             }
         ]
     ]

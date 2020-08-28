@@ -19,7 +19,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
 
     def __init__(
             self,
-            process_type=['pass', 'illegal_parking', 'illegal_occupation','illegal_person']):
+            process_type=['pass', 'illegal_parking', 'illegal_occupation','illegal_person','illegal_turn']):
         """收集违规信息并存入数据库中
 
         Args:
@@ -156,5 +156,7 @@ class InformationCollectorComponent(BaseBackboneComponent):
                         (start_time_id, number_plate, img_path, info_type),
                         False
                     ) 
+                elif info_type == 'illegal_turn':
+                    pass
                 continue
         return kwargs

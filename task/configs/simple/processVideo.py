@@ -44,6 +44,10 @@ TaskCfg = {
                 'resolution':None,
                 'write_path':None,
                 'fps':30
+            },
+            {
+                'type':'ProcessCollectorComponent',
+                'isPrint': TaskConfig.IS_PRINT_PROCESS
             }
         ]
     ]

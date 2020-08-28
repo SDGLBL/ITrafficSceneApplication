@@ -47,12 +47,12 @@ class PathExtract(BaseBackboneComponent):
                 tPath['maybe_classes'][object['cls_pred']] += 1
 
                 # 在模型存在时，进行车牌识别等操作：
-                if self.model is not None:
-                    if tPath['number_plate'] is None and img_info['index']-tPath['state']>=30:
-                        tPath['state'] = img_info['index']
-                        number_plate = identify_number_plate(img, object['bbox'])
-                        if number_plate is not None:
-                            tPath['number_plate'] = number_plate
+                # if self.model is not None:
+                #     if tPath['number_plate'] is None and img_info['index']-tPath['state']>=30:
+                #         tPath['state'] = img_info['index']
+                #         number_plate = identify_number_plate(img, object['bbox'])
+                #         if number_plate is not None:
+                #             tPath['number_plate'] = number_plate
 
         # 结算已经跟踪结束的目标：
         for del_id in img_info['del_id']:
@@ -87,14 +87,14 @@ class Constraint:
             if model['type'] == 'crossroad':
                 self.startArea = utils.getMapMask(self.model['main_map'], th=0.2)
                 self.half = -1
-                self.classes = ['car', 'trucker', 'bus'] 
+                self.classes = ['car', 'truck', 'bus','bicycle','motorbike'] 
 
     def __call__(self, object):
         cls_pred = object['cls_pred']
         centre = utils.getCentre(object['bbox'])
-        if self.startArea is not None:
-            if not self.startArea[centre[1], centre[0]]:
-                return False
+        # if self.startArea is not None:
+        #     if not self.startArea[centre[1], centre[0]]:
+        #         return False
         if self.half is not None:
             if dotStatus(centre, self.model) != self.half:
                 return None

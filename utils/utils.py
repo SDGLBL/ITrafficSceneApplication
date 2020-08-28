@@ -44,7 +44,9 @@ def draw_label(
     """        
     thickness = len(img) // 200
     # img = deepcopy(img)
-    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人'}
+    cls2lable = {'car':'小汽车','bus':'巴士','truck':'卡车','person':'人',
+    'bicycle':'自行车','motorbike':'摩托车','traffic light':'交通信号灯',
+    }
     for bbox, obj_conf, cls_conf, cls_pred, id in zip(bboxs, obj_confs, cls_confs, cls_preds, ids):
         if cls_pred not in cls2lable.keys():
             continue
@@ -292,7 +294,7 @@ def is_bbox_in_img(img,bbox):
     # print(bbox)
     # print(h,w)
     # print('---------------')
-    if x1 > 0 and x2 < w and y1 > 0 and y2 < h:
+    if x1 > 0 and x2 < w - 10 and y1 > 0 and y2 < h - 10:
         return True
     else:
         return False

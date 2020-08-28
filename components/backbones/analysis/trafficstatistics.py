@@ -34,15 +34,13 @@ class TrafficStatistics(BaseBackboneComponent):
         for i in laneC:
             self.laneStr[i] = '第{}车道'.format(str(str(k)))
             k += 1
-        self.indY = ['car', 'truck', 'bus']
+        self.indY = ['car', 'truck', 'bus','motorbike']
         self.indX = np.array(self.indX)
         self.indY = np.array(self.indY)
         self.pass_count_table = np.zeros((len(self.indY), len(self.indX)))
         self.is_process = is_process
         self.trans = {
-            'car':'小汽车',
-            'bus':'公交车',
-            'truck':'卡车'
+            'car':'小汽车','bus':'巴士','truck':'卡车','motorbike':'摩托车'
         }
         self.CIndY = np.array(self.indY)
         for i in range(len(self.CIndY)):

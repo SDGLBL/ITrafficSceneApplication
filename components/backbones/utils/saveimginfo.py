@@ -29,6 +29,6 @@ class SaveImgInfo(BaseBackboneComponent):
             with open(self.savePath, 'a+', encoding='utf-8') as f:
                 line = json.dumps(img_info, ensure_ascii=False)
                 f.write(line+'\n')
-        return None
+        return kwargs
 
      

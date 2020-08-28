@@ -5,3 +5,4 @@ from .rtmpwrite import RtmpWriteComponent
 from .saveimginfo import SaveImgInfo
 from .writevideo import WriteVideoComponent
 from .drawinfo import DrawInfoComponent
+from .processcollect import ProcessCollectorComponent

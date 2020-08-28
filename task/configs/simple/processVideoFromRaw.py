@@ -24,7 +24,7 @@ TaskCfg = {
             'type': 'Yolov5Detector',
             'device': '0',
             'batch_size': TaskConfig.BATCH_SIZE,
-            'weights':'./components/detector/yolov5/weights/yolov5x.pt'
+            'weights':'./components/detector/yolov5/weights/yolov5s.pt'
         }
     ,
     'tracker':
@@ -50,6 +50,10 @@ TaskCfg = {
                 'resolution':None,
                 'write_path':None,
                 'fps':30
+            },
+            {
+                'type':'ProcessCollectorComponent',
+                'isPrint': TaskConfig.IS_PRINT_PROCESS
             }
         ]
     ]

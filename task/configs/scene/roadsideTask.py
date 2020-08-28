@@ -19,11 +19,12 @@ TaskCfg = {
             'cache_capacity': 100
         }
     ,
-    'detector':
+    'detector': 
         {
-            'type': 'Yolov3Detector',
-            'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-            'batch_size': TaskConfig.BATCH_SIZE
+            'type': 'Yolov5Detector',
+            'device': '0',
+            'batch_size': TaskConfig.BATCH_SIZE,
+            'weights':'./components/detector/yolov5/weights/yolov5s.pt'
         }
     ,
     'tracker':

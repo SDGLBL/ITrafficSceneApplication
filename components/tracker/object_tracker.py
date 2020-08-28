@@ -85,7 +85,6 @@ class SORT_Track(BaseTracker):
             print('cant found \'objects\' in img_info')
             print(img_info)
             return img_info
-
         bboxs = self.preprocessing(img_info)
         bbox_ids, id_index, del_id = self.track(bboxs)
         return self.afterprocessing(img_info, bbox_ids,id_index, del_id)

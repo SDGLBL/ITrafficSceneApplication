@@ -369,13 +369,14 @@ class Yolov5Detector(BaseDetector):
     def afterprocessing(self, detections, imgs_batch, imgs_info):
         preds = non_max_suppression(detections, self.conf_thres, self.iou_thres)
         for i,det in enumerate(preds):
+            imgs_info[i]['objects'] = []
             if det is not None and len(det):
                 det[:, :4] = scale_coords(imgs_batch.shape[2:], det[:, :4], imgs_info[i]['shape']).round()
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s = '%g %ss, ' % (n, self.names[int(c)])  # add to string
-                imgs_info[i]['objects'] = []
+                
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     x1, y1, x2, y2 = xyxy
